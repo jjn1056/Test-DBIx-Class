@@ -5,7 +5,7 @@ use Test::More; {
 
 	require_ok 'Test::DBIx::Class';
 	use_ok 'Test::DBIx::Class::Types';
-	use_ok 'Test::DBIx::Class::Schema';
+	use_ok 'Test::DBIx::Class::SchemaManager';
 	use_ok 'Test::DBIx::Class::Example::Schema';
 	use_ok 'Test::DBIx::Class::Example::Schema::Result';
 	use_ok 'Test::DBIx::Class::Example::Schema::ResultSet';

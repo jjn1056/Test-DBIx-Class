@@ -6,16 +6,16 @@ package Test::DBIx::Class::Types; {
 	use Class::MOP;
 	use MooseX::Types::Moose qw(Str ClassName ArrayRef HashRef);
 	use MooseX::Types -declare => [qw/
-		TestBuilder SchemaClass ConnectInfo FixtureClass
+		TestBuilder SchemaManagerClass ConnectInfo FixtureClass
 	/];
 
 	subtype TestBuilder,
 	  as class_type('Test::Builder');
 
-	subtype SchemaClass,
+	subtype SchemaManagerClass,
 	  as ClassName;
 
-	coerce SchemaClass,
+	coerce SchemaManagerClass,
 	  from Str,
 	  via {
 		my $type = $_;
@@ -93,21 +93,11 @@ __END__
 
 =head1 NAME
 
-Test::DBIx::Class::Schema - Manages a DBIx::Class::Schema for Testing
+Test::DBIx::Class::Types - Type Constraint Library
 
 =head1 DESCRIPTION
 
-This class is a helper for L<Test::DBIx::Class>.  Basically it is a type of
-wrapper or adaptor for your schema so we can more easily and quickly deploy it
-and cleanup it for the purposes of automated testing.
-
-You shouldn't need to use anything here.
-
-=head1 SEE ALSO
-
-The following modules or resources may be of interest.
-
-L<DBIx::Class>, L<Test::DBIx::Class>
+L<MooseX::Types> based type constraint library
 
 =head1 AUTHOR
 

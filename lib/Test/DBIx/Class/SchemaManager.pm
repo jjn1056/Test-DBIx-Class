@@ -1,9 +1,9 @@
-package Test::DBIx::Class::Schema; {
+package Test::DBIx::Class::SchemaManager; {
 
 	use Moose;
 	use MooseX::Attribute::ENV;
 	use Test::DBIx::Class::Types qw(
-		TestBuilder SchemaClass ConnectInfo FixtureClass
+		TestBuilder SchemaManagerClass ConnectInfo FixtureClass
 	);
 
 	has 'keep_db' => (
@@ -23,7 +23,7 @@ package Test::DBIx::Class::Schema; {
 	has 'schema_class' => (
 		traits => ['ENV'],
 		is => 'ro',
-		isa => SchemaClass,
+		isa => SchemaManagerClass,
 		required => 1,
 		coerce => 1,
 	);
@@ -167,7 +167,7 @@ __END__
 
 =head1 NAME
 
-Test::DBIx::Class::Schema - Manages a DBIx::Class::Schema for Testing
+Test::DBIx::Class::SchemaManager - Manages a DBIx::Class::SchemaManager for Testing
 
 =head1 DESCRIPTION
 
