@@ -135,11 +135,5 @@ use Test::More; {
 		{name=>'Vincent', age=>15},
 	], 'Found People and data4';
 
-	use Data::Dump 'dump';
-
-	##warn dump $john->created;
-	##warn dump $john->get_inflated_column('created');
-	##warn dump hri_dump(NotTeenager);
-
 	done_testing();
 }

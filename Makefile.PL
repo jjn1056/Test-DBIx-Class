@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 all_from 'lib/Test/DBIx/Class.pm';
-repository 'TBD';	
+repository 'git://github.com/jjn1056/Test-DBIx-Class.git';	
 
 requires 'Moose' => '0.88';
 requires 'MooseX::Types' => '0.16';
@@ -19,7 +19,7 @@ requires 'DBIx::Class::Schema::PopulateMore' => '0.14';
 requires 'Path::Class' => '0.17';
 requires 'Config::Any' => '0.17';
 requires 'Sub::Exporter' => '0.982';
-requires 'Scalar::Utils';
+requires 'Scalar::Util';
 requires 'Digest::MD5' => '2.39';
 
 build_requires 'Test::More' => '0.92';
