@@ -1,0 +1,9 @@
+---
+a: 5
+c: 3
+config_path:
+  - t
+  - etc
+  - example
+  - schema3
+
