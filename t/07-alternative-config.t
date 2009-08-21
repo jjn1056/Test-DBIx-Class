@@ -3,7 +3,7 @@ use Test::More; {
 	use strict;
 	use warnings;
 
-	## Test to override the config path and test loading resultsources via the
+	## Test to override the config path and test loading resultsets via the
 	## configuration, as well as fixtures.
 
 	use Test::DBIx::Class 

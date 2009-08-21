@@ -295,7 +295,7 @@ sub import {
 			} $schema_manager->schema->sources,
 		],
 		groups => {
-			resultsources => [$schema_manager->schema->sources],
+			resultsets => [$schema_manager->schema->sources],
 		},
 		into_level => 1,	
 	});
@@ -315,11 +315,11 @@ sub _initialize {
 	my ($config, @exports) = $class->_normalize_opts(@opts);
 	my $merged_config = $class->_prepare_config($config);
 
-	if(my $resultsources = delete $merged_config->{resultsources}) {
-		if(ref $resultsources eq 'ARRAY') {
-			push @exports, @$resultsources;
+	if(my $resultsets = delete $merged_config->{resultsets}) {
+		if(ref $resultsets eq 'ARRAY') {
+			push @exports, @$resultsets;
 		} else {
-			die '"resultsources" options must be a Array Reference.';
+			die '"resultsets" options must be a Array Reference.';
 		}
 	}
 	my $merged_with_fixtures_config = $class->_prepare_fixtures($merged_config);
@@ -357,11 +357,11 @@ sub _normalize_opts {
 		}
 	}
 
-	if(my $resultsources = delete $config->{resultsources}) {
-		if(ref $resultsources eq 'ARRAY') {
-			push @exports, @$resultsources;
+	if(my $resultsets = delete $config->{resultsets}) {
+		if(ref $resultsets eq 'ARRAY') {
+			push @exports, @$resultsets;
 		} else {
-			die '"resultsources" options must be a Array Reference.';
+			die '"resultsets" options must be a Array Reference.';
 		}
 	}
 
@@ -994,7 +994,7 @@ it into the database.  Must capture and report errors.  Default value is
 "::Populate", which loads L<Test::DBIx::Class::FixtureClass::Populate>, which
 is a command class based on L<DBIx::Class::Schema/populate>.
 
-=item resultsources
+=item resultsets
 
 Lets you add in some result source definitions to be imported at test script
 runtime.  See L</Initialization Sources> for more.
@@ -1040,41 +1040,46 @@ method on $resultset.  For example:
 Although since fixtures will not yet be installed, the above is probably not
 going to be a normally working example :)
 
-Additionally, since you can also initialize sources via the 'resultsources'
+Additionally, since you can also initialize sources via the 'resultsets'
 configuration option, which can be placed into your global configuration files
 this means you can predefine and result resultsets across all your tests.  Here
-is an example 't/etc/schema.yml' file where I initialize pretty much everything
+is an example 't/etc/schema.pl' file where I initialize pretty much everything
 in one file:
 
-	---
-	schema_class: Test::DBIx::Class::Example::Schema
-	resultsources:
-	  - Person
-	  - Job
-	  - Person
-	  - -as: NotTeenager
-		search:
-		  age:
-			'>': 18
-	fixture_sets:
-	  basic:
-		Person:
-		  -
-			- name
-			- age
-			- email
-		  -
-			- John
-			- 40
-			- john@nowehere.com
-		  -
-			- Vincent
-			- 15
-			- vincent@home.com
-		  -
-			- Vanessa
-			- 35
-			- vanessa@school.com
+	 {
+	  'schema_class' => 'Test::DBIx::Class::Example::Schema',
+	  'resultsets' => [
+		'Person',
+		'Job',
+		'Person' => { '-as' => 'NotTeenager', search => {age=>{'>'=>18}}},
+	  ],
+	  'fixture_sets' => {
+		'basic' => {
+		  'Person' => [
+			[
+			  'name',
+			  'age',
+			  'email'
+			],
+			[
+			  'John',
+			  '40',
+			  'john@nowehere.com'
+			],
+			[
+			  'Vincent',
+			  '15',
+			  'vincent@home.com'
+			],
+			[
+			  'Vanessa',
+			  '35',
+			  'vanessa@school.com'
+			]
+		  ]
+		}
+	  },
+	};
 
 In this case you can simple do "use Test::DBIx::Class" and everything will
 happen automatically.

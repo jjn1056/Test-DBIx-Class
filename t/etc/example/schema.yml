@@ -1,6 +1,6 @@
 ---
 schema_class: Test::DBIx::Class::Example::Schema
-resultsources:
+resultsets:
   - Person
   - Job
   - Person
