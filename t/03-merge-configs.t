@@ -25,8 +25,8 @@ use Test::More; {
 		[qw(t etc example schema1)], 
 		[qw(t etc example schema2)],
 	])], [
-		Path::Class::file(qw/t etc example schema1.yml/),
-		Path::Class::file(qw/t etc example schema2.yml/), 
+		Path::Class::file(qw/t etc example schema1.pl/),
+		Path::Class::file(qw/t etc example schema2.pl/), 
 	], 'Got correct valid configuration files';
 
 	is_deeply [Test::DBIx::Class->_load_via_config_any(
