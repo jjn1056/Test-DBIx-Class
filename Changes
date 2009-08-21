@@ -1,4 +1,7 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.02  21 August 2009 @ 18:33:20 UTC	
+    - First usable version released.
+
 0.01  21 August 2009
     - First usable version released.
