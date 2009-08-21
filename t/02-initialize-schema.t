@@ -45,26 +45,32 @@ use Test::More; {
 	is $return[0]->{Job}->[0]->name, 'programmer'
 	  => 'Found expected name value of programmer';
 
-	ok my %return2 = $schema_manager->install_fixtures(
-			'::PopulateMore',
-			Person => {
-				fields => ['name', 'age', 'email'],
-				data => {
-					york => ['York', 45, 'york@york.com'],
-					mike => ['Mike', 65, 'mike@mike.com'],
-				},
-			},
-			'Person::Employee' => {
-				fields => 'person',
-				data => {
-					employee_york => '!Index:Person.york',
-					employee_mike => '!Index:Person.mike',
-				},
-			}
-	), "Installed Fixtures with PopulateMore";
+	SKIP: {
+		eval {require DBIx::Class::Schema::PopulateMore};
+		skip "You need the optional DBIx::Class::Schema::PopulateMore", 
+		2 if $@;
 
-	is $return2{'Person.york'}->name, 'York',
-	  => 'york is York!';
+		ok my %return2 = $schema_manager->install_fixtures(
+				'::PopulateMore',
+				Person => {
+					fields => ['name', 'age', 'email'],
+					data => {
+						york => ['York', 45, 'york@york.com'],
+						mike => ['Mike', 65, 'mike@mike.com'],
+					},
+				},
+				'Person::Employee' => {
+					fields => 'person',
+					data => {
+						employee_york => '!Index:Person.york',
+						employee_mike => '!Index:Person.mike',
+					},
+				}
+		), "Installed Fixtures with PopulateMore";
+
+		is $return2{'Person.york'}->name, 'York',
+		  => 'york is York!';
+	}
 
 	done_testing();
 }

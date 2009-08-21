@@ -15,12 +15,12 @@ requires 'DBIx::Class::UUIDColumns' => '0.02005';
 requires 'DBIx::Class::TimeStamp' => '0.12'; 
 requires 'SQL::Translator' => '0.09007';
 requires 'Test::Builder' => '0.92';
-requires 'DBIx::Class::Schema::PopulateMore' => '0.14';
 requires 'Path::Class' => '0.17';
 requires 'Config::Any' => '0.17';
 requires 'Sub::Exporter' => '0.982';
 requires 'Scalar::Util';
 requires 'Digest::MD5' => '2.39';
+requires 'DBIx::Class::Schema::PopulateMore' => '0.14';
 
 build_requires 'Test::More' => '0.92';
 
