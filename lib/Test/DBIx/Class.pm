@@ -6,7 +6,7 @@ use warnings;
 
 use base 'Test::Builder::Module';
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
 use Test::DBIx::Class::SchemaManager;
@@ -445,7 +445,11 @@ sub _prepare_config {
 		my @extensions = $class->_allowed_extensions;
 		my @post_config_files =  grep { -e $_} map {
 			my $path = $_; 
-			map {"$path.$_"} @extensions;
+			map {
+			$ENV{TEST_DBIC_CONFIG_SUFFIX} ? 
+			  ("$path.$_", "$path$ENV{TEST_DBIC_CONFIG_SUFFIX}.$_") : 
+			  ("$path.$_");
+			} @extensions;
 		} map {
 			my @local_path = ref $_ ? @$_ : ($_);
 			Path::Class::file(@local_path);
@@ -482,7 +486,11 @@ sub _valid_config_files {
 	my @paths = $class->_normalize_config_path($default_paths, $extra_paths);
 	my @config_files = grep { -e $_} map { 
 		my $path = $_; 
-		map {"$path.$_"} @extensions;
+		map { 
+			$ENV{TEST_DBIC_CONFIG_SUFFIX} ? 
+			  ("$path.$_", "$path$ENV{TEST_DBIC_CONFIG_SUFFIX}.$_") : 
+			  ("$path.$_");
+		} @extensions;
 	 } @paths;
 
 	return @config_files;
@@ -555,15 +563,16 @@ sub _initialize_schema {
 	my $class = shift @_;
 	my $config  = shift @_;
 	my $builder = __PACKAGE__->builder;
+	
 	my $schema_manager;
-
-	eval {
-		$schema_manager = Test::DBIx::Class::SchemaManager->initialize_schema(
+	 eval {
+		$schema_manager = Test::DBIx::Class::SchemaManager->initialize_schema({
 			%$config, 
 			builder => $builder,
-		);
-	}; if ($@) {
+		});
+	}; if ($@ or !$schema_manager) {
 		Test::More::fail("Can't initialize a schema with the given configuration");
+		Test::More::diag("Returned Error: ".$@) if $@;
 		Test::More::diag(
 			Test::More::explain("configuration: " => $config)
 		);
@@ -597,14 +606,6 @@ script could contain:
 			schema_class => 'MyApp::Schema',
 			connect_info => ['dbi:SQLite:dbname=:memory:','',''],
 			fixture_class => '::Populate',
-			fixture_providers => [
-				'::File' => {
-					path => [ 
-						[qw/t etc fixtures/], 
-						[qw/t etc schema 01-basic/], 
-					],
-				},
-			],
 		}, 'Person', 'Person::Employee' => {-as => 'Employee'}, 'Job', 'Phone';
 
 		## Your testing code below ##
@@ -624,7 +625,7 @@ place, "t/etc/schema.conf":
 		
 		use strict;
 		use warnings;
-		use Test::DBIx::Class;
+		use Test::DBIx::Class qw(:resultsets);
 
 		## Your testing code below ##
 		## Your testing code above ##
@@ -635,7 +636,7 @@ place, "t/etc/schema.conf":
 Then, assuming the existance of a L<DBIx::Class::Schema> subclass called, 
 "MyApp::Schema" and some L<DBIx::Class::ResultSources> named like "Person", 
 "Person::Employee", "Job" and "Phone", will automatically deploy a testing 
-schema in the given database / storage (or auto deploy to an in memory based
+schema in the given database / storage (or auto deploy to an in-memory based
 L<DBD::SQLite> database), install fixtures and let you run some test cases, 
 such as:
 
@@ -1097,7 +1098,7 @@ to store configuration in the format of your choice.
 
 "[test file path]" is the relative path part under the "t" directory of the
 calling test script.  For example, if your test script is "t/mytest.t" we add
-the path "./t/etc/schema/mytest.*" to the path.
+the path "./t/etc/mytest.*" to the path.
 
 Additionally, we do a a merge using L<Hash::Merge> of all the matching found
 configurations.  This allows you to do 'cascading' configuration from the most
@@ -1131,7 +1132,7 @@ configuration settings mixed with global settings, as in:
 		];
 
 Which would search and combine "/etc/myapp/test-schema.*", "./t/etc/schema.*",
-"./etc/test-dbix-class.*" and "~/etc/test-schema.*".  This would let you set
+"./etc/[test script name].*" and "~/etc/test-schema.*".  This would let you set
 up server level global settings, distribution level settings and finally user
 level settings.
 
@@ -1140,13 +1141,38 @@ reference of path parts, rather than as a string with delimiters (i.e. we do
 [qw(t etc)] rather than "t/etc").  This is not required but recommended.  All
 arguments, either string or array references, are passed to L<Path::Class> so
 that we can maintain better compatibility with non unix filesystems.  If you
-are writing for CPAN, please consider our non Unix filesystem friends :) 
+are writing for CPAN, please consider our non Unix filesystem friends :)
 
-=head1 EXAMPLES
+Lastly, there is an %ENV variable named '' which, if it
+exists, can be used to further customize your configuration path.  If we find
+that $ENV{TEST_DBIC_CONFIG_SUFFIX} is set, we attempt to find configuration files
+with the suffix appended to each of the items in the config_path option.  So, if
+you have:
 
-The following are some additional examples using this module.
+	use Test::DBIx::Class
+		-config_path => [ 
+			[qw(/ etc myapp test-schema)],
+			'+',
+			[qw(~ etc test-schema)],
+		];
+		
+and $ENV{TEST_DBIC_CONFIG_SUFFIX} = '-mysql' we will check the following paths
+for valid and loading configuration files (assuming unix filesystem conventions)
 
-	TBD
+	/etc/myapp/test-schema.*
+	/etc/myapp/test-schema-mysql.*
+	./t/etc/schema.*	
+	./t/etc/schema-mysql.*
+	./etc/[test script name].*
+	./etc/[test script name]-mysql.*
+	~/etc/test-schema.*
+	~/etc/test-schema-mysql.*
+	
+Each path is testing in turn and all found configurations are merged from top to
+bottom.  This feature is intended to make it easier to switch between sets of
+configuration files when developing.  For example, you can create a test suite
+intended for a mysql database, but allow a failback to the default Sqlite should
+certain enviroment variables not exist.
 
 =head1 SEE ALSO
 

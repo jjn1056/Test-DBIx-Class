@@ -50,8 +50,37 @@ use Test::More; {
 				[qw(t etc example schema2)],
 			]
 	})], [
-		{ schema_class => "Test::DBIx::Class::Example::Schema", a => 5, aa => 100, b => 2, c => 40, aaaa=>1, bbbb=>2 },
+		{ schema_class => "Test::DBIx::Class::Example::Schema", 
+		a => 5, aa => 100, b => 2, c => 40, aaaa=>1, bbbb=>2 },
 	], 'Got correct _prepare_config';
+	
+	{
+		$ENV{TEST_DBIC_CONFIG_SUFFIX} = '-prod';
+		
+		is_deeply [Test::DBIx::Class->_valid_config_files([],[
+			['+'],
+			[qw(t etc example schema1)], 
+			[qw(t etc example schema2)],
+		])], [
+			Path::Class::file(qw/t etc example schema1.pl/),
+			Path::Class::file(qw/t etc example schema1-prod.pl/),
+			Path::Class::file(qw/t etc example schema2.pl/), 
+		], 'Got correct valid configuration files';
+		
+	}
 
+	 is_deeply [Test::DBIx::Class->_prepare_config({
+			aa => 100,
+			c => 40,
+			config_path => [
+				['+'],
+				[qw(t etc example schema1)], 
+				[qw(t etc example schema2)],
+			]
+	})], [
+		{ schema_class => "Test::DBIx::Class::Example::Schema", 
+		a => 5, aa => 100, b => 2, c => 40, aaaa=>1, bbbb=>2, z=>1 },
+	], 'Got correct _prepare_config';
+	
 	done_testing();
 }

@@ -2,6 +2,7 @@ package Test::DBIx::Class::SchemaManager; {
 
 	use Moose;
 	use MooseX::Attribute::ENV;
+	use Test::More ();
 	use Test::DBIx::Class::Types qw(
 		TestBuilder SchemaManagerClass ConnectInfo FixtureClass
 	);
@@ -100,19 +101,29 @@ package Test::DBIx::Class::SchemaManager; {
 	}
 
 	sub initialize_schema {
-		my $class = shift @_;
-
-		if(my $self = $class->new(@_)) {
+		my ($class, $config) = @_;
+		if(my $self = $class->new($config)) {
 			$self->setup;
 			return $self;
+		} else {
+			return;
 		}
 	}
 
 	sub setup {
 		my $self = shift @_;
-		$self->schema->storage->ensure_connected;
+		$self->schema->storage->ensure_connected; 
 		my $deploy_args = $ENV{FORCE_DROP_TABLE} ? {add_drop_table => 1} : {};
-		$self->schema->deploy($deploy_args);
+
+		if(my $schema = $self->schema) {
+			eval {
+				$schema->deploy($deploy_args);
+			};if($@) {
+				Test::More::fail("Error Deploying Schema: $@");
+			}
+			return $self;
+		} 
+		return;
 	}
 
 	sub cleanup {
