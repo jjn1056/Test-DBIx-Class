@@ -1,5 +1,9 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.03  23 August 2009
+    - Reverted to a version of the Makefile that actually has all the 
+      dependencies listed correctly.
+
 0.02  21 August 2009 @ 18:33:20 UTC	
     - First usable version released.
 

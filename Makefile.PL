@@ -21,6 +21,7 @@ requires 'Sub::Exporter' => '0.982';
 requires 'Scalar::Util';
 requires 'Digest::MD5' => '2.39';
 requires 'DBIx::Class::Schema::PopulateMore' => '0.14';
+requires 'Hash::Merge' => '0.11';
 
 build_requires 'Test::More' => '0.92';
 
