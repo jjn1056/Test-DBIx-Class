@@ -21,7 +21,7 @@ $VAR1 = {
         [
           'Vanessa',
           '35',
-          'vanessa@school.com'
+          'vanessa__ENV(TEST_DBIC_LAST_NAME)__@school.com'
         ]
       ]
     }

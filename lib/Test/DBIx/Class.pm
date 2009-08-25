@@ -6,7 +6,7 @@ use warnings;
 
 use base 'Test::Builder::Module';
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
 use Test::DBIx::Class::SchemaManager;
@@ -17,11 +17,11 @@ use Sub::Exporter;
 use Test::More ();
 use Digest::MD5;
 use Scalar::Util 'blessed';
+use Data::Visitor::Callback;
 
 sub import {
 	my ($class, @opts) = @_;
 	my ($schema_manager, $merged_config, @exports) = $class->_initialize(@opts);
-
 	my $exporter = Sub::Exporter::build_exporter({
 		exports => [
 			dump_settings => sub {
@@ -323,6 +323,9 @@ sub _initialize {
 		}
 	}
 	my $merged_with_fixtures_config = $class->_prepare_fixtures($merged_config);
+	my $visitor = Data::Visitor::Callback->new(plain_value=>\&_visit_config_values);
+	$visitor->visit($merged_with_fixtures_config);
+
 	my $schema_manager = $class->_initialize_schema($merged_with_fixtures_config);
 
 	return (
@@ -330,6 +333,33 @@ sub _initialize {
 		$merged_config,
 		@exports,
 	);
+}
+
+sub _visit_config_values {
+	return unless $_;
+
+	&_config_substitutions($_);
+	
+}
+
+sub _config_substitutions {
+    my $subs = {};
+    $subs->{ ENV } = 
+        sub { 
+            my ( $v ) = @_;
+            if (! defined($ENV{$v})) {
+                Test::More::fail("Missing environment variable: $v");
+                return '';
+            } else {
+                return $ENV{ $v }; 
+            }
+        };
+    $subs->{ literal } ||= sub { return $_[ 1 ]; };
+    my $subsre = join( '|', keys %$subs );
+
+    for ( @_ ) {
+        s{__($subsre)(?:\((.+?)\))?__}{ $subs->{ $1 }->( $2 ? split( /,/, $2 ) : () ) }eg;
+    }
 }
 
 sub _normalize_opts {
@@ -455,10 +485,7 @@ sub _prepare_config {
 			Path::Class::file(@local_path);
 		} @post_config_paths;
 
-	    $post_config = Config::Any->load_files({
-			files => \@post_config_files,
-			use_ext => 1,
-		});
+	    my $post_config = $class->_config_any_load_files(@post_config_files);
 		foreach my $config_datum(reverse map { values %$_ } @$post_config) {
 			$config = Hash::Merge::merge($config, $config_datum);
 		}
@@ -470,14 +497,19 @@ sub _prepare_config {
 sub _load_via_config_any {
 	my ($class, $extra_paths) = @_;
 	my @files = $class->_valid_config_files($class->_default_paths, $extra_paths);
-
-    my $config = Config::Any->load_files({
-		files => \@files,
-		use_ext => 1,
-	});
+	my $config = $class->_config_any_load_files(@files);
 
 	my @config_data = map { values %$_ } @$config;
 	return @config_data;
+}
+
+sub _config_any_load_files {
+	my ($class, @files) = @_;
+
+    return Config::Any->load_files({
+		files => \@files,
+		use_ext => 1,
+	});
 }
 
 sub _valid_config_files {
@@ -1173,6 +1205,34 @@ bottom.  This feature is intended to make it easier to switch between sets of
 configuration files when developing.  For example, you can create a test suite
 intended for a mysql database, but allow a failback to the default Sqlite should
 certain enviroment variables not exist.
+
+=head1 CONFIGURATION SUBSTITUTIONS
+
+Similarly to L<Catalyst::Plugin::ConfigLoader>, there are some macro style 
+keyword inflators available for use within your configuration files.  This
+allows you to set the value of a configuration setting from an external source,
+such as from %ENV.  There are currently two macro substitutions:
+
+=over 4
+
+=item ENV
+
+Given a value in %ENV, substitute the keyword for the value of the named
+substitution.  For example, if you had:
+
+	email = 'vanessa__ENV(TEST_DBIC_LAST_NAME)__@school.com'
+
+in your configuration filem your could:
+
+	TEST_DBIC_LAST_NAME=_lee prove -lv t/schema-your-test.t
+
+and then:
+
+	is $vanessa->email, 'vanessa_lee@school.com', 'Got expected email';
+
+You might find this useful for configuring localized username and passwords
+although personally I'd rather set that via configuration in the user home
+directory.
 
 =head1 SEE ALSO
 

@@ -22,6 +22,7 @@ requires 'Scalar::Util';
 requires 'Digest::MD5' => '2.39';
 requires 'DBIx::Class::Schema::PopulateMore' => '0.14';
 requires 'Hash::Merge' => '0.11';
+requires 'Data::Visitor' => '0.25';
 
 build_requires 'Test::More' => '0.92';
 

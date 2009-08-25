@@ -1,5 +1,9 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.05  24 August 2009 @ 11::55::00 UTC
+    - New Feature: Perform configuration file substitutions, similar to the way
+      Catalyst::Plugin::ConfigLoader works.  Added tests and docs.
+
 0.04  24 August 2009
     - Fixed some minor documentation typos and improved error reporting when a
       schema fails to deploy (we now properly report the actual error instead of
