@@ -55,7 +55,7 @@ __END__
 
 =head1 NAME
 
-Test::DBIx::Class::FixtureComand::PopulateMore - Install fixtures using PopulateMore
+Test::DBIx::Class::FixtureCommand::PopulateMore - Install fixtures using PopulateMore
 
 =head1 SYNOPSIS
 

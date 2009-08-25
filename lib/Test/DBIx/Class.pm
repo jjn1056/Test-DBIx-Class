@@ -60,17 +60,17 @@ sub import {
 			},
 			is_result => sub {
 				my ($local_class, $name, $arg) = @_;
-				my $global_default = defined $arg->{isa_class} ? $arg->{isa_class} : '';
+				my $global_class = defined $arg->{isa_class} ? $arg->{isa_class} : '';
 				return sub {
 					my $rs = shift @_;
-					my $compare = shift @_ || $global_default || "DBIx::Class";
+					my $compare = shift @_ || $global_class || "DBIx::Class";
 					my $message = shift @_;
 					Test::More::isa_ok($rs, $compare, $message);
 				}
 			},
 			is_resultset => sub {
 				my ($local_class, $name, $arg) = @_;
-				my $global_default = defined $arg->{isa_class} ? $arg->{isa_class} : '';
+				my $global_class = defined $arg->{isa_class} ? $arg->{isa_class} : '';
 				return sub {
 					my $rs = shift @_;
 					my $compare = shift @_ || $global_class || "DBIx::Class::ResultSet";

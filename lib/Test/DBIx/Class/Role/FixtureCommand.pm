@@ -15,11 +15,12 @@ __END__
 
 =head1 NAME
 
-Test::DBIx::Class::Role::FixtureComand - Role that a FixtureCommand must consume
+Test::DBIx::Class::Role::FixtureCommand - Role that a FixtureCommand must consume
 
 =head1 DESCRIPTION
 
 If you need to make your own custom Fixture Commands, please consume this role.
+
 =head1 AUTHOR
 
 John Napiorkowski C<< <jjnapiork@cpan.org> >>

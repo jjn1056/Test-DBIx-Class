@@ -53,7 +53,7 @@ __END__
 
 =head1 NAME
 
-Test::DBIx::Class::FixtureComand::Populate - Install fixtures using Populate
+Test::DBIx::Class::FixtureCommand::Populate - Install fixtures using Populate
 
 =head1 SYNOPSIS
 
@@ -139,8 +139,6 @@ This class defines the following methods
 Takes an Array or ArrayRef of arguments and installs them into your target
 database.  Returns an array of hashrefs, where each hashref is a {$source =>
 @rows} pair.
-
-
 
 =head1 AUTHOR
 
