@@ -59,17 +59,21 @@ sub import {
 				}
 			},
 			is_result => sub {
+				my ($local_class, $name, $arg) = @_;
+				my $global_default = defined $arg->{isa_class} ? $arg->{isa_class} : '';
 				return sub {
 					my $rs = shift @_;
-					my $compare = shift @_ || "DBIx::Class";
+					my $compare = shift @_ || $global_default || "DBIx::Class";
 					my $message = shift @_;
 					Test::More::isa_ok($rs, $compare, $message);
 				}
 			},
 			is_resultset => sub {
+				my ($local_class, $name, $arg) = @_;
+				my $global_default = defined $arg->{isa_class} ? $arg->{isa_class} : '';
 				return sub {
 					my $rs = shift @_;
-					my $compare = shift @_ || "DBIx::Class::ResultSet";
+					my $compare = shift @_ || $global_class || "DBIx::Class::ResultSet";
 					my $message = shift @_;
 					Test::More::isa_ok($rs, $compare, $message);
 				}
@@ -300,14 +304,11 @@ sub import {
 		into_level => 1,	
 	});
 
-
-
 	$class->$exporter(
 		qw/Schema ResultSet is_result is_resultset hri_dump fixtures_ok reset_schema
 			eq_result eq_resultset is_fields dump_settings/,
 		 @exports
 	);
-		
 }
 
 sub _initialize {
@@ -958,8 +959,7 @@ You should examine the test cases for more examples.
 
 =head2 is_fields_multi
 
-	TBD: Not yet written.  Intended to be a version of 'is_fields that
-	supports an array of items.
+	TBD: Not yet written.
 
 =head1 SETUP AND INITIALIZATION
 
@@ -997,7 +997,7 @@ files.
 When the final merging of all configurations (both anything inlined at 'use'
 time, and anything found in any of the specified config_paths, we do a single
 'post' config_path check.  This allows you to add in a configuration file from
-inside a configuration file.  For safty and sanity you can only do this once.
+inside a configuration file.  For safety and sanity you can only do this once.
 This feature makes it easier to globalize any additional configuration files.
 For example, I often store user specific settings in "~/etc/conf.*".  This
 feature allows me to add that into my standard "t/etc/schema.*" so it's 
@@ -1005,8 +1005,8 @@ available to all my test cases.
 
 =item schema_class
 
-Required.  If left blank, will look down the lib path for a module called,
-"Schema.pm" or "Store.pm" and attempt to use that.
+Required. This must be your subclass of L<DBIx::Class::Schema> that defines
+your database schema. 
 
 =item connect_info
 
@@ -1032,7 +1032,59 @@ is a command class based on L<DBIx::Class::Schema/populate>.
 Lets you add in some result source definitions to be imported at test script
 runtime.  See L</Initialization Sources> for more.
 
+=item force_drop_table
+
+When deploying the database this option allows you add a 'drop table' statement
+before the create ddl.  Since this will return an error if you attempt to drop
+a table that doesn't exist, this is off by default for SQLite storage engines.
+You may need to enble it you you are using the following 'keep_db' option.
+
+=item keep_db
+
+By default your testing database is 'cleaned up' after you are finished.  This
+drops all the created tables (but currently doesn't delete any related files
+or database users, if any).  If you want to keep your testing database after
+all the tests are run, you can set this to true.  If so, you may also need to
+set the previously mentioned option 'force_drop_table' to true as well, or we
+will attempt to create tables and populate them when they are already populated
+and created.
+
 =back
+
+Please note that although all initialization options can be set inlined or in
+a configuration file, some options can also be set via %ENV variables.  Right
+now only the 'force_drop_table' and 'keep_db' options can be set this way,
+since they seem to be the most useful.  Also, %ENV settings will only apply IF
+there is not existing value for the option in any configuration file.  As of 
+this time we don't merge %ENV settings, they only provider overrides to the
+default settings.  This may change in the future.  Example (assumes you are
+using the default SQLite database)
+
+	SQLITE_TEST_DBNAME=test.db KEEP_DB=1 prove -lv t/schema/check-person.t
+
+After running the test there will be a new file called 'test.db' in the home
+directory of your distribution.  You can use:
+
+	sqlite3 test.db
+
+to open and view the tables and thier data as loaded by any fixtures or create
+statements.  Next time you run the test you should either first delete the
+test.db file or force tables to be dropped at deploy time:
+
+	rm test.db && SQLITE_TEST_DBNAME=test.db KEEP_DB=1 prove -lv t/schema/check-person.t
+	SQLITE_TEST_DBNAME=test.db KEEP_DB=1 FORCE_DROP_TABLE=1 prove -lv t/schema/check-person.t
+
+Either option will prevent errors at deploy and populate time for SQLite.
+
+Please note, if you are using mysql, it is safe to always set 'force_drop_table'
+since mysql supports an 'drop table XXX if exists XXX' idiom that sqlite does
+not support.  So if you are roundtripping with mysql and wish to preserve your
+installed tables and fixtures between test runs, it is safe to simple use the
+'keep_db' and 'force_drop_table' options together.
+
+In the future we will support pluggable 'traits' at configuration time so that
+we will have additional options ona per database storage type.  For the moment
+we concentrate on SQLite and mysql, since one is easy and the other is popular.
 
 =head2 Initialization Sources
 

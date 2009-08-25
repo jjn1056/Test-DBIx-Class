@@ -7,6 +7,14 @@ package Test::DBIx::Class::SchemaManager; {
 		TestBuilder SchemaManagerClass ConnectInfo FixtureClass
 	);
 
+	has 'force_drop_table' => (
+		traits=>['ENV'],
+		is=>'ro',
+		isa=>'Bool',
+		required=>1, 
+		default=>0,	
+	);
+
 	has 'keep_db' => (
 		traits=>['ENV'],
 		is=>'ro',
@@ -113,7 +121,7 @@ package Test::DBIx::Class::SchemaManager; {
 	sub setup {
 		my $self = shift @_;
 		$self->schema->storage->ensure_connected; 
-		my $deploy_args = $ENV{FORCE_DROP_TABLE} ? {add_drop_table => 1} : {};
+		my $deploy_args = $self->force_drop_table ? {add_drop_table => 1} : {};
 
 		if(my $schema = $self->schema) {
 			eval {
@@ -188,7 +196,7 @@ and cleanup it for the purposes of automated testing.
 
 You shouldn't need to use anything here.  However, we do define %ENV variables
 that you might be interested in using (although its probably best to define
-inline configuration or use a configuration file_.
+inline configuration or use a configuration file).
 
 =over 4
 
