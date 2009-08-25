@@ -1,5 +1,13 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.06  25 August 2009
+    - Documentation additions related to overridding configuration via %ENV
+    - Fixes to broken POD
+    - Allows the option 'force_drop_table' to be set at configuration time
+    - More completely documented ::SchemaManager options
+    - Some additional (undocumented) features added to the exported subroutine
+      generators.  
+	
 0.05  24 August 2009 @ 11::55::00 UTC
     - New Feature: Perform configuration file substitutions, similar to the way
       Catalyst::Plugin::ConfigLoader works.  Added tests and docs.
