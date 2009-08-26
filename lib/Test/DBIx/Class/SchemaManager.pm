@@ -113,6 +113,7 @@ package Test::DBIx::Class::SchemaManager; {
 		my @traits = defined $config->{traits} && ref $config->{traits} eq 'ARRAY' ? @{$config->{traits}} : ();
 		if(my $connect_info = $config->{connect_info}) {
 			$connect_info = to_ConnectInfo($connect_info);
+			my ($driver) = $connect_info->{dsn} =~ /dbi:([^:]+):/i;
 		} else {
 			push @traits, 'SQLite'
 			  unless @traits;
