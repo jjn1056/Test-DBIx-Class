@@ -1,0 +1,643 @@
+NAME
+    Test::DBIx::Class - Easier test cases for your DBIx::Class applications
+
+SYNOPSIS
+    The following is example usage for this module. Assume you create a
+    standard Perl testing script, such as "MyApp/t/schema/01-basic.t" which
+    is run from the shell like "prove -l t/schema/01-basic.t" or during
+    "make test". That test script could contain:
+
+            use Test::More; {
+
+                    use strict;
+                    use warnings;
+
+                    use Test::DBIx::Class {
+                            schema_class => 'MyApp::Schema',
+                            connect_info => ['dbi:SQLite:dbname=:memory:','',''],
+                            fixture_class => '::Populate',
+                    }, 'Person', 'Person::Employee' => {-as => 'Employee'}, 'Job', 'Phone';
+
+                    ## Your testing code below ##
+
+                    ## Your testing code above ##
+
+                    done_testing();
+            }
+
+    Yes, it looks like a lot of boilerplate, but sensible defaults are in
+    place (the above code example shows most of the existing defaults) and
+    configuration data can be loaded from a central file. So your 'real
+    life' example is going to look closer to (assuming you put all your test
+    configuration in the standard place, "t/etc/schema.conf":
+
+            use Test::More; {
+                
+                    use strict;
+                    use warnings;
+                    use Test::DBIx::Class qw(:resultsets);
+
+                    ## Your testing code below ##
+                    ## Your testing code above ##
+
+                    done_testing();
+            }
+
+    Then, assuming the existance of a DBIx::Class::Schema subclass called,
+    "MyApp::Schema" and some DBIx::Class::ResultSources named like "Person",
+    "Person::Employee", "Job" and "Phone", will automatically deploy a
+    testing schema in the given database / storage (or auto deploy to an
+    in-memory based DBD::SQLite database), install fixtures and let you run
+    some test cases, such as:
+
+                    ## Your testing code below ##
+
+                    fixtures_ok 'basic'
+                      => 'installed the basic fixtures from configuration files';
+
+                    fixtures_ok { 
+                            Job => [
+                                    [qw/name description/],
+                                    [Programmer => 'She whow writes the code'],
+                                    ['Movie Star' => 'Knows nothing about the code'],
+                            ],
+                    }, 'Installed some custom fixtures via the Populate fixture class',
+
+                    ok my $john = Person->find({email=>'jjnapiork@cpan.org'})
+                      => 'John has entered the building!';
+
+                    is_fields $john, {
+                            name => 'John Napiorkowski', 
+                            email => 'jjnapiork@cpan.org', 
+                            age => 40,
+                    }, 'John has the expected fields';
+
+                    is_fields ['job_title'], $john->jobs, [
+                            {job_title => 'programmer'},
+                            {job_title => 'administrator'},
+                    ], 
+                    is_fields 'job_title', $john->jobs, 
+                            [qw/programmer administrator/],
+                            'Same test as above, just different compare format;
+
+                    is_fields [qw/job_title salary/], $john->jobs, [
+                            ['programmer', 100000],
+                            ['administrator, 120000],
+                    ], 'Got expected fields from $john->jobs';
+
+                    is_fields [qw/name age/], $john, ['John Napiorkowski', 40],
+                      => 'John has expected name and age';
+
+                    is_fields_multi 'name', [
+                            $john, ['John Napiorkowski'],
+                            $vanessa, ['Vanessa Li'],
+                            $vincent, ['Vincent Zhou'],
+                    ] => 'All names as expected';
+
+                    is_fields 'fullname', 
+                            ResultSet('Country')->find('USA'), 
+                            'United States of America',
+                            'Found the USA';
+
+                    is_deeply [sort Schema->sources], [qw/
+                            Person Person::Employee Job Country Phone
+                    /], 'Found all expected sources in the schema';
+
+                    fixtures_ok my $first_album = sub {
+                            my $schema = shift @_;
+                            my $cd_rs = $schema->resultset('CD');
+                            return $cd_rs->create({
+                                    name => 'My First Album',
+                                    track_rs => [
+                                            {position=>1, title=>'the first song'},
+                                            {position=>2, title=>'yet another song'},
+                                    ],
+                                    cd_artist_rs=> [
+                                            {person_artist=>{person => $vanessa}},
+                                            {person_artist=>{person => $john}},
+                                    ],
+                            });
+                    }, 'You can even use a code reference for custom fixtures';
+
+                    ## Your testing code above ##
+
+    Please see the test cases for more examples.
+
+DESCRIPTION
+    The goal of this distribution is to make it easier to write test cases
+    for your DBIx::Class based applications. It does this in three ways.
+    First, it trys to make it easy to deploy your Schema. This can be to
+    your dedicated testing database, or a simple SQLite database. This
+    allows you to run tests without interfering with your development work
+    and having to stop and set up a testing database instance.
+
+    Second, we allow you to load test fixtures via several different tools.
+    Last we create some helper functions in your test script so that you can
+    reduce repeated or boilerplate code.
+
+    Overall, we attempt to reduce the amount of code you have to write
+    before you can begin writing tests.
+
+IMPORTED METHODS
+    The following methods are automatically imported when you use this
+    module.
+
+  Schema
+    You probably won't need this directly in your tests unless you have some
+    application logic methods in it.
+
+  ResultSet ($source, ?{%search}, ?{%conditions})
+    Although you can import your sources as local keywords, sometimes you
+    might need to get a particular resultset when you don't wish to import
+    it globally. Use like
+
+            ok ResultSet('Job'), "Yeah, some jobs in the database";
+            ok ResultSet( Job => {hourly_pay=>{'>'=>100}}), "Good paying jobs available!";
+
+    Since this returns a normal DBIx::Class::ResultSet, you can just call
+    the normal methods against it.
+
+            ok ResultSet('Job')->search({hourly_pay=>{'>'=>100}}), "Good paying jobs available!";
+
+    This is the same as the test above.
+
+  fixtures_ok
+    This is used to install and verify installation of fixtures, either
+    inlined, from a fixture set in a file, or through a custom sub
+    reference. Accept three argument styles:
+
+    coderef
+        Given a code reference, execute it against the currently defined
+        schema. This is used when you need a lot of control over installing
+        your fixtures. Example:
+
+                fixtures_ok sub {
+                        my $schema = shift @_;
+                        my $cd_rs = $schema->resultset('CD');
+                        return $cd_rs->create({
+                                name => 'My First Album',
+                                track_rs => [
+                                        {position=>1, title=>'the first song'},
+                                        {position=>2, title=>'yet another song'},
+                                ],
+                                cd_artist_rs=> [
+                                        {person_artist=>{person => $vanessa}},
+                                        {person_artist=>{person => $john}},
+                                ],
+                        });
+
+                }, 'Installed fixtures';
+
+        The above gets executed at runtime and if there is an error it is
+        trapped, reported and we move on to the next test.
+
+    hashref
+        Given a hash reference, attempt to process it via the default
+        fixtures loader or through the specified loader.
+
+                fixtures_ok {
+                        Person => [
+                                ['name', 'age', 'email'],
+                                ['John', 40, 'john@nowehere.com'],
+                                ['Vincent', 15, 'vincent@home.com'],
+                                ['Vanessa', 35, 'vanessa@school.com'],
+                        ],
+                }, 'Installed fixtures';
+
+        This is a good option to use while you are building up your fixture
+        sets or when your sets are going to be small and not reused across
+        lots of tests. This will get you rolling without messing around with
+        configuration files.
+
+    fixture set name
+        Given a fixture name, or array reference of names, install the
+        fixtures.
+
+                fixtures_ok 'core';
+                fixtures_ok [qw/core extra/];
+
+        Fixtures are installed in the order specified.
+
+    All different types can be mixed and matched in a given test file.
+
+  is_result ($result, ?$result)
+    Quick test to make sure $result does inherit from DBIx::Class or that it
+    inherits from a subclass of DBIx::Class.
+
+  is_resultset ($resultset, ?$resultset)
+    Quick test to make sure $resultset does inherit from
+    DBIx::Class::ResultSet or from a subclass of DBIx::Class::ResultSet.
+
+  eq_resultset ($resultset, $resultset, ?$message)
+    Given two ResultSets, determine if the are equal based on class type and
+    data. This is a true set equality that ignores sorting order of items
+    inside the set.
+
+  eq_result ($resultset, $resultset, ?$message)
+    Given two row objects, make sure they are the same.
+
+  hri_dump ($resultset)
+    Not a test, just returns a version of the ResultSet that has its
+    inflator set to DBIx::Class::ResultClass::HashRefInflator, which returns
+    a set of hashes and makes it easier to stop issues. This return value is
+    suitable for dumping via Data::Dump, for example.
+
+  reset_schema
+    Wipes and reloads the schema.
+
+  dump_settings
+    Returns the configuration and related settings used to initialize this
+    testing module. This is mostly to help you debug trouble with
+    configuration and to help the authors find and fix bugs. At some point
+    this won't be exported by default so don't use it for your real tests,
+    just to help you understand what is going on. You've been warned!
+
+  is_fields
+    A 'Swiss Army Knife' method to check your results or resultsets. Tests
+    the values of a Result or ResultSet against expected via a pattern. A
+    pattern is automatically created by instrospecting the fields of your
+    ResultSet or Result.
+
+    Example usage for testing a result follows.
+
+            ok my $john = Person->find('john');
+
+            is_fields 'name', $john, ['John Napiorkowski'],
+              'Found name of $john';
+
+            is_fields [qw/name age/], $john, ['John Napiorkowski', 40],
+              'Found $johns name and age';
+
+            is_fields $john, {
+                    name => 'John Napiorkowski',
+                    age => 40,
+                    email => 'john@home.com'};  # Assuming $john has only the three columns listed
+
+    In the case were we need to infer the match pattern, we get the columns
+    of the given result but remove the primary key. Please note the
+    following would also work:
+
+            is_fields [qw/name age/] $john, {
+                    name => 'John Napiorkowski',
+                    age => 40}, 'Still got the name and age correct'; 
+
+    You should choose the method that makes most sense in your tests.
+
+    Example usage for testing a resultset follows.
+
+            is_fields 'name', Person, [
+                    'John',
+                    'Vanessa',
+                    'Vincent',
+            ];
+
+            is_fields ['name'], Person, [
+                    'John',
+                    'Vanessa',
+                    'Vincent',
+            ];
+
+            is_fields ['name','age'], Person, [
+                    ['John',40],
+                    ['Vincent',15],
+                    ['Vanessa',35],
+            ];
+
+            is_fields ['name','age'], Person, [
+                    {name=>'John', age=>40},
+                    {name=>'Vanessa',age=>35},
+                    {name=>'Vincent', age=>15},
+            ];
+
+    I find the array version is most consise. Please note that the match is
+    not ordered. If you need to test that a given Resultset is in a
+    particular order, you will currently need to write a custom test. If you
+    have a big need for this I'd be willing to write a test for it, or
+    gladly accept a patch to add it.
+
+    You should examine the test cases for more examples.
+
+  is_fields_multi
+            TBD: Not yet written.
+
+SETUP AND INITIALIZATION
+    The generic usage for this would look like one of the following:
+
+            use Test::DBIx::Class \%options, @sources
+            use Test::DBIx::Class %options, @sources
+
+    Where %options are key value pairs and @sources an array as specified
+    below.
+
+  Initialization Options
+    The only difference between the hash and hash reference version of
+    %options is that the hash version requires its keys to be prepended with
+    "-". If you are inlining a lot of configuration the hash reference
+    version may look neater, while if you are only setting one or two
+    options the hash version might be more readable. For example, the
+    following are the same:
+
+            use Test::DBIx::Class -config_path=>[qw(t etc config)], 'Person', 'Job';
+            use Test::DBIx::Class {config_path=>[qw(t etc config)]}, 'Person', 'Job';
+
+    The following options are currently standard and always available.
+    Depending on your storage engine (such as SQLite or mysql) you will have
+    other options.
+
+    config_path
+        These are the relative paths searched for configuration file
+        information. See "Initialization Sources" for more.
+
+        In the case were we have both inlined and file based configurations,
+        the inlined is merged last (that is, has highest authority to
+        override configuration files.
+
+        When the final merging of all configurations (both anything inlined
+        at 'use' time, and anything found in any of the specified
+        config_paths, we do a single 'post' config_path check. This allows
+        you to add in a configuration file from inside a configuration file.
+        For safety and sanity you can only do this once. This feature makes
+        it easier to globalize any additional configuration files. For
+        example, I often store user specific settings in "~/etc/conf.*".
+        This feature allows me to add that into my standard "t/etc/schema.*"
+        so it's available to all my test cases.
+
+    schema_class
+        Required. This must be your subclass of DBIx::Class::Schema that
+        defines your database schema.
+
+    connect_info
+        Required. This will accept anything you can send to "connect" in
+        DBIx::Class. Defaults to: ['dbi:SQLite:dbname=:memory:','',''] if
+        left blank.
+
+    fixture_path
+        These are a list of relative paths search for fixtures. Each item
+        should be a directory that contains files loadable by Config::Any
+        and suitable to be installed via one of the fixture classes.
+
+    fixture_class
+        Command class that installs data into the database. Must provide a
+        method called 'install_fixtures' that accepts a perl data structure
+        and installs it into the database. Must capture and report errors.
+        Default value is "::Populate", which loads
+        Test::DBIx::Class::FixtureClass::Populate, which is a command class
+        based on "populate" in DBIx::Class::Schema.
+
+    resultsets
+        Lets you add in some result source definitions to be imported at
+        test script runtime. See "Initialization Sources" for more.
+
+    force_drop_table
+        When deploying the database this option allows you add a 'drop
+        table' statement before the create ddl. Since this will return an
+        error if you attempt to drop a table that doesn't exist, this is off
+        by default for SQLite storage engines. You may need to enble it you
+        you are using the following 'keep_db' option.
+
+    keep_db
+        By default your testing database is 'cleaned up' after you are
+        finished. This drops all the created tables (but currently doesn't
+        delete any related files or database users, if any). If you want to
+        keep your testing database after all the tests are run, you can set
+        this to true. If so, you may also need to set the previously
+        mentioned option 'force_drop_table' to true as well, or we will
+        attempt to create tables and populate them when they are already
+        populated and created.
+
+    Please note that although all initialization options can be set inlined
+    or in a configuration file, some options can also be set via %ENV
+    variables. %ENV settings will only apply IF there are no existing values
+    for the option in any configuration file. As of this time we don't merge
+    %ENV settings, they only provider overrides to the default settings.
+    Example use (assumes you are using the default SQLite database)
+
+            DBPATH=test.db KEEP_DB=1 prove -lv t/schema/check-person.t
+
+    After running the test there will be a new file called 'test.db' in the
+    home directory of your distribution. You can use:
+
+            sqlite3 test.db
+
+    to open and view the tables and their data as loaded by any fixtures or
+    create statements. See Test::DBIx::Class::SchemaManager::Trait::SQLite
+    for more. Note that you can specify both 'dbpath' and 'keep_db' in your
+    configuration files if you prefer. I tried to expose a subset of
+    configuration to %ENV that I thought the most useful. Patches and
+    suggestions welcomed.
+
+  Initialization Sources
+    The @sources are a list of result sources that you want helper methods
+    injected into your test script namespace. This is the 'Source' part of:
+
+            $schema->resultset('Source');
+
+    Injecting methods are optional since you can also use the 'ResultSet'
+    keyword
+
+    Imported Source keywords use Sub::Exporter so you have quite a few
+    options for controling how the keywords are imported. For example:
+
+            use Test::DBIx::Class 
+                    'Person',
+                    'Person::Employee' => {-as => 'Employee'},
+                    'Person' => {search => {age=>{'>'=>55}}, -as => 'OlderPerson'};
+
+    This would import three local keywork methods, "Person", "Employee" and
+    "OlderPerson". For "OlderPerson", the search parameter would
+    automatically be resolved via $resultset->search and the correct
+    resultset returned. You may wish to preconfigure all your test result
+    set cases in one go at the top of your test script as a way to promote
+    reusability.
+
+    In addition to the 'search' parameter, there is also an 'exec' parameter
+    which let's you process your resultset programatically. For example:
+
+            'Person' => {exec => sub { shift->older_than(55) }, -as => 'OlderPerson'};
+
+    This code reference gets passed the resultset object. So you can use any
+    method on $resultset. For example:
+
+            'Person' => {exec => sub { shift->find('john') }, -as => 'John'}; 
+
+            is_result John;
+            is John->name, 'John Napiorkowski', "Got Correct Name";
+
+    Although since fixtures will not yet be installed, the above is probably
+    not going to be a normally working example :)
+
+    Additionally, since you can also initialize sources via the 'resultsets'
+    configuration option, which can be placed into your global configuration
+    files this means you can predefine and result resultsets across all your
+    tests. Here is an example 't/etc/schema.pl' file where I initialize
+    pretty much everything in one file:
+
+             {
+              'schema_class' => 'Test::DBIx::Class::Example::Schema',
+              'resultsets' => [
+                    'Person',
+                    'Job',
+                    'Person' => { '-as' => 'NotTeenager', search => {age=>{'>'=>18}}},
+              ],
+              'fixture_sets' => {
+                    'basic' => {
+                      'Person' => [
+                            [
+                              'name',
+                              'age',
+                              'email'
+                            ],
+                            [
+                              'John',
+                              '40',
+                              'john@nowehere.com'
+                            ],
+                            [
+                              'Vincent',
+                              '15',
+                              'vincent@home.com'
+                            ],
+                            [
+                              'Vanessa',
+                              '35',
+                              'vanessa@school.com'
+                            ]
+                      ]
+                    }
+              },
+            };
+
+    In this case you can simple do "use Test::DBIx::Class" and everything
+    will happen automatically.
+
+CONFIGURATION BY FILE
+    By default, we try to load configuration fileis from the following
+    locations:
+
+             ./t/etc/schema.*
+             ./t/etc/[test file path].*
+
+    Where "." is the root of the distribution and "*" is any of the
+    configuration file types supported by Config::Any configuration loader.
+    This allows you to store configuration in the format of your choice.
+
+    "[test file path]" is the relative path part under the "t" directory of
+    the calling test script. For example, if your test script is
+    "t/mytest.t" we add the path "./t/etc/mytest.*" to the path.
+
+    Additionally, we do a a merge using Hash::Merge of all the matching
+    found configurations. This allows you to do 'cascading' configuration
+    from the most global to the most local settings.
+
+    You can override this search path with the "-config_path" key in
+    options. For example, the following searches for "t/etc/myconfig.*" (or
+    whatever is the correct directory separator for your operating system):
+
+            use Test::DBIx::Class -config_path => [qw/t etc myconfig/];
+
+    Relative paths are rooted to the distribution home directory (ie, the
+    one that contains your 'lib' and 't' directories). Full paths are
+    searched without modification.
+
+    You can specify multiply paths. The following would search for both
+    "schema.*" and "share/schema".
+
+            use Test::DBIx::Class -config_path => [[qw/share schema/], [qw/schema/]];
+
+    Lastly, you can use the special symbol "+" to indicate that your custom
+    path adds to or prepends to the default search path. Since as indicated
+    we merge all the configurations found, this means it's easy to create
+    user level configuration settings mixed with global settings, as in:
+
+            use Test::DBIx::Class
+                    -config_path => [ 
+                            [qw(/ etc myapp test-schema)],
+                            '+',
+                            [qw(~ etc test-schema)],
+                    ];
+
+    Which would search and combine "/etc/myapp/test-schema.*",
+    "./t/etc/schema.*", "./etc/[test script name].*" and
+    "~/etc/test-schema.*". This would let you set up server level global
+    settings, distribution level settings and finally user level settings.
+
+    Please note that in all the examples given, paths are written as an
+    array reference of path parts, rather than as a string with delimiters
+    (i.e. we do [qw(t etc)] rather than "t/etc"). This is not required but
+    recommended. All arguments, either string or array references, are
+    passed to Path::Class so that we can maintain better compatibility with
+    non unix filesystems. If you are writing for CPAN, please consider our
+    non Unix filesystem friends :)
+
+    Lastly, there is an %ENV variable named '' which, if it exists, can be
+    used to further customize your configuration path. If we find that
+    $ENV{TEST_DBIC_CONFIG_SUFFIX} is set, we attempt to find configuration
+    files with the suffix appended to each of the items in the config_path
+    option. So, if you have:
+
+            use Test::DBIx::Class
+                    -config_path => [ 
+                            [qw(/ etc myapp test-schema)],
+                            '+',
+                            [qw(~ etc test-schema)],
+                    ];
+                
+    and $ENV{TEST_DBIC_CONFIG_SUFFIX} = '-mysql' we will check the following
+    paths for valid and loading configuration files (assuming unix
+    filesystem conventions)
+
+            /etc/myapp/test-schema.*
+            /etc/myapp/test-schema-mysql.*
+            ./t/etc/schema.*        
+            ./t/etc/schema-mysql.*
+            ./etc/[test script name].*
+            ./etc/[test script name]-mysql.*
+            ~/etc/test-schema.*
+            ~/etc/test-schema-mysql.*
+        
+    Each path is testing in turn and all found configurations are merged
+    from top to bottom. This feature is intended to make it easier to switch
+    between sets of configuration files when developing. For example, you
+    can create a test suite intended for a mysql database, but allow a
+    failback to the default Sqlite should certain enviroment variables not
+    exist.
+
+CONFIGURATION SUBSTITUTIONS
+    Similarly to Catalyst::Plugin::ConfigLoader, there are some macro style
+    keyword inflators available for use within your configuration files.
+    This allows you to set the value of a configuration setting from an
+    external source, such as from %ENV. There are currently two macro
+    substitutions:
+
+    ENV Given a value in %ENV, substitute the keyword for the value of the
+        named substitution. For example, if you had:
+
+                email = 'vanessa__ENV(TEST_DBIC_LAST_NAME)__@school.com'
+
+        in your configuration filem your could:
+
+                TEST_DBIC_LAST_NAME=_lee prove -lv t/schema-your-test.t
+
+        and then:
+
+                is $vanessa->email, 'vanessa_lee@school.com', 'Got expected email';
+
+        You might find this useful for configuring localized username and
+        passwords although personally I'd rather set that via configuration
+        in the user home directory.
+
+SEE ALSO
+        The following modules or resources may be of interest.
+
+        DBIx::Class, DBIx::Class::Schema::PopulateMore,
+        DBIx::Class::Fixtures
+
+AUTHOR
+        John Napiorkowski "<jjnapiork@cpan.org>"
+
+COPYRIGHT & LICENSE
+        Copyright 2009, John Napiorkowski "<jjnapiork@cpan.org>"
+
+        This program is free software; you can redistribute it and/or modify
+        it under the same terms as Perl itself.
+
