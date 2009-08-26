@@ -1,15 +1,19 @@
 package Test::DBIx::Class::SchemaManager; {
 
 	use Moose;
+	with 'MooseX::Traits::Pluggable';
 	use MooseX::Attribute::ENV;
 	use Test::More ();
+	use List::MoreUtils qw(uniq);
 	use Test::DBIx::Class::Types qw(
-		TestBuilder SchemaManagerClass ConnectInfo FixtureClass
+		TestBuilder SchemaManagerClass FixtureClass ConnectInfo
 	);
+
+	has '+_trait_namespace' => (default => '+Trait');
 
 	has 'force_drop_table' => (
 		traits=>['ENV'],
-		is=>'ro',
+		is=>'rw',
 		isa=>'Bool',
 		required=>1, 
 		default=>0,	
@@ -37,16 +41,16 @@ package Test::DBIx::Class::SchemaManager; {
 		coerce => 1,
 	);
 
+	has 'schema' => (
+		is => 'ro',
+		init_arg => undef,
+		lazy_build => 1,
+	);
+
 	has 'connect_info' => (
 		is => 'ro',
 		isa => ConnectInfo,
 		coerce => 1,
-		lazy_build => 1,
-	);
-
-	has 'schema' => (
-		is => 'ro',
-		init_arg => undef,
 		lazy_build => 1,
 	);
 
@@ -70,21 +74,6 @@ package Test::DBIx::Class::SchemaManager; {
 		isa => 'HashRef',
 	);
 
-	sub _build_connect_info {
-		## TODO should be delegated to a SQLite specific class
-		my $self = shift @_;
-		my $path = $ENV{SQLITE_TEST_DBNAME} || ':memory:';
-
-		if(-e $path) {
-			$self->builder->ok(
-				-w $path,
-				"Using $path as dbname for default SQLite Driver is accessible"
-			);
-		}
-
-		return ["dbi:SQLite:dbname=$path",'',''];
-	}
-
 	sub get_fixture_sets {
 		my ($self, @sets) = @_;
 		my @return;
@@ -100,7 +89,17 @@ package Test::DBIx::Class::SchemaManager; {
 		my $self = shift @_;
 		my $schema_class = $self->schema_class;
 		my $connect_info = $self->connect_info;
+
 		return $schema_class->connect($connect_info);
+	}
+
+	sub _build_connect_info {
+		my ($self) = @_;
+		if(my $default = $self->can('get_default_connect_info') ) {
+			return $self->$default;
+		} else {
+			Test::More::fail("Can't build a default connect info");
+		}
 	}
 
 	sub _build_fixture_command {
@@ -110,7 +109,20 @@ package Test::DBIx::Class::SchemaManager; {
 
 	sub initialize_schema {
 		my ($class, $config) = @_;
-		if(my $self = $class->new($config)) {
+
+		my @traits = defined $config->{traits} && ref $config->{traits} eq 'ARRAY' ? @{$config->{traits}} : ();
+		if(my $connect_info = $config->{connect_info}) {
+			$connect_info = to_ConnectInfo($connect_info);
+		} else {
+			push @traits, 'SQLite'
+			  unless @traits;
+		}
+		@traits = uniq @traits;
+		
+		$config->{traits} = \@traits;
+		my $self = $class->new_with_traits($config);
+
+		if($self) {
 			$self->setup;
 			return $self;
 		} else {
@@ -212,10 +224,6 @@ Usually at the end of tests we cleanup your database and remove all the tables
 created, etc.  Sometimes you might want to preserve the database after testing
 so that you can 'poke around'.  Personally I think it's better to write tests
 for the poking, but sometimes you just need a quick look.
-
-=item SQLITE_TEST_DBNAME
-
-Use this to force the default mysql database to something other than :memory:
 
 =back
 

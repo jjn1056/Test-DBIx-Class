@@ -6,7 +6,7 @@ use warnings;
 
 use base 'Test::Builder::Module';
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
 use Test::DBIx::Class::SchemaManager;
@@ -752,9 +752,10 @@ Please see the test cases for more examples.
 
 The goal of this distribution is to make it easier to write test cases for your
 L<DBIx::Class> based applications.  It does this in three ways.  First, it trys
-to make it easy to deploy your Schema to a test sandbox.  This can be to your
-dedicated testing database, a simple SQLite database, or even a MySQL Sandbox.
-This allows you to run tests without interfering with your development work.
+to make it easy to deploy your Schema.  This can be to your dedicated testing
+database, or a simple SQLite database.  This allows you to run tests without 
+interfering with your development work and having to stop and set up a testing 
+database instance.
 
 Second, we allow you to load test fixtures via several different tools.  Last
 we create some helper functions in your test script so that you can reduce
@@ -981,7 +982,8 @@ might be more readable.  For example, the following are the same:
 	use Test::DBIx::Class -config_path=>[qw(t etc config)], 'Person', 'Job';
 	use Test::DBIx::Class {config_path=>[qw(t etc config)]}, 'Person', 'Job';
 
-The following options are currently defined.
+The following options are currently standard and always available.  Depending
+on your storage engine (such as SQLite or mysql) you will have other options.
 
 =over 4
 
@@ -1052,39 +1054,24 @@ and created.
 =back
 
 Please note that although all initialization options can be set inlined or in
-a configuration file, some options can also be set via %ENV variables.  Right
-now only the 'force_drop_table' and 'keep_db' options can be set this way,
-since they seem to be the most useful.  Also, %ENV settings will only apply IF
-there is not existing value for the option in any configuration file.  As of 
-this time we don't merge %ENV settings, they only provider overrides to the
-default settings.  This may change in the future.  Example (assumes you are
+a configuration file, some options can also be set via %ENV variables. %ENV
+settings will only apply IF there are no existing values for the option in any
+configuration file.  As of this time we don't merge %ENV settings, they only
+provider overrides to the default settings. Example use (assumes you are
 using the default SQLite database)
 
-	SQLITE_TEST_DBNAME=test.db KEEP_DB=1 prove -lv t/schema/check-person.t
+	DBPATH=test.db KEEP_DB=1 prove -lv t/schema/check-person.t
 
 After running the test there will be a new file called 'test.db' in the home
 directory of your distribution.  You can use:
 
 	sqlite3 test.db
 
-to open and view the tables and thier data as loaded by any fixtures or create
-statements.  Next time you run the test you should either first delete the
-test.db file or force tables to be dropped at deploy time:
-
-	rm test.db && SQLITE_TEST_DBNAME=test.db KEEP_DB=1 prove -lv t/schema/check-person.t
-	SQLITE_TEST_DBNAME=test.db KEEP_DB=1 FORCE_DROP_TABLE=1 prove -lv t/schema/check-person.t
-
-Either option will prevent errors at deploy and populate time for SQLite.
-
-Please note, if you are using mysql, it is safe to always set 'force_drop_table'
-since mysql supports an 'drop table XXX if exists XXX' idiom that sqlite does
-not support.  So if you are roundtripping with mysql and wish to preserve your
-installed tables and fixtures between test runs, it is safe to simple use the
-'keep_db' and 'force_drop_table' options together.
-
-In the future we will support pluggable 'traits' at configuration time so that
-we will have additional options ona per database storage type.  For the moment
-we concentrate on SQLite and mysql, since one is easy and the other is popular.
+to open and view the tables and their data as loaded by any fixtures or create
+statements. See L<Test::DBIx::Class::SchemaManager::Trait::SQLite> for more.
+Note that you can specify both 'dbpath' and 'keep_db' in your configuration
+files if you prefer.  I tried to expose a subset of configuration to %ENV that
+I thought the most useful.  Patches and suggestions welcomed.
 
 =head2 Initialization Sources
 

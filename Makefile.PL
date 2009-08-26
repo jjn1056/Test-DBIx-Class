@@ -9,6 +9,7 @@ repository 'git://github.com/jjn1056/Test-DBIx-Class.git';
 requires 'Moose' => '0.88';
 requires 'MooseX::Types' => '0.16';
 requires 'MooseX::Attribute::ENV' => '0.01';
+requires 'MooseX::Traits::Pluggable' => '0.04';
 requires 'Data::UUID' => '1.202';
 requires 'DBIx::Class' => '0.08108';
 requires 'DBIx::Class::UUIDColumns' => '0.02005';
@@ -23,6 +24,7 @@ requires 'Digest::MD5' => '2.39';
 requires 'DBIx::Class::Schema::PopulateMore' => '0.14';
 requires 'Hash::Merge' => '0.11';
 requires 'Data::Visitor' => '0.25';
+requires 'List::MoreUtils' => '0.22';
 
 build_requires 'Test::More' => '0.92';
 

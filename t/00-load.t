@@ -12,6 +12,7 @@ use Test::More; {
 	use_ok 'Test::DBIx::Class::Example::Schema::DefaultRS';
 	use_ok 'Test::DBIx::Class::FixtureCommand::Populate';
 	use_ok 'Test::DBIx::Class::FixtureCommand::PopulateMore';
+	use_ok 'Test::DBIx::Class::SchemaManager::Trait::SQLite';
 	
 
 	done_testing();
