@@ -1,8 +1,10 @@
 package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 	
 	use Moose::Role;
+	use MooseX::Attribute::ENV;
 	use Test::mysqld;
 	use Test::More ();
+	use Path::Class qw(dir);
 
 	has '+force_drop_table' => (default=>1);
 
@@ -12,7 +14,12 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 		lazy_build=>1,
 	);
 
-	has [qw/base_dir mysql_install_db mysqld/] => (is=>'ro', isa=>'Str');
+
+	has [qw/base_dir mysql_install_db mysqld/] => (
+		is=>'ro', 
+		traits=>['ENV'], 
+	);
+
 	has my_cnf => (is=>'ro', isa=>'HashRef', auto_deref=>1);
 
 	sub _build_mysqldobj {
@@ -29,7 +36,9 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 		$config{base_dir} = $self->base_dir if $self->base_dir;	
 		$config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	
 		$config{mysqld} = $self->mysqld if $self->mysqld;	
-	
+		unless(-e $self->base_dir) {
+
+		}
 		return  Test::mysqld->new(%config);
 	}
 
@@ -47,6 +56,16 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 		Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$base_dir/tmp/mysql.sock','root','')");
 		return ["DBI:mysql:test;mysql_socket=$base_dir/tmp/mysql.sock",'root',''];
 	}
+
+	after 'cleanup' => sub {
+		my ($self) = @_;
+		unless($self->keep_db) {
+			if($self->base_dir) {
+				my $dir = dir($self->base_dir);
+				$dir->rmtree;
+			}
+		}
+	};
 
 } 1;
 
@@ -83,6 +102,23 @@ this unset we automatically create a place in the temporary directory and then
 clean it up later.  Unless you plan to roundtrip to the same database a lot
 you can just leave this blank.
 
+Please note if you set this to a particular area, we will delete it unless
+you specifically use the 'keep_db' option.  SO be care where you point it!
+
+Here's an example use.  I often want the test database setup in my local
+testing directory, that makes it easy for me to examine the logs, etc.  I do:
+
+	BASE_DIR=./t/tmp KEEP_DB prove -lvr t/my-mysql-test.t
+
+Now I can roundtrip the test as often as I want and in between tests I can
+review the logs, start the database manually and login (see the 'keep_db'
+section below for an example of how to do this).  Next time I run the tests
+the framework will automatically clean it up and rest the schema for testing.
+
+You may need to do this if you are stuck on a shared host and can't write
+anything to /tmp.  Remember, you can also put the 'base_dir' option into
+configuration. 
+
 =head2 my_cnf
 
 A hashref containing the list of name=value pairs to be written into "my.cnf",
@@ -95,6 +131,12 @@ things most needed to get a server running.
 If your mysqld is not in the $PATH you might need to specify the location to
 one of there binaries.  If you have a normal mysql setup this should not be
 a problem and you can leave this blank.
+
+For example, I often use L<MySQL::Sandbox> to setup various versions of mysql
+in my local user directory, particularly if I am on a shared host, or in the
+case where I don't want mysql installed globally.  Personally I think this is
+really your safest option (and there will probably be a trait based on this
+in the future)
 
 =head1 NOTES
 
