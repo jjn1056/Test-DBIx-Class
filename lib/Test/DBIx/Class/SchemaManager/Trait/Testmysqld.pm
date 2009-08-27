@@ -108,7 +108,7 @@ you specifically use the 'keep_db' option.  SO be care where you point it!
 Here's an example use.  I often want the test database setup in my local
 testing directory, that makes it easy for me to examine the logs, etc.  I do:
 
-	BASE_DIR=./t/tmp KEEP_DB prove -lvr t/my-mysql-test.t
+	BASE_DIR=t/tmp KEEP_DB=1 prove -lv t/my-mysql-test.t
 
 Now I can roundtrip the test as often as I want and in between tests I can
 review the logs, start the database manually and login (see the 'keep_db'
@@ -117,14 +117,15 @@ the framework will automatically clean it up and rest the schema for testing.
 
 You may need to do this if you are stuck on a shared host and can't write
 anything to /tmp.  Remember, you can also put the 'base_dir' option into
-configuration. 
+configuration instead of having to type it into the commandline each time!
 
 =head2 my_cnf
 
 A hashref containing the list of name=value pairs to be written into "my.cnf",
 which is the primary configuration file for the mysql instance.  Again, unless
 you have some specific needs you can leave this empty, since we set the few
-things most needed to get a server running.
+things most needed to get a server running.  You will need to review the
+documentation on the Mysql website for options related to this.
 
 =head2 mysql_install_db or mysqld
 
