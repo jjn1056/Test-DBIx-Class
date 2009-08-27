@@ -36,9 +36,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 		$config{base_dir} = $self->base_dir if $self->base_dir;	
 		$config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	
 		$config{mysqld} = $self->mysqld if $self->mysqld;	
-		unless(-e $self->base_dir) {
 
-		}
 		return  Test::mysqld->new(%config);
 	}
 
