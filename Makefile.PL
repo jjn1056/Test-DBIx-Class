@@ -19,12 +19,13 @@ requires 'Test::Builder' => '0.92';
 requires 'Path::Class' => '0.17';
 requires 'Config::Any' => '0.17';
 requires 'Sub::Exporter' => '0.982';
-requires 'Scalar::Util';
+requires 'Scalar::Util' => '1.19';
 requires 'Digest::MD5' => '2.39';
 requires 'DBIx::Class::Schema::PopulateMore' => '0.14';
 requires 'Hash::Merge' => '0.11';
 requires 'Data::Visitor' => '0.25';
 requires 'List::MoreUtils' => '0.22';
+requires 'Test::mysqld' => '0.06';
 
 build_requires 'Test::More' => '0.92';
 

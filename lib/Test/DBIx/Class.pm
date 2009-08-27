@@ -306,7 +306,7 @@ sub import {
 
 	$class->$exporter(
 		qw/Schema ResultSet is_result is_resultset hri_dump fixtures_ok reset_schema
-			eq_result eq_resultset is_fields dump_settings/,
+			eq_result eq_resultset is_fields dump_settings /,
 		 @exports
 	);
 }

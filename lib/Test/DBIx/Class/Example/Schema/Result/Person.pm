@@ -20,8 +20,8 @@ package Test::DBIx::Class::Example::Schema::Result::Person; {
 			is_nullable => 0,
 		},
 		email => {
-			data_type => 'integer',
-			is_nullable => 0,
+			data_type => 'varchar',
+			size=>'128',
 		},
 		created => {
 			data_type => 'timestamp', 
