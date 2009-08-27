@@ -6,7 +6,7 @@ use warnings;
 
 use base 'Test::Builder::Module';
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
 use Test::DBIx::Class::SchemaManager;
@@ -1013,7 +1013,8 @@ your database schema.
 =item connect_info
 
 Required. This will accept anything you can send to L<DBIx::Class/connect>.
-Defaults to: ['dbi:SQLite:dbname=:memory:','',''] if left blank.
+Defaults to: ['dbi:SQLite:dbname=:memory:','',''] if left blank (but see
+'traits' below for more)
 
 =item fixture_path
 
@@ -1050,6 +1051,24 @@ all the tests are run, you can set this to true.  If so, you may also need to
 set the previously mentioned option 'force_drop_table' to true as well, or we
 will attempt to create tables and populate them when they are already populated
 and created.
+
+=item traits
+
+Traits are L<Moose::Role>s that are applied to the class managing the connection
+to your database.  If you leave this option blank and you don't specify anything
+for 'connect_info' (above), we automatically load the SQLite trait (which can
+be reviewed at L<Test::DBIx::Class::SchemaManager::Trait::SQLite>).  This trait
+installs the ability to automatically discover and deploy to an in memory or a
+filesystem SQLite database.  If you are just getting started with testing, this
+is probably your easiest option.
+
+Currently there are only two traits, the SQLite trait just described (and since
+it get's automatically loaded you never need to load it yourself) and the
+L<Test::DBIx::Class::SchemaManager::Trait::Testmysqld> trait, which is built on
+top of L<Test::mysqld> and allows you the ability to deploy to and run tests
+against a temporary instance of Mysql.  For this trait Mysql and L<DBD::mysql>
+needs to be installed, but Mysql does not need to be running, nor do you need
+to create a test database or user.  See L</TRAITS> for more.
 
 =back
 
@@ -1272,6 +1291,35 @@ and then:
 You might find this useful for configuring localized username and passwords
 although personally I'd rather set that via configuration in the user home
 directory.
+
+=head1 TRAITS
+
+As described, a trait is a L<Moose::Role> that is applied to the class managing
+your database and test instance.  Currently we only have the default 'SQLite'
+trait and the 'Testmysqld' trait, but we eventually intend to have traits to
+add easy support for creating Postgresql databases and supporting testing on
+replicated systems.
+
+Traits are installed by the 'traits' configuration option, which expects an
+ArrayRef as its input (however will also normalize a scalar to an ArrayRef).
+
+Available traits are as follows.
+
+=head2 SQLite
+
+This is the default trait which will be loaded if no other traits are installed
+and there is not 'connect_info' in the configuration.  In this case we assume
+you want us to go and create a tempory SQLite database for testing.  Please see
+L<Test::DBIx::Class::SchemaManager::Trait::SQLite> for more.
+
+=head2 Testmysqld
+
+If Mysql is installed on the testing machine, and L<DBD::mysql>, we try to auto
+create an instance of Mysql and deploy our tests to that.  Similarly to the way
+the SQLite trait works, we attempt to create the database without requiring any
+other using effort or setup.
+
+See L<Test::DBIx::Class::SchemaManager::Trait::Testmysqld> for more.
 
 =head1 SEE ALSO
 

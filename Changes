@@ -1,5 +1,15 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.08  27 August 2009
+    - New Functionality:  Added storage trait 'Testmysql' which allows you
+      to create a temporary test instance of mysql, deploy and test against
+      it, and clean itself up afterward.  Now you can test against Mysql
+      nearly as easily as SQLite.
+    - Populating fixtures now wraps everything inside a transaction.
+    - Fixed an error in the Example Schema, now Email is a varchar instead of
+      an integer
+    - Documentation and tests for all the above
+
 0.07  26 August 2009
     - Create framework for 'pluggable' storage traits and migrated all the
       SQLite specific stuff to a SQLite trait.  This change will allow us

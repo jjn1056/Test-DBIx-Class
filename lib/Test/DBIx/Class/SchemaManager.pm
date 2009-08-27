@@ -115,7 +115,11 @@ package Test::DBIx::Class::SchemaManager; {
 	sub initialize_schema {
 		my ($class, $config) = @_;
 
-		my @traits = defined $config->{traits} && ref $config->{traits} eq 'ARRAY' ? @{$config->{traits}} : ();
+		my @traits = ();
+		if(defined $config->{traits}) {
+			@traits = ref $config->{traits} ? @{$config->{traits}} : ($config->{traits});
+		}
+
 		if(my $connect_info = $config->{connect_info}) {
 			$connect_info = to_ConnectInfo($connect_info);
 			my ($driver) = $connect_info->{dsn} =~ /dbi:([^:]+):/i;
