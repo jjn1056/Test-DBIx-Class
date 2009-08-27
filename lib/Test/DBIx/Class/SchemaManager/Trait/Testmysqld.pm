@@ -6,28 +6,41 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 
 	has '+force_drop_table' => (default=>1);
 
-	has mysqld => (
+	has mysqldobj => (
 		is=>'ro',
 		init_arg=>undef,
 		lazy_build=>1,
 	);
 
-	sub _build_mysqld {
+	has [qw/base_dir mysql_install_db mysqld/] => (is=>'ro', isa=>'Str');
+	has my_cnf => (is=>'ro', isa=>'HashRef', auto_deref=>1);
+
+	sub _build_mysqldobj {
 		my ($self) = @_;
 		if($self->keep_db) {
 			$ENV{TEST_MYSQLD_PRESERVE} = 1;
 		}
-		return  Test::mysqld->new(my_cnf=>{'skip-networking'=>''});
+
+		my %config = (
+			my_cnf=>{'skip-networking'=>''},
+			$self->my_cnf,
+		);
+
+		$config{base_dir} = $self->base_dir if $self->base_dir;	
+		$config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	
+		$config{mysqld} = $self->mysqld if $self->mysqld;	
+	
+		return  Test::mysqld->new(%config);
 	}
 
 	sub get_default_connect_info {
 		my ($self) = @_;
-		my $base_dir = $self->mysqld->base_dir;
+		my $base_dir = $self->mysqldobj->base_dir;
 
 		Test::More::diag(
 			"Starting mysqld with: ".
-			$self->mysqld->mysqld.
-			" --defaults-file=".$self->mysqld->base_dir . '/etc/my.cnf'.
+			$self->mysqldobj->mysqld.
+			" --defaults-file=".$self->mysqldobj->base_dir . '/etc/my.cnf'.
 			" --user=root"
 		);
 
@@ -45,7 +58,43 @@ Test::DBIx::Class::SchemaManager::Trait::Testmysqld - deploy to a test mysql ins
 
 =head1 DESCRIPTION
 
-	TBD
+This trait uses L<Test::mysqld> to auto create a test instance of mysql in a
+temporary area.  This way you can test against mysql without having to create
+a test database, users, etc.  Mysql needs to be installed (but doesn't need to
+be running) as well as L<DBD::mysql>.  You need to install these yourself.
+
+Please review L<Test::mysqld> for help if you get stuck.
+
+
+=head1 CONFIGURATION
+
+This trait supports all the existing features but adds some additional options
+you can put into your inlined of configuration files.  These following 
+additional configuration options basically map to the options supported by 
+L<Test::mysqld> and the docs are adapted shamelessly from that module.
+
+For the most part, if you have mysql installed in a normal, findable manner
+you should be able to leave all these options blank.
+
+=head2 base_dir
+
+Returns directory under which the mysqld instance is being created. If you leave
+this unset we automatically create a place in the temporary directory and then
+clean it up later.  Unless you plan to roundtrip to the same database a lot
+you can just leave this blank.
+
+=head2 my_cnf
+
+A hashref containing the list of name=value pairs to be written into "my.cnf",
+which is the primary configuration file for the mysql instance.  Again, unless
+you have some specific needs you can leave this empty, since we set the few
+things most needed to get a server running.
+
+=head2 mysql_install_db or mysqld
+
+If your mysqld is not in the $PATH you might need to specify the location to
+one of there binaries.  If you have a normal mysql setup this should not be
+a problem and you can leave this blank.
 
 =head1 NOTES
 
