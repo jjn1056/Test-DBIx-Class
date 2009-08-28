@@ -674,6 +674,14 @@ TRAITS
 
         See Test::DBIx::Class::SchemaManager::Trait::Testmysqld for more.
 
+  Testpostgresql
+        If Postgresql is install on the testing machine, along with DBD::Pg,
+        we try to auto create an instance of Postgresql in a testing area
+        and deploy our tests and fixtures to it.
+
+        See Test::DBIx::Class::SchemaManager::Trait::Testpostgresql for
+        more.
+
 SEE ALSO
         The following modules or resources may be of interest.
 
