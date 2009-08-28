@@ -25,11 +25,19 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 			$ENV{TEST_POSTGRESQL_PRESERVE} = 1;
 		}
 
-		my %config = ();
+		my %config = (
+			initdb_args => $Test::postgresql::Defaults{initdb_args} ."",
+			postmaster_args => $Test::postgresql::Defaults{initdb_args} ." --shared_buffers=64M",
+		);
 
 		$config{base_dir} = $self->base_dir if $self->base_dir;	
 		$config{initdb} = $self->initdb if $self->initdb;	
-		$config{postmaster} = $self->postmaster if $self->postmaster;	
+		$config{postmaster} = $self->postmaster if $self->postmaster;
+		
+		if($self->base_dir && -e $self->base_dir) {
+			$self->builder->ok(-w $self->base_dir, "Path ".$self->base_dir." is accessible, forcing 'force_drop_table'");
+			$self->force_drop_table(1);
+		}	
 
 		if(my $testdb = Test::postgresql->new(%config)) {
 			return $testdb;
@@ -44,9 +52,9 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 
 		Test::More::diag(
 			"Starting postgresql with: ".
-            $self->postmaster.
+            $self->postgresqlobj->postmaster.
             ' -p ', $port,
-            ' -D ', $self->base_dir . '/data'
+            ' -D ', $self->postgresqlobj->base_dir . '/data'
 		);
 
 		Test::More::diag("DBI->connect('DBI:Pg:dbname=template1;port=$port','postgres',''])");
@@ -80,7 +88,6 @@ be running) as well as L<DBD::Pg>.  You need to install these yourself.
 
 Please review L<Test::postgresql> for help if you get stuck.
 
-
 =head1 CONFIGURATION
 
 This trait supports all the existing features but adds some additional options
@@ -88,7 +95,7 @@ you can put into your inlined of configuration files.  These following
 additional configuration options basically map to the options supported by 
 L<Test::postgresql> and the docs are adapted shamelessly from that module.
 
-For the most part, if you have Postgresqk installed in a normal, findable manner
+For the most part, if you have Postgresql installed in a normal, findable manner
 you should be able to leave all these options blank.
 
 =head2 base_dir
@@ -115,11 +122,18 @@ You may need to do this if you are stuck on a shared host and can't write
 anything to /tmp.  Remember, you can also put the 'base_dir' option into
 configuration instead of having to type it into the commandline each time!
 
+Note that if you override the BASE_DIR we will set the 'force_drop_tables'
+option to true to ensure that we properly clean the database before trying
+to install tables and fixtures.
+
 =head2 initdb and postmaster
 
-If your postgresql is not in the $PATH you might need to specify the location to
-one of there binaries.  If you have a normal postgresql setup this should not be
-a problem and you can leave this blank.
+If your postgresql is not in the $PATH you might need to specify the location
+to one of there binaries.  If you have a normal postgresql setup this should 
+not be a problem and you can leave this blank.
+
+If you have to set these, please note you need to set the full path to the
+required file, not just the path to containing directory.
 
 =head1 NOTES
 
@@ -139,18 +153,20 @@ If you use the 'keep_db' option and want to start and log into the test generate
 database instance, you can start the database by noticing the diagnostic output
 that should be generated at the top of your test.  It will look similar to:
 
-	# Starting postgresql with: /usr/local/mysql/bin/postgresql --defaults-file=/tmp/KHKfJf0Yf6/etc/my.cnf --user=root
+	# Starting postgresql with: /Library/PostgreSQL/8.4/bin/postmaster \
+	 -p 15432 -D /tmp/E4tuZF5uFR/data
+	# DBI->connect('DBI:Pg:dbname=template1;port=15432','postgres',''])
 
 You can then start the database instance yourself with something like:
 
-	/usr/local/mysql/bin/postgresql --defaults-file=/tmp/WT0P0VutAe/etc/my.cnf \
-	--user=root &
-	[1] 3447
-	....
-	090827 15:06:16  InnoDB: Started; log sequence number 0 78863
-	090827 15:06:16 [Note] Event Scheduler: Loaded 0 events
-	090827 15:06:16 [Note] /usr/local/mysql/bin/postgresql: ready for connections.
-	Version: '5.1.37'  socket: '/tmp/WT0P0VutAe/tmp/mysql.sock'  port: 0  MySQL Community Server (GPL)
+	./Library/PostgreSQL/8.4/bin/postmaster -p 15432 \
+	-D /tmp/E4tuZF5uFR/data &
+
+You will get output that looks like:
+
+	[1] 1564
+	LOG:  database system is ready to accept connections
+	LOG:  autovacuum launcher started
 
 There will be some additional output to the term and then the server will go
 into the background.  If you don't like the extra output, you can just redirect
@@ -158,22 +174,36 @@ it all to /dev/null or whatever is similar for your OS.
 
 You can now log into the test generated database instance with:
 
-	mysql --socket=/tmp/WT0P0VutAe/tmp/mysql.sock -u root test
+	psql -h localhost --user postgres --port 15432 -d template1
 
 You may need to specify the full path to 'mysql' if it's not in your search 
 $PATH.
 
 When you are finished you can then kill the process.  In this case our reported
-process id is '3447'
+process id is '1564'
 
-	kill 3447
+	kill 1564
 
 And then you might wish to 'tidy' up temp
 
-	rm -rf /tmp/WT0P0VutAe
+	rm -rf /tmp/E4tuZF5uFR
 
 All the above assume you are on a unix or unixlike system.  Would welcome 
 document patches for how to do all the above on windows.
+
+=head2 Noisy warnings
+
+When running the L<Test::postgresql> instance, you'll probably see a lot of
+mostly harmless warnings, similar to:
+
+	NOTICE:  drop cascades to 2 other objects
+	DETAIL:  drop cascades to constraint cd_track_fk_cd_id_fkey on table cd_track
+	drop cascades to constraint cd_artist_fk_cd_id_fkey on table cd_artist
+	NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "cd_pkey" for table "cd"
+
+In general these are harmless and can be ignored.  I will work with the author
+of L<Test::postgresql> to see if we can find a way to redirect these to a log 
+file somewhere.
 
 =head1 AUTHOR
 
