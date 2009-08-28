@@ -6,7 +6,7 @@ use warnings;
 
 use base 'Test::Builder::Module';
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
 use Test::DBIx::Class::SchemaManager;
@@ -1320,6 +1320,14 @@ the SQLite trait works, we attempt to create the database without requiring any
 other using effort or setup.
 
 See L<Test::DBIx::Class::SchemaManager::Trait::Testmysqld> for more.
+
+=head2 Testpostgresql
+
+If Postgresql is install on the testing machine, along with L<DBD::Pg>, we try
+to auto create an instance of Postgresql in a testing area and deploy our tests
+and fixtures to it.
+
+See L<Test::DBIx::Class::SchemaManager::Trait::Testpostgresql> for more.
 
 =head1 SEE ALSO
 

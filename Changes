@@ -1,5 +1,13 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.09  28 August 2009
+    - New Functionality:  Added storage trait 'Testpostgresql' which works just
+      like the 'Testmysql' except deploys to a test Postgresql database.
+    - Changed some tests to prevent failures to install.
+    - updated the Makefile.PL so that the support for Mysql and Postgresql is
+      optional.
+    - New documentation to reflect the above.
+
 0.08  27 August 2009
     - New Functionality:  Added storage trait 'Testmysql' which allows you
       to create a temporary test instance of mysql, deploy and test against
