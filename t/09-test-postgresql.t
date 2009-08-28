@@ -9,8 +9,8 @@ use Test::More; {
 	use warnings;
 
 	BEGIN {
-		eval "use Test::mysqld"; if($@) {
-			plan skip_all => 'Test::mysqld not installed';
+		eval "use Test::postgresql"; if($@) {
+			plan skip_all => 'Test::postgresql not installed';
 		}
 	}
 
@@ -20,7 +20,7 @@ use Test::More; {
 
 	use Test::DBIx::Class 
 		-config_path=>[qw/t etc example schema/],
-		-traits=>['Testmysqld'];
+		-traits=>'Testpostgresql';
 
 	is_resultset Person;
 	is_resultset Job;
@@ -45,4 +45,3 @@ use Test::More; {
 
 	done_testing;
 }
-
