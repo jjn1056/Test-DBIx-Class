@@ -8,7 +8,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 
 	has '+force_drop_table' => (default=>1);
 
-	has mysqldobj => (
+	has test_db_manager => (
 		is=>'ro',
 		init_arg=>undef,
 		lazy_build=>1,
@@ -20,38 +20,66 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 		traits=>['ENV'], 
 	);
 
-	has my_cnf => (is=>'ro', isa=>'HashRef', auto_deref=>1);
+	has my_cnf => (
+		is=>'ro', 
+		isa=>'HashRef', 
+		auto_deref=>1,
+	);
 
-	sub _build_mysqldobj {
-		my ($self) = @_;
+	has default_cnf => (
+		is=>'ro', 
+		init_arg=>undef, 
+		isa=>'HashRef', 
+		auto_deref=>1, 
+		lazy_build=>1,
+	);
+
+	sub _build_default_cnf {
+		return {
+			'skip-networking'=>'',
+		};
+	}
+
+	sub _build_test_db_manager {
+		my $self = shift @_;
+		my %config = $self->prepare_config(@_);
+
 		if($self->keep_db) {
 			$ENV{TEST_MYSQLD_PRESERVE} = 1;
 		}
 
-		my %config = (
-			my_cnf=>{'skip-networking'=>''},
-			$self->my_cnf,
-		);
-
-		$config{base_dir} = $self->base_dir if $self->base_dir;	
-		$config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	
-		$config{mysqld} = $self->mysqld if $self->mysqld;	
-
-		if(my $testdb = Test::mysqld->new(%config)) {
+		if(my $testdb = $self->deploy_testdb(%config)) {
 			return $testdb;
 		} else {
 			die $Test::mysqld::errstr;
 		}
 	}
 
+	sub prepare_config {
+		my ($self, %extra) = @_;
+		my %config = ($self->default_cnf, $self->my_cnf, %extra);
+
+		$config{base_dir} = $self->base_dir if $self->base_dir;	
+		$config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	
+		$config{mysqld} = $self->mysqld if $self->mysqld;	
+		
+		return %config;
+	}
+	
+	sub deploy_testdb {
+		my ($self, %config) = @_;
+		return Test::mysqld->new(%config);
+	}
+
 	sub get_default_connect_info {
-		my ($self) = @_;
-		my $base_dir = $self->mysqldobj->base_dir;
+		my $self = shift @_;
+		my $deployed_db = shift(@_) || $self->test_db_manager;
+		my $base_dir = $deployed_db->base_dir;
 
 		Test::More::diag(
 			"Starting mysqld with: ".
-			$self->mysqldobj->mysqld.
-			" --defaults-file=".$self->mysqldobj->base_dir . '/etc/my.cnf'.
+			$deployed_db->mysqld.
+			" --defaults-file=".$base_dir . '/etc/my.cnf'.
 			" --user=root"
 		);
 

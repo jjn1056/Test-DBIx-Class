@@ -134,6 +134,7 @@ package Test::DBIx::Class::SchemaManager; {
 		my $self = $class->new_with_traits($config);
 
 		if($self) {
+			$self->schema->storage->ensure_connected; 
 			$self->setup;
 			return $self;
 		} else {
@@ -155,7 +156,6 @@ package Test::DBIx::Class::SchemaManager; {
 
 	sub setup {
 		my $self = shift @_;
-		$self->schema->storage->ensure_connected; 
 		my $deploy_args = $self->force_drop_table ? {add_drop_table => 1} : {};
 
 		if(my $schema = $self->schema) {

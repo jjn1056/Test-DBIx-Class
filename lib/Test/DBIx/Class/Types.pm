@@ -4,9 +4,10 @@ package Test::DBIx::Class::Types; {
 	use warnings;
 
 	use Class::MOP;
-	use MooseX::Types::Moose qw(Str ClassName ArrayRef HashRef);
+	use MooseX::Types::Moose qw(Str Int ClassName ArrayRef HashRef);
 	use MooseX::Types -declare => [qw/
 		TestBuilder SchemaManagerClass ConnectInfo FixtureClass
+		ReplicantsConnectInfo
 	/];
 
 	subtype TestBuilder,
@@ -87,6 +88,20 @@ package Test::DBIx::Class::Types; {
 	}
 
 
+	subtype ReplicantsConnectInfo,
+		as ArrayRef[ConnectInfo];
+
+	coerce ReplicantsConnectInfo,
+		from Int,
+		via { [map { +{dsn=>'', user=>'', password=>''} } (1..$_)] },
+		from ArrayRef[Str],
+		via {
+			[map { &_coerce_connect_info_from_str($_) } @$_];
+		},
+		from ArrayRef[ArrayRef],
+		via {
+			[map { &_coerce_connect_info_from_arrayref($_) } @$_];
+		};
 } 1
 
 __END__

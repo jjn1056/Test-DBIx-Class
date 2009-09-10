@@ -604,7 +604,7 @@ sub _initialize_schema {
 			builder => $builder,
 		});
 	}; if ($@ or !$schema_manager) {
-		Test::More::fail("Can't initialize a schema with the given configuration");
+		Test::More::diag("Can't initialize a schema with the given configuration");
 		Test::More::diag("Returned Error: ".$@) if $@;
 		Test::More::diag(
 			Test::More::explain("configuration: " => $config)
