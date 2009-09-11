@@ -4,19 +4,15 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 	use MooseX::Attribute::ENV;
 	use Test::DBIx::Class::Types qw(ReplicantsConnectInfo);
 
-	requires 'deploy_testdb', 'setup';
+	requires 'deploy_testdb', 'setup', 'prepare_schema_class';
 
 	has replicants => (
-		is=>'ro',
+		is=>'rw',
 		isa=>ReplicantsConnectInfo,
 		required=>1,
 		coerce=>1,
 		auto_deref=>1,
 	);
-
-	sub _build_replicants {
-		my $self = shift @_;
-	}
 
 	has pool_args => (
 		is=>'ro',
@@ -28,15 +24,22 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 	has balancer_type => (
 		is=>'ro',
 		isa=>'Str',
-		required=>0,
+		required=>1,
 		predicate=>'has_balancer_type',
+		default=>'::Random',
 	);
 
 	has balancer_args => (
 		is=>'ro',
 		isa=>'HashRef',
-		required=>0,
+		required=>1,
 		predicate=>'has_balancer_args',
+		default=> sub {
+			return {
+				auto_validate_every=>100,
+				master_read_weight => 1,
+            },	
+		},
 	);
 
 	has my_replicant_cnf => (
@@ -53,7 +56,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 		lazy_build=>1,
 	);
 
-	sub default_replicant_cnf {
+	sub _build_default_replicant_cnf {
 		return {
 			'skip-networking'=>'',
 		};
@@ -61,13 +64,17 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 
 	sub prepare_replicant_config {
 		my ($self, $replicant, %extra) = @_;
+		my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
 		my %config = (
-			$self->default_replicant_cnf,
-			$self->my_replicant_cnf, 
-			%extra
+			my_cnf => {
+				$self->default_replicant_cnf,
+				$self->my_replicant_cnf,
+				%my_cnf_extra,
+			},
+			%extra,
 		);
 
-		my $replicant_name = defined $replicant->{name} ? $replicant->{name} : length $self->replicants;
+		my $replicant_name =$replicant->{name};
 		my $base_dir = $self->test_db_manager->base_dir . "/$replicant_name";
 
 		$config{base_dir} = $base_dir;	
@@ -77,18 +84,23 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 		return %config;
 	}
 
+	around 'prepare_schema_class' => sub {
+		my ($prepare_schema_class, $self, @args) = @_;
+		my $schema_class = $self->$prepare_schema_class(@args);
 
-	around 'setup' => sub {
-		my ($self, $setup, @args) = @_;
-		$self->schema->storage_type({
+		$schema_class->storage_type({
 			'::DBI::Replicated' => {
 				pool_args => $self->has_pool_args ? $self->pool_args : {},
-				balancer_type => $self->has_balancer_type ? $self->balancer_type : undef,
+				balancer_type => $self->has_balancer_type ? $self->balancer_type : '',
 				balancer_args => $self->has_balancer_args ? $self->balancer_args : {},
 			},
 		});
 
-		$self = $self->setup(@args);
+		return $schema_class;
+	};
+
+	around 'setup' => sub {
+		my ($setup, $self, @args) = @_;
 
 		## Do we need to invent replicants?
 		my @replicants = ();
@@ -98,12 +110,13 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 			} else {
 				## If there is no 'dsn' key, that means we should auto generate
 				## a test db and request its connect info.
+				$replicant->{name} = defined $replicant->{name} ? $replicant->{name} : ($#replicants+1);
 				my %config = $self->prepare_replicant_config($replicant);
 				my $deployed = $self->deploy_testdb(%config);
 				my $replicant_base_dir = $deployed->base_dir;
 
 				Test::More::diag(
-					"Starting mysqld with: ".
+					"Starting replicant mysqld with: ".
 					$deployed->mysqld.
 					" --defaults-file=".$replicant_base_dir . '/etc/my.cnf'.
 					" --user=root"
@@ -113,10 +126,13 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 				push @replicants, 
 				  ["DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock",'root',''];
 
-			}
-			$self->replicants(\@replicants);
+			}	
 		}
+
+		$self->replicants(\@replicants);
+		$self->schema->storage->ensure_connected;
 		$self->schema->storage->connect_replicants($self->replicants);
+		return $self->$setup(@args);
 	};
 
 } 1;

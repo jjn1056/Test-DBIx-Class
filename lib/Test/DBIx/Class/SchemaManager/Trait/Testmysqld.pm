@@ -14,7 +14,6 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 		lazy_build=>1,
 	);
 
-
 	has [qw/base_dir mysql_install_db mysqld/] => (
 		is=>'ro', 
 		traits=>['ENV'], 
@@ -57,7 +56,15 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 
 	sub prepare_config {
 		my ($self, %extra) = @_;
-		my %config = ($self->default_cnf, $self->my_cnf, %extra);
+		my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
+		my %config = (
+			my_cnf => {
+				$self->default_cnf, 
+				$self->my_cnf, 
+				%my_cnf_extra,
+			},
+			%extra,
+		);
 
 		$config{base_dir} = $self->base_dir if $self->base_dir;	
 		$config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	

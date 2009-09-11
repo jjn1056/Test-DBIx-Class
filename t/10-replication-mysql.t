@@ -20,7 +20,8 @@ use Test::More; {
 
 	use Test::DBIx::Class 
 		-config_path=>[qw/t etc example schema/],
-		-traits=>['Testmysqld', 'Replicated'];
+		-traits=>['Testmysqld', 'Replicated'],
+		-replicants=>2;
 
 	is_resultset Person;
 	is_resultset Job;

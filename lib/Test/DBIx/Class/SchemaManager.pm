@@ -95,6 +95,8 @@ package Test::DBIx::Class::SchemaManager; {
 		my $schema_class = $self->schema_class;
 		my $connect_info = $self->connect_info;
 
+		$schema_class = $self->prepare_schema_class($schema_class);
+
 		return $schema_class->connect($connect_info);
 	}
 
@@ -110,6 +112,11 @@ package Test::DBIx::Class::SchemaManager; {
 	sub _build_fixture_command {
 		my $self = shift @_;
 		return $self->fixture_class->new(schema_manager=>$self);
+	}
+
+	sub prepare_schema_class {
+		my ($self, $schema_class) = @_;
+		return $schema_class;
 	}
 
 	sub initialize_schema {
@@ -129,7 +136,6 @@ package Test::DBIx::Class::SchemaManager; {
 			  unless @traits;
 		}
 		@traits = uniq @traits;
-
 		$config->{traits} = \@traits;
 		my $self = $class->new_with_traits($config);
 
