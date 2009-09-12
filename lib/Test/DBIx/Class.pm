@@ -684,7 +684,7 @@ such as:
 		fixtures_ok { 
 			Job => [
 				[qw/name description/],
-				[Programmer => 'She whow writes the code'],
+				[Programmer => 'She who writes the code'],
 				['Movie Star' => 'Knows nothing about the code'],
 			],
 		}, 'Installed some custom fixtures via the Populate fixture class',
