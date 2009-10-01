@@ -29,21 +29,10 @@ package Test::DBIx::Class::FixtureCommand::Populate; {
 		my @return;
 		foreach my $definition (@definitions) {
 			my ($source, $rows) = each %$definition;
+            my $rs = $self->schema_manager->schema->resultset($source);
 
-			$builder->ok(
-			  my $rs = $self->schema_manager->schema->resultset($source), 
-			  "Got ResultSet for $source"
-			);
-			my @rows;
-			eval {
-				@rows =  $rs->populate($rows);
-			};
-
-			if($@) {
-				Test::More::fail("Can't install fixtures for $source, got $@");
-			} else {
-				push @return, {$source => [@rows]};
-			}
+			my @rows =  $rs->populate($rows);
+			push @return, {$source => [@rows]};
 		}
 		return @return;
 	}

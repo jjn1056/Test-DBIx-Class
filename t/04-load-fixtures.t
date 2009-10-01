@@ -25,6 +25,10 @@ use Test::More; {
                                       ["Vincent", 15, "vincent\@home.com"],
                                       ["Vanessa", 35, "vanessa\@school.com"],
                                     ],
+                                Company => [
+                                      ["name"],
+                                      ["Acme"],
+                                    ],
                                 a => 100,
                                 b => 2,
                               },
