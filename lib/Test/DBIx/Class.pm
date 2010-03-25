@@ -135,7 +135,7 @@ sub import {
 						} else {
 							Test::More::pass($message);
 						}
-					} elsif( $arg && ref $arg && (ref $arg eq 'HASH') ) {
+					} elsif( $arg && ref $arg && (ref $arg eq 'HASH' || ref $arg eq 'ARRAY') ) {
 						my @return;
 						eval {
 							@return = $schema_manager->install_fixtures($arg);
@@ -1338,6 +1338,10 @@ L<DBIx::Class>, L<DBIx::Class::Schema::PopulateMore>, L<DBIx::Class::Fixtures>
 =head1 AUTHOR
 
 John Napiorkowski C<< <jjnapiork@cpan.org> >>
+
+=head1 CONTRIBUTORS
+
+Tristan Pratt
 
 =head1 COPYRIGHT & LICENSE
 

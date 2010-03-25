@@ -1,5 +1,10 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+NEXT
+    - Fixed bug where only one table would get loaded when using fixtures_ok
+      and added tests (Tristan Pratt).
+
+
 0.09  28 August 2009
     - New Functionality:  Added storage trait 'Testpostgresql' which works just
       like the 'Testmysql' except deploys to a test Postgresql database.

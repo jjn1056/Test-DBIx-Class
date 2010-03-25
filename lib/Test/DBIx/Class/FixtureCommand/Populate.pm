@@ -13,7 +13,16 @@ package Test::DBIx::Class::FixtureCommand::Populate; {
 		$builder->croak("Argument is required.")
 		  unless $arg;
 
-		my @args = (ref $arg && ref $arg eq 'ARRAY') ? @$arg : ($arg, @rest);
+		my @args;
+		if(ref $arg && ref $arg eq 'ARRAY') {
+			@args = @$arg;
+		}
+		elsif(ref $arg && ref $arg eq 'HASH') {
+			@args = %$arg;
+		}
+		else {
+			@args = ($arg, @rest);
+		}
 
 		my @definitions;
 		while(@args) {
