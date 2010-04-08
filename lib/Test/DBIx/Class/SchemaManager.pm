@@ -130,7 +130,11 @@ package Test::DBIx::Class::SchemaManager; {
 		if(my $connect_info = $config->{connect_info}) {
 			$connect_info = to_ConnectInfo($connect_info);
 			my ($driver) = $connect_info->{dsn} =~ /dbi:([^:]+):/i;
-			## TODO map drivers to storage traits
+                        if(lc $driver eq "sqlite") {
+                            push @traits, 'SQLite';    
+                        }
+                        # Don't assume mysql means we want Testmysqld; we may
+                        # want to connect to a real mysql server to test.
 		} else {
 			push @traits, 'SQLite'
 			  unless @traits;
