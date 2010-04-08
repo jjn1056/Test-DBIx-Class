@@ -9,16 +9,16 @@ use base 'Test::Builder::Module';
 our $VERSION = '0.09';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
-use Test::DBIx::Class::SchemaManager;
-use Path::Class;
 use Config::Any;
-use Hash::Merge;
-use Sub::Exporter;
-use Test::More ();
-use Digest::MD5;
-use Scalar::Util 'blessed';
 use Data::Visitor::Callback;
+use Digest::MD5;
+use Hash::Merge;
+use Path::Class;
+use Scalar::Util 'blessed';
+use Sub::Exporter;
+use Test::DBIx::Class::SchemaManager;
 use Test::Differences;
+use Test::More ();
 
 sub import {
 	my ($class, @opts) = @_;
