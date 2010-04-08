@@ -220,7 +220,7 @@ package Test::DBIx::Class::SchemaManager; {
 		});
 	}
 
-	sub DESTROY {
+	sub DEMOLISH {
 		my $self = shift @_;
 		if(defined $self) {
 			$self->cleanup;
