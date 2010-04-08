@@ -25,6 +25,7 @@ requires 'DBIx::Class::Schema::PopulateMore' => '0.14';
 requires 'Hash::Merge' => '0.11';
 requires 'Data::Visitor' => '0.25';
 requires 'List::MoreUtils' => '0.22';
+requires 'Test::Differences' => '0.5';
 
 feature('MySql Support', -default => 0, 'Test::mysqld' => '0.06');
 feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.03'); 

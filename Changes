@@ -2,8 +2,11 @@ This file documents the revision history for Perl extension Test-DBIx-Class.
 
 NEXT
     - Fixed bug where only one table would get loaded when using fixtures_ok
-      and added tests (Tristan Pratt).
-
+      and added tests.  (Tristan Pratt)
+    - Diffs are now readable by humans when is_fixtures fails.  Changed uses
+      of Test::More::is_deeply to Test::Differences::eq_or_diff so that the
+      actual data structure contents are printed out instead of just
+      "HASH(0x1008032b8)".  (Tristan Pratt)
 
 0.09  28 August 2009
     - New Functionality:  Added storage trait 'Testpostgresql' which works just

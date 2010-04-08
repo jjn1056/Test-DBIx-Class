@@ -18,6 +18,7 @@ use Test::More ();
 use Digest::MD5;
 use Scalar::Util 'blessed';
 use Data::Visitor::Callback;
+use Test::Differences;
 
 sub import {
 	my ($class, @opts) = @_;
@@ -83,7 +84,7 @@ sub import {
 					my ($result1, $result2, $message) = @_;
 					$message = defined $message ? $message : ref($result1) . " equals " . ref($result2);
 					if( ref($result1) eq ref($result2) ) {
-						Test::More::is_deeply(
+						eq_or_diff(
 							{$result1->get_columns},
 							{$result2->get_columns},
 							$message,
@@ -107,7 +108,7 @@ sub import {
 							[@result];
 						} ($rs1, $rs2);
 
-						Test::More::is_deeply([$rs1],[$rs2],$message);
+						eq_or_diff([$rs1],[$rs2],$message);
 					} else {
 						Test::More::fail($message ." :ResultSet arguments not of same class");
 					}
@@ -213,7 +214,7 @@ sub import {
 							die "$_ is not an available field"
 							  unless $result->can($_); 
 							$_ => $result->$_ } @fields};
-						Test::More::is_deeply($compare_rs,$compare,$message);
+						eq_or_diff($compare_rs,$compare,$message);
 						return $compare;
 					} elsif (blessed $args[0] && $args[0]->isa('DBIx::Class::ResultSet')) {
 
@@ -259,7 +260,7 @@ sub import {
 							my $id = Digest::MD5::md5_hex(join('.', map {$row->{$_}} sort keys %$row));
 							$compare{$id} = $row;
 						}
-						Test::More::is_deeply(\%compare_rs,\%compare,$message);
+						eq_or_diff(\%compare_rs,\%compare,$message);
 						return \@compare;
 					} else {
 						die "I'm not sure what to do with your arguments";
