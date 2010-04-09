@@ -7,6 +7,11 @@ NEXT
       of Test::More::is_deeply to Test::Differences::eq_or_diff so that the
       actual data structure contents are printed out instead of just
       "HASH(0x1008032b8)".  (Tristan Pratt)
+    - Add feature to automatically load SQLite traits if connect_info's dsn
+      appears to be of sqlite variety.  (Tristan Pratt)
+    - Fixed bug where Traits::SQLite would not clean up your db even if keep_db
+      was set to 0 if you specified the dbname inside connect_info's dsn. 
+      (Tristan Pratt)
 
 0.09  28 August 2009
     - New Functionality:  Added storage trait 'Testpostgresql' which works just

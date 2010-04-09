@@ -4,22 +4,25 @@ package Test::DBIx::Class::SchemaManager::Trait::SQLite; {
 	use MooseX::Attribute::ENV;
 	use Test::DBIx::Class::Types qw(ConnectInfo);
 
-	has 'dbname' => (
-		is=>'ro',
-		isa=>'Str',
-		lazy_build=>1,
-		required=>1,
-	);
-
-	sub _build_dbname {
+	sub dbname {
 		my ($self) = @_;
-		if(my $path = $ENV{DBNAME}) {
-			if(-e $path) {
-				$self->builder->ok(-w $path, "Path $path is accessible, forcing 'force_drop_table'");
-				$self->force_drop_table(1);
+
+		my $env_path = $ENV{DBNAME};
+		my $dsn      = $self->{connect_info}{dsn};  
+
+		if($env_path) {
+			return $env_path;
+		}
+		elsif($dsn) {
+			my ($dbname) = $dsn =~ m/dbi:[^:]+:dbname=(.+)/i;
+			if($dbname) {
+				return $dbname;
 			}
-			return $path;
-		} else {
+			else {
+				croak("Couldn't find dbname in sqlite dsn '$dsn'");
+			}
+		}
+		else {
 			return ':memory:';
 		}
 	}
@@ -29,11 +32,20 @@ package Test::DBIx::Class::SchemaManager::Trait::SQLite; {
 		return ["dbi:SQLite:dbname=".$self->dbname,'',''];
 	}
 
+	before 'setup' => sub {
+		my ($self) = @_;
+		if(my $path = $ENV{DBNAME}) {
+			if(-e $path) {
+				$self->builder->ok(-w $path, "Path $path is accessible, forcing 'force_drop_table'");
+				$self->force_drop_table(1);
+			}
+		}
+	};
+
 	after 'cleanup' => sub {
 		my ($self) = @_;
-		unless($self->keep_db) {
-			unlink $self->dbname
-			  unless $self->dbname eq ':memory:'; ##evil hack but what can you do :)
+		if(!$self->keep_db && lc $self->dbname ne ':memory:') {
+			unlink $self->dbname;
 		}
 	};
 } 1;
@@ -74,6 +86,10 @@ tell the system to delete the file each time.
 =head1 AUTHOR
 
 John Napiorkowski C<< <jjnapiork@cpan.org> >>
+
+=head1 CONTRIBUTORS
+
+Tristan Pratt
 
 =head1 COPYRIGHT & LICENSE
 
