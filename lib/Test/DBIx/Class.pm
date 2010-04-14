@@ -85,8 +85,8 @@ sub import {
 					$message = defined $message ? $message : ref($result1) . " equals " . ref($result2);
 					if( ref($result1) eq ref($result2) ) {
 						eq_or_diff(
-							{$result1->get_columns},
 							{$result2->get_columns},
+							{$result1->get_columns},
 							$message,
 						);
 					} else {
@@ -108,7 +108,7 @@ sub import {
 							[@result];
 						} ($rs1, $rs2);
 
-						eq_or_diff([$rs1],[$rs2],$message);
+						eq_or_diff([$rs2],[$rs1],$message);
 					} else {
 						Test::More::fail($message ." :ResultSet arguments not of same class");
 					}
@@ -214,7 +214,7 @@ sub import {
 							die "$_ is not an available field"
 							  unless $result->can($_); 
 							$_ => $result->$_ } @fields};
-						eq_or_diff($compare_rs,$compare,$message);
+						eq_or_diff($compare,$compare_rs,$message);
 						return $compare;
 					} elsif (blessed $args[0] && $args[0]->isa('DBIx::Class::ResultSet')) {
 
@@ -252,15 +252,17 @@ sub import {
 							})->all;
 						my %compare_rs;
 						foreach my $row(@resultset) {
+							no warnings 'uninitialized';
 							my $id = Digest::MD5::md5_hex(join('.', map {$row->{$_}} sort keys %$row));
 							$compare_rs{$id} = $row;
 						}
 						my %compare;
 						foreach my $row(@compare) {
+							no warnings 'uninitialized';
 							my $id = Digest::MD5::md5_hex(join('.', map {$row->{$_}} sort keys %$row));
 							$compare{$id} = $row;
 						}
-						eq_or_diff(\%compare_rs,\%compare,$message);
+						eq_or_diff(\%compare,\%compare_rs,$message);
 						return \@compare;
 					} else {
 						die "I'm not sure what to do with your arguments";
