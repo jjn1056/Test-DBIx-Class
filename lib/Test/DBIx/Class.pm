@@ -14,7 +14,7 @@ use Data::Visitor::Callback;
 use Digest::MD5;
 use Hash::Merge;
 use Path::Class;
-use Scalar::Util 'blessed';
+use Scalar::Util ();
 use Sub::Exporter;
 use Test::DBIx::Class::SchemaManager;
 use Test::Differences;
@@ -180,7 +180,7 @@ sub import {
 						my $fields = shift(@args);
 						@fields = ref $fields ? @$fields : ($fields); 
 					} 
-					if(blessed $args[0] && 
+					if(Scalar::Util::blessed($args[0]) && 
 						$args[0]->isa('DBIx::Class') && 
 						!$args[0]->isa('DBIx::Class::ResultSet')
 					) {
@@ -214,9 +214,14 @@ sub import {
 							die "$_ is not an available field"
 							  unless $result->can($_); 
 							$_ => $result->$_ } @fields};
-						eq_or_diff($compare,$compare_rs,$message);
+
+use Test::Deep;
+cmp_deeply($compare,$compare_rs,$message);
+
+
+						#eq_or_diff($compare,$compare_rs,$message);
 						return $compare;
-					} elsif (blessed $args[0] && $args[0]->isa('DBIx::Class::ResultSet')) {
+					} elsif (Scalar::Util::blessed($args[0]) && $args[0]->isa('DBIx::Class::ResultSet')) {
 
 						my $resultset = shift(@args);
 						unless(@fields) {

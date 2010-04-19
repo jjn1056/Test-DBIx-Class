@@ -6,7 +6,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 	use Test::More ();
 	use Path::Class qw(dir);
 
-	has '+force_drop_table' => (default=>1);
+	has '+force_drop_table' => (is=>'rw',default=>1);
 
 	has test_db_manager => (
 		is=>'ro',
