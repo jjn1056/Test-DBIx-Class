@@ -276,13 +276,13 @@ sub import {
 					Test::More::pass($message);
 				}
 			},
-            cleanup => sub {
+            cleanup_schema => sub {
                 return sub {
 					my $message = shift @_ || 'Schema cleanup complete';
 					$schema_manager->cleanup;
 					Test::More::pass($message);
                 }
-            }
+            },
 			map {
 				my $source = $_;
  				$source => sub {
@@ -316,7 +316,7 @@ sub import {
 
 	$class->$exporter(
 		qw/Schema ResultSet is_result is_resultset hri_dump fixtures_ok reset_schema
-			eq_result eq_resultset is_fields dump_settings cleanup /,
+			eq_result eq_resultset is_fields dump_settings cleanup_schema /,
 		 @exports
 	);
 }
@@ -905,6 +905,10 @@ via L<Data::Dump>, for example.
 =head2 reset_schema
 
 Wipes and reloads the schema.
+
+=head2 cleanup_schema
+
+Wipes schema and disconnects.
 
 =head2 dump_settings
 
