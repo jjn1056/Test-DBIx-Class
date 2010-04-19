@@ -214,12 +214,7 @@ sub import {
 							die "$_ is not an available field"
 							  unless $result->can($_); 
 							$_ => $result->$_ } @fields};
-
-use Test::Deep;
-cmp_deeply($compare,$compare_rs,$message);
-
-
-						#eq_or_diff($compare,$compare_rs,$message);
+						eq_or_diff($compare,$compare_rs,$message);
 						return $compare;
 					} elsif (Scalar::Util::blessed($args[0]) && $args[0]->isa('DBIx::Class::ResultSet')) {
 
@@ -259,13 +254,14 @@ cmp_deeply($compare,$compare_rs,$message);
 						foreach my $row(@resultset) {
 							no warnings 'uninitialized';
 							my $id = Digest::MD5::md5_hex(join('.', map {$row->{$_}} sort keys %$row));
-							$compare_rs{$id} = $row;
+							$compare_rs{$id} = { map { $_,"$row->{$_}"} keys %$row};
 						}
 						my %compare;
 						foreach my $row(@compare) {
 							no warnings 'uninitialized';
 							my $id = Digest::MD5::md5_hex(join('.', map {$row->{$_}} sort keys %$row));
-							$compare{$id} = $row;
+                            ## Force comparison stuff in stringy form :(
+							$compare{$id} = { map { $_,"$row->{$_}"} keys %$row};
 						}
 						eq_or_diff(\%compare,\%compare_rs,$message);
 						return \@compare;

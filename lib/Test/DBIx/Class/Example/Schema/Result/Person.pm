@@ -16,7 +16,6 @@ package Test::DBIx::Class::Example::Schema::Result::Person; {
 		},
 		age => {
 			data_type => 'integer',
-			is_numeric => 1,
 			is_nullable => 0,
 		},
 		email => {
