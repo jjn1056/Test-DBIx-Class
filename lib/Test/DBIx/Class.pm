@@ -276,6 +276,13 @@ sub import {
 					Test::More::pass($message);
 				}
 			},
+            cleanup => sub {
+                return sub {
+					my $message = shift @_ || 'Schema cleanup complete';
+					$schema_manager->cleanup;
+					Test::More::pass($message);
+                }
+            }
 			map {
 				my $source = $_;
  				$source => sub {
@@ -309,7 +316,7 @@ sub import {
 
 	$class->$exporter(
 		qw/Schema ResultSet is_result is_resultset hri_dump fixtures_ok reset_schema
-			eq_result eq_resultset is_fields dump_settings /,
+			eq_result eq_resultset is_fields dump_settings cleanup /,
 		 @exports
 	);
 }
