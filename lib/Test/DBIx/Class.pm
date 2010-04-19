@@ -416,34 +416,45 @@ sub _prepare_fixtures {
 		@dirs = $class->_normalize_config_path($class->_default_fixture_paths);
 	}
 
-		my @extensions = $class->_allowed_extensions;
-		my @files = grep { $class->_is_allowed_extension($_) }
-			map {Path::Class::dir($_)->children} 
-			grep { -e $_  } @dirs;
+    my @extensions = $class->_allowed_extensions;
+    my @files = (
+        grep { $class->_is_allowed_extension($_) }
+        map {Path::Class::dir($_)->children} 
+        grep { -e $_  }
+        @dirs
+    );
 
-		my $fixture_definitions = Config::Any->load_files({
-			files => \@files,
-			use_ext => 1,
-		});
+    my $fixture_definitions = Config::Any->load_files({
+        files => \@files,
+        use_ext => 1,
+    });
 
-		my %merged_fixtures;
-		foreach my $fixture_definition(@$fixture_definitions) {
-			my ($path, $fixture) = each %$fixture_definition;
-			my $file = Path::Class::file($path)->basename;
-			$file =~s/\..{1,4}$//;
-			if($merged_fixtures{$file}) {
-				$merged_fixtures{$file} = Hash::Merge::merge($fixture, $merged_fixtures{$file});
-			} else {
-				$merged_fixtures{$file} = $fixture;
-			}
-		}
+	my %merged_fixtures;
+    foreach my $fixture_definition(@$fixture_definitions) {
+        my ($path, $fixture) = %$fixture_definition;
+        ## hack to normalize arrayref fixtures.  needs work!!!
+        $fixture = ref $fixture eq 'HASH' ? [$fixture] : $fixture;
+        my $file = Path::Class::file($path)->basename;
+        $file =~s/\..{1,4}$//;
+        if($merged_fixtures{$file}) {
+            my $old_fixture = $merged_fixtures{$file};
+            my $merged_fixture = Hash::Merge::merge($fixture, $old_fixture);
+            $merged_fixtures{$file} = $merged_fixture;
+        } else {
+            $merged_fixtures{$file} = $fixture;
+        }
+    }
 
-		if(my $old_fixture_sets = delete $config->{fixture_sets}) {
-			my $new_fixture_sets = Hash::Merge::merge($old_fixture_sets, \%merged_fixtures );
-			$config->{fixture_sets} = $new_fixture_sets;
-		} else {
-			$config->{fixture_sets} = \%merged_fixtures;
-		}
+    if(my $old_fixture_sets = delete $config->{fixture_sets}) {
+        ## hack to normalize arrayref fixtures.  needs work!!!
+        my %normalized_old_fixture_sets = map {
+            ref($old_fixture_sets->{$_}) eq 'HASH' ? ($_, [$old_fixture_sets->{$_}]): ($_, $old_fixture_sets->{$_});
+        } keys %$old_fixture_sets;
+        my $new_fixture_sets = Hash::Merge::merge(\%normalized_old_fixture_sets, \%merged_fixtures );
+        $config->{fixture_sets} = $new_fixture_sets;
+    } else {
+        $config->{fixture_sets} = \%merged_fixtures;
+    }
 
 	return $config;
 }
