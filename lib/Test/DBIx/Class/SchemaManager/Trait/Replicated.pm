@@ -6,6 +6,8 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 
 	requires 'deploy_testdb', 'setup', 'prepare_schema_class';
 
+    has deployed_replicants => (is=>'rw', isa=>'ArrayRef', auto_deref=>1);
+    
 	has replicants => (
 		is=>'rw',
 		isa=>ReplicantsConnectInfo,
@@ -104,6 +106,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 
 		## Do we need to invent replicants?
 		my @replicants = ();
+        my @deployed_replicants = ();
 		foreach	my $replicant ($self->replicants) {
 			if($replicant->{dsn}) {
 				push @replicants, $replicant;
@@ -123,12 +126,14 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 				);
 
 				Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock','root','')");
+                push @deployed_replicants, $deployed;
 				push @replicants, 
 				  ["DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock",'root',''];
 
 			}	
 		}
 
+        $self->deployed_replicants(\@deployed_replicants);
 		$self->replicants(\@replicants);
 		$self->schema->storage->ensure_connected;
 		$self->schema->storage->connect_replicants($self->replicants);
