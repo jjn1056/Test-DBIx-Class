@@ -1093,7 +1093,7 @@ configuration file.  As of this time we don't merge %ENV settings, they only
 provider overrides to the default settings. Example use (assumes you are
 using the default SQLite database)
 
-	DBPATH=test.db KEEP_DB=1 prove -lv t/schema/check-person.t
+	DBNAME=test.db KEEP_DB=1 prove -lv t/schema/check-person.t
 
 After running the test there will be a new file called 'test.db' in the home
 directory of your distribution.  You can use:
