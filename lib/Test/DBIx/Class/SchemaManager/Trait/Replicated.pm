@@ -38,7 +38,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 		predicate=>'has_balancer_args',
 		default=> sub {
 			return {
-				auto_validate_every=>0,
+				auto_validate_every=>10,
 				master_read_weight => 1,
             },	
 		},

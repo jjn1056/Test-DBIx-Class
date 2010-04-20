@@ -1,103 +1,113 @@
-package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
+package Test::DBIx::Class::SchemaManager::Trait::Testmysqld;
 	
-	use Moose::Role;
-	use MooseX::Attribute::ENV;
-	use Test::mysqld;
-	use Test::More ();
-	use Path::Class qw(dir);
+use Moose::Role;
+use MooseX::Attribute::ENV;
+use Test::mysqld;
+use Test::More ();
+use Path::Class qw(dir);
 
-	has '+force_drop_table' => (is=>'rw',default=>1);
+has '+force_drop_table' => (is=>'rw',default=>1);
 
-	has test_db_manager => (
-		is=>'ro',
-		init_arg=>undef,
-		lazy_build=>1,
-	);
+has [qw/base_dir mysql_install_db mysqld/] => (
+    is=>'ro', 
+    traits=>['ENV'], 
+);
 
-	has [qw/base_dir mysql_install_db mysqld/] => (
-		is=>'ro', 
-		traits=>['ENV'], 
-	);
+has test_db_manager => (
+    is=>'ro',
+    init_arg=>undef,
+    lazy_build=>1,
+);
 
-	has my_cnf => (
-		is=>'ro', 
-		isa=>'HashRef', 
-		auto_deref=>1,
-	);
+sub _build_test_db_manager {
+    my $self = shift @_;
+    my %config = $self->prepare_config(@_);
 
-	has default_cnf => (
-		is=>'ro', 
-		init_arg=>undef, 
-		isa=>'HashRef', 
-		auto_deref=>1, 
-		lazy_build=>1,
-	);
+    if($self->keep_db) {
+        $ENV{TEST_MYSQLD_PRESERVE} = 1;
+    }
 
-	sub _build_default_cnf {
-        my $port = first_unused_port(3306);
-		return {
-            'server-id'=>1,
-            'log-bin'=>'mysql-bin',
-            'binlog-do-db'=>'test',
-            'port'=>$port,
-		};
-	}
+    if(my $testdb = $self->deploy_testdb(%config)) {
+        return $testdb;
+    } else {
+        die $Test::mysqld::errstr;
+    }
+}
 
-	sub _build_test_db_manager {
-		my $self = shift @_;
-		my %config = $self->prepare_config(@_);
+has default_cnf => (
+    is=>'ro', 
+    init_arg=>undef, 
+    isa=>'HashRef', 
+    auto_deref=>1, 
+    lazy_build=>1,
+);
 
-		if($self->keep_db) {
-			$ENV{TEST_MYSQLD_PRESERVE} = 1;
-		}
+sub _build_default_cnf {
+    my $port = first_unused_port(3306);
+    return {
+        'server-id'=>1,
+        'log-bin'=>'mysql-bin',
+        'binlog-do-db'=>'test',
+        'port'=>$port,
+    };
+}
 
-		if(my $testdb = $self->deploy_testdb(%config)) {
-			return $testdb;
-		} else {
-			die $Test::mysqld::errstr;
-		}
-	}
+has my_cnf => (
+    is=>'ro', 
+    isa=>'HashRef', 
+    auto_deref=>1,
+);
 
-	sub prepare_config {
-		my ($self, %extra) = @_;
-		my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
-		my %config = (
-			my_cnf => {
-				$self->default_cnf, 
-				$self->my_cnf, 
-				%my_cnf_extra,
-			},
-			%extra,
-		);
 
-		$config{base_dir} = $self->base_dir if $self->base_dir;	
-		$config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	
-		$config{mysqld} = $self->mysqld if $self->mysqld;	
-		
-		return %config;
-	}
-	
-	sub deploy_testdb {
-		my ($self, %config) = @_;
-		return Test::mysqld->new(%config);
-	}
+sub prepare_config {
+    my ($self, %extra) = @_;
+    my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
+    my %config = (
+        my_cnf => {
+            $self->default_cnf, 
+            $self->my_cnf, 
+            %my_cnf_extra,
+        },
+        %extra,
+    );
 
-	sub get_default_connect_info {
-		my $self = shift @_;
-		my $deployed_db = shift(@_) || $self->test_db_manager;
-		my $base_dir = $deployed_db->base_dir;
+    $config{base_dir} = $self->base_dir if $self->base_dir;	
+    $config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	
+    $config{mysqld} = $self->mysqld if $self->mysqld;	
+    
+    return %config;
+}
 
-		Test::More::diag(
-			"Starting mysqld with: ".
-			$deployed_db->mysqld.
-			" --defaults-file=".$base_dir . '/etc/my.cnf'.
-			" --user=root"
-		);
+sub deploy_testdb {
+    my ($self, %config) = @_;
+    return Test::mysqld->new(%config);
+}
 
-		Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$base_dir/tmp/mysql.sock','root','')");
-		return ["DBI:mysql:test;mysql_socket=$base_dir/tmp/mysql.sock",'root',''];
-	}
+sub get_default_connect_info {
+    my $self = shift @_;
+    my $deployed_db = shift(@_) || $self->test_db_manager;
+    my $base_dir = $deployed_db->base_dir;
 
+    Test::More::diag(
+        "Starting mysqld with: ".
+        $deployed_db->mysqld.
+        " --defaults-file=".$base_dir . '/etc/my.cnf'.
+        " --user=root"
+    );
+
+    Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$base_dir/tmp/mysql.sock','root','')");
+    return ["DBI:mysql:test;mysql_socket=$base_dir/tmp/mysql.sock",'root',''];
+}
+
+after 'cleanup' => sub {
+    my ($self) = @_;
+    unless($self->keep_db) {
+        if($self->base_dir) {
+            my $dir = dir($self->base_dir);
+            $dir->rmtree;
+        }
+    }
+};
 
 use Socket;
 sub is_port_open {
@@ -132,19 +142,7 @@ sub first_unused_port {
     return $port;
 }
 
-
-
-	after 'cleanup' => sub {
-		my ($self) = @_;
-		unless($self->keep_db) {
-			if($self->base_dir) {
-				my $dir = dir($self->base_dir);
-				$dir->rmtree;
-			}
-		}
-	};
-
-} 1;
+1;
 
 __END__
 
