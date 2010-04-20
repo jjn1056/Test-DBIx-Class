@@ -23,10 +23,21 @@ use Test::DBIx::Class
     -traits=>['Testmysqld', 'Replicated'],
     -replicants=>2;
 
+
 is_resultset Person;
 is_resultset Job;
 
 fixtures_ok 'basic';
+
+sleep(3);
+
+ok Schema->storage->pool->has_replicants
+    => 'does have replicants';
+
+is Schema->storage->pool->num_replicants => 2
+    => 'has two replicants';
+
+Schema->storage->pool->validate_replicants;
 
 is_fields 'email', NotTeenager, [
     "vanessa$lastname\@school.com",

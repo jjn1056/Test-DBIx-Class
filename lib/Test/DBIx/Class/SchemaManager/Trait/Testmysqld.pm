@@ -34,8 +34,12 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 	);
 
 	sub _build_default_cnf {
+        my $port = first_unused_port(3306);
 		return {
-			'skip-networking'=>'',
+            'server-id'=>1,
+            'log-bin'=>'mysql-bin',
+            'binlog-do-db'=>'test',
+            'port'=>$port,
 		};
 	}
 
@@ -93,6 +97,42 @@ package Test::DBIx::Class::SchemaManager::Trait::Testmysqld; {
 		Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$base_dir/tmp/mysql.sock','root','')");
 		return ["DBI:mysql:test;mysql_socket=$base_dir/tmp/mysql.sock",'root',''];
 	}
+
+
+use Socket;
+sub is_port_open {
+    my ($port) = @_;
+    die "No port" unless $port;
+    my ($host, $iaddr, $paddr, $proto);
+
+    $host  =  '127.0.0.1';
+    $iaddr   = inet_aton($host)               
+        or die "no host: $host";
+    $paddr   = sockaddr_in($port, $iaddr);
+
+    $proto   = getprotobyname('tcp');
+    socket(SOCK, PF_INET, SOCK_STREAM, $proto)
+        or die "error creating test socket for port $port: $!";
+    if (connect(SOCK, $paddr)) {
+        close (SOCK)
+            or die "error closing test socket: $!";
+        return 1;
+    }
+    return 0; 
+}
+
+sub first_unused_port {
+    my ($port) = @_;
+    while (is_port_open($port)) {
+        $port++;
+        if ($port > 0xFFF0) {
+            die "no ports available\n";
+        }
+    }
+    return $port;
+}
+
+
 
 	after 'cleanup' => sub {
 		my ($self) = @_;

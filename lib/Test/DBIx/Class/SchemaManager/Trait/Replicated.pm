@@ -38,7 +38,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 		predicate=>'has_balancer_args',
 		default=> sub {
 			return {
-				auto_validate_every=>100,
+				auto_validate_every=>0,
 				master_read_weight => 1,
             },	
 		},
@@ -60,21 +60,25 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 
 	sub _build_default_replicant_cnf {
 		return {
-			'skip-networking'=>'',
 		};
 	}
 
 	sub prepare_replicant_config {
-		my ($self, $replicant, %extra) = @_;
+		my ($self, $replicant, @replicants,%extra) = @_;
 		my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
+        my $port = 8000 + (0+@replicants);
 		my %config = (
 			my_cnf => {
+                'port'=>$port,
+                'server-id'=>($replicant->{name}+2),
 				$self->default_replicant_cnf,
 				$self->my_replicant_cnf,
 				%my_cnf_extra,
 			},
 			%extra,
 		);
+
+use Data::Dump 'dump';warn dump %config;
 
 		my $replicant_name =$replicant->{name};
 		my $base_dir = $self->test_db_manager->base_dir . "/$replicant_name";
@@ -114,7 +118,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 				## If there is no 'dsn' key, that means we should auto generate
 				## a test db and request its connect info.
 				$replicant->{name} = defined $replicant->{name} ? $replicant->{name} : ($#replicants+1);
-				my %config = $self->prepare_replicant_config($replicant);
+				my %config = $self->prepare_replicant_config($replicant, @replicants);
 				my $deployed = $self->deploy_testdb(%config);
 				my $replicant_base_dir = $deployed->base_dir;
 
@@ -137,6 +141,14 @@ package Test::DBIx::Class::SchemaManager::Trait::Replicated; {
 		$self->replicants(\@replicants);
 		$self->schema->storage->ensure_connected;
 		$self->schema->storage->connect_replicants($self->replicants);
+
+        foreach my $storage ($self->schema->storage->pool->all_replicant_storages) {
+            ## TODO, need to change this to dbh_do
+            my $dbh = $storage->_get_dbh;
+            $dbh->do("CHANGE MASTER TO  master_host='127.0.0.1',  master_port=3306,  master_user='root',  master_password=''") or warn $dbh->errstr;
+            $dbh->do("START SLAVE") or warn $dbh->errstr;
+        }
+
 		return $self->$setup(@args);
 	};
 
