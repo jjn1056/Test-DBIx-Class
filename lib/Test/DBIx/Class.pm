@@ -1363,11 +1363,14 @@ L<DBIx::Class>, L<DBIx::Class::Schema::PopulateMore>, L<DBIx::Class::Fixtures>
 
 =head1 AUTHOR
 
-John Napiorkowski C<< <jjnapiork@cpan.org> >>
+    John Napiorkowski C<< <jjnapiork@cpan.org> >>
 
 =head1 CONTRIBUTORS
 
-Tristan Pratt
+    Tristan Pratt
+    Tomas Doran C<< <bobtfish@bobtfish.net> >>
+    Kyle Hasselbacher C<< kyleha@gmail.com >>
+    cvince 
 
 =head1 COPYRIGHT & LICENSE
 
