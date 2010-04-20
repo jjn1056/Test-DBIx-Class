@@ -44,7 +44,7 @@ has default_cnf => (
 );
 
 sub _build_default_cnf {
-    my $port = first_unused_port(3306);
+    my $port = first_unused_port();
     return {
         'server-id'=>1,
         'log-bin'=>'mysql-bin',
@@ -117,7 +117,7 @@ has my_replicant_cnf => (
 sub prepare_replicant_config {
     my ($self, $replicant, @replicants,%extra) = @_;
     my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
-    my $port = 8000 + (0+@replicants);
+    my $port = first_unused_port();
     my %config = (
         my_cnf => {
             'port'=>$port,
@@ -197,7 +197,7 @@ around 'setup' => sub {
     foreach my $storage ($self->schema->storage->pool->all_replicant_storages) {
         ## TODO, need to change this to dbh_do
         my $dbh = $storage->_get_dbh;
-        $dbh->do("CHANGE MASTER TO  master_host='127.0.0.1',  master_port=3306,  master_user='root',  master_password=''")
+        $dbh->do("CHANGE MASTER TO  master_host='127.0.0.1',  master_port=8001,  master_user='root',  master_password=''")
             || die $dbh->errstr;
         $dbh->do("START SLAVE")
             || die $dbh->errstr;
@@ -221,7 +221,7 @@ sub prepare_config {
     $config{base_dir} = $self->base_dir if $self->base_dir;	
     $config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	
     $config{mysqld} = $self->mysqld if $self->mysqld;	
-    
+ 
     return %config;
 }
 
@@ -259,7 +259,6 @@ after 'cleanup' => sub {
 use Socket;
 sub is_port_open {
     my ($port) = @_;
-    die "No port" unless $port;
     my ($host, $iaddr, $paddr, $proto);
 
     $host  =  '127.0.0.1';
@@ -278,8 +277,10 @@ sub is_port_open {
     return 0; 
 }
 
+our $next_port = 8000;
 sub first_unused_port {
-    my ($port) = @_;
+    ++$next_port;
+    my $port = $next_port;
     while (is_port_open($port)) {
         $port++;
         if ($port > 0xFFF0) {
