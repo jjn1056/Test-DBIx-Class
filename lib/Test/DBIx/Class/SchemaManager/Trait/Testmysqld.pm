@@ -191,10 +191,11 @@ around 'setup' => sub {
         }	
     }
 
+
     $self->deployed_replicants(\@deployed_replicants);
     $self->replicants(\@replicants);
-    $self->schema->storage->ensure_connected;
     $self->schema->storage->connect_replicants($self->replicants);
+    $self->schema->storage->ensure_connected;
 
     foreach my $storage ($self->schema->storage->pool->all_replicant_storages) {
         ## TODO, need to change this to dbh_do
