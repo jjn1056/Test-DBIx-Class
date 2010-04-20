@@ -7,6 +7,8 @@ use Test::More ();
 use Path::Class qw(dir);
 use Test::DBIx::Class::Types qw(ReplicantsConnectInfo);
 
+requires 'setup', 'cleanup';
+
 has '+force_drop_table' => (is=>'rw',default=>1);
 
 has [qw/base_dir mysql_install_db mysqld/] => (
@@ -142,7 +144,6 @@ sub prepare_replicant_config {
 around 'prepare_schema_class' => sub {
     my ($prepare_schema_class, $self, @args) = @_;
     my $schema_class = $self->$prepare_schema_class(@args);
-
     if($self->has_replicants) {
         $schema_class->storage_type({
             '::DBI::Replicated' => {
@@ -158,12 +159,13 @@ around 'prepare_schema_class' => sub {
 
 around 'setup' => sub {
     my ($setup, $self, @args) = @_;
+ 
     return $self->$setup(@args) unless $self->has_replicants;
 
     ## Do we need to invent replicants?
     my @replicants = ();
     my @deployed_replicants = ();
-    foreach	my $replicant ($self->replicants) {
+    foreach	my $replicant ($self->replicants) { 
         if($replicant->{dsn}) {
             push @replicants, $replicant;
         } else {

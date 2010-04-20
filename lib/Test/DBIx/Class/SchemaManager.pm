@@ -142,7 +142,6 @@ package Test::DBIx::Class::SchemaManager; {
 		@traits = uniq @traits;
 		$config->{traits} = \@traits;
 		my $self = $class->new_with_traits($config);
-
 		if($self) {
 			$self->schema->storage->ensure_connected; 
 			$self->setup;
@@ -167,7 +166,6 @@ package Test::DBIx::Class::SchemaManager; {
 	sub setup {
 		my $self = shift @_;
 		my $deploy_args = $self->force_drop_table ? {add_drop_table => 1} : {};
-
 		if(my $schema = $self->schema) {
 			eval {
 				$schema->deploy($deploy_args);
