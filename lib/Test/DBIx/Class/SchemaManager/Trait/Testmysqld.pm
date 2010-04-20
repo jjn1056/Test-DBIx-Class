@@ -5,6 +5,7 @@ use MooseX::Attribute::ENV;
 use Test::mysqld;
 use Test::More ();
 use Path::Class qw(dir);
+use Test::DBIx::Class::Types qw(ReplicantsConnectInfo);
 
 has '+force_drop_table' => (is=>'rw',default=>1);
 
@@ -57,6 +58,152 @@ has my_cnf => (
     isa=>'HashRef', 
     auto_deref=>1,
 );
+
+## Replicant stuff... probably should be a delegate
+
+has deployed_replicants => (is=>'rw', isa=>'ArrayRef', auto_deref=>1);
+
+has replicants => (
+    is=>'rw',
+    isa=>ReplicantsConnectInfo,
+    coerce=>1,
+    auto_deref=>1,
+    predicate=>'has_replicants',
+);
+
+has pool_args => (
+    is=>'ro',
+    isa=>'HashRef',
+    required=>0,
+    predicate=>'has_pool_args',
+);
+
+has balancer_type => (
+    is=>'ro',
+    isa=>'Str',
+    required=>1,
+    predicate=>'has_balancer_type',
+    default=>'::Random',
+);
+
+has balancer_args => (
+    is=>'ro',
+    isa=>'HashRef',
+    required=>1,
+    predicate=>'has_balancer_args',
+    default=> sub {
+        return {
+            auto_validate_every=>10,
+            master_read_weight => 1,
+        },	
+    },
+);
+
+has default_replicant_cnf => (
+    is=>'ro', 
+    init_arg=>undef, 
+    isa=>'HashRef', 
+    auto_deref=>1, 
+    required=>1,
+    default=> sub { +{} },
+);
+
+has my_replicant_cnf => (
+    is=>'ro', 
+    isa=>'HashRef', 
+    auto_deref=>1,
+);
+
+sub prepare_replicant_config {
+    my ($self, $replicant, @replicants,%extra) = @_;
+    my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
+    my $port = 8000 + (0+@replicants);
+    my %config = (
+        my_cnf => {
+            'port'=>$port,
+            'server-id'=>($replicant->{name}+2),
+            $self->default_replicant_cnf,
+            $self->my_replicant_cnf,
+            %my_cnf_extra,
+        },
+        %extra,
+    );
+
+    my $replicant_name =$replicant->{name};
+    my $base_dir = $self->test_db_manager->base_dir . "/$replicant_name";
+
+    $config{base_dir} = $base_dir;	
+    $config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	
+    $config{mysqld} = $self->mysqld if $self->mysqld;	
+    
+    return %config;
+}
+
+around 'prepare_schema_class' => sub {
+    my ($prepare_schema_class, $self, @args) = @_;
+    my $schema_class = $self->$prepare_schema_class(@args);
+
+    if($self->has_replicants) {
+        $schema_class->storage_type({
+            '::DBI::Replicated' => {
+                pool_args => $self->has_pool_args ? $self->pool_args : {},
+                balancer_type => $self->has_balancer_type ? $self->balancer_type : '',
+                balancer_args => $self->has_balancer_args ? $self->balancer_args : {},
+            },
+        });
+    }
+
+    return $schema_class;
+};
+
+	around 'setup' => sub {
+		my ($setup, $self, @args) = @_;
+        return $self->$setup(@args) unless $self->has_replicants;
+
+		## Do we need to invent replicants?
+		my @replicants = ();
+        my @deployed_replicants = ();
+		foreach	my $replicant ($self->replicants) {
+			if($replicant->{dsn}) {
+				push @replicants, $replicant;
+			} else {
+				## If there is no 'dsn' key, that means we should auto generate
+				## a test db and request its connect info.
+				$replicant->{name} = defined $replicant->{name} ? $replicant->{name} : ($#replicants+1);
+				my %config = $self->prepare_replicant_config($replicant, @replicants);
+				my $deployed = $self->deploy_testdb(%config);
+				my $replicant_base_dir = $deployed->base_dir;
+
+				Test::More::diag(
+					"Starting replicant mysqld with: ".
+					$deployed->mysqld.
+					" --defaults-file=".$replicant_base_dir . '/etc/my.cnf'.
+					" --user=root"
+				);
+
+				Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock','root','')");
+                push @deployed_replicants, $deployed;
+				push @replicants, 
+				  ["DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock",'root',''];
+
+			}	
+		}
+
+        $self->deployed_replicants(\@deployed_replicants);
+		$self->replicants(\@replicants);
+		$self->schema->storage->ensure_connected;
+		$self->schema->storage->connect_replicants($self->replicants);
+
+        foreach my $storage ($self->schema->storage->pool->all_replicant_storages) {
+            ## TODO, need to change this to dbh_do
+            my $dbh = $storage->_get_dbh;
+            $dbh->do("CHANGE MASTER TO  master_host='127.0.0.1',  master_port=3306,  master_user='root',  master_password=''") or warn $dbh->errstr;
+            $dbh->do("START SLAVE") or warn $dbh->errstr;
+        }
+
+		return $self->$setup(@args);
+	};
+
 
 
 sub prepare_config {

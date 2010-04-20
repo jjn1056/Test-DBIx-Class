@@ -20,7 +20,7 @@ ok $lastname = $ENV{TEST_DBIC_LAST_NAME},
 
 use Test::DBIx::Class 
     -config_path=>[qw/t etc example schema/],
-    -traits=>['Testmysqld', 'Replicated'],
+    -traits=>'Testmysqld',
     -replicants=>2;
 
 
