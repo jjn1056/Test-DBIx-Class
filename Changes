@@ -1,6 +1,12 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
-NEXT
+0.10
+    - New Functionality: MySQL Replication now supported.  Documention is
+      lagging, if you are interested check out t/10-replication-mysql.t
+    - Closed bug related controlling if database files are preserved or not
+    - Bunched of typos fixed from various contributors.
+    - tested on perl 5.12.0
+    - New Contributors POD.  Please let me know if I missed you
     - Fixed bug where only one table would get loaded when using fixtures_ok
       and added tests.  (Tristan Pratt)
     - Diffs are now readable by humans when is_fixtures fails.  Changed uses
