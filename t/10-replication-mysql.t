@@ -29,7 +29,7 @@ is_resultset Job;
 
 fixtures_ok 'basic';
 
-sleep(3);
+sleep(1); ## Given replication a change to catch up
 
 ok Schema->storage->pool->has_replicants
     => 'does have replicants';

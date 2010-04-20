@@ -156,55 +156,55 @@ around 'prepare_schema_class' => sub {
     return $schema_class;
 };
 
-	around 'setup' => sub {
-		my ($setup, $self, @args) = @_;
-        return $self->$setup(@args) unless $self->has_replicants;
+around 'setup' => sub {
+    my ($setup, $self, @args) = @_;
+    return $self->$setup(@args) unless $self->has_replicants;
 
-		## Do we need to invent replicants?
-		my @replicants = ();
-        my @deployed_replicants = ();
-		foreach	my $replicant ($self->replicants) {
-			if($replicant->{dsn}) {
-				push @replicants, $replicant;
-			} else {
-				## If there is no 'dsn' key, that means we should auto generate
-				## a test db and request its connect info.
-				$replicant->{name} = defined $replicant->{name} ? $replicant->{name} : ($#replicants+1);
-				my %config = $self->prepare_replicant_config($replicant, @replicants);
-				my $deployed = $self->deploy_testdb(%config);
-				my $replicant_base_dir = $deployed->base_dir;
+    ## Do we need to invent replicants?
+    my @replicants = ();
+    my @deployed_replicants = ();
+    foreach	my $replicant ($self->replicants) {
+        if($replicant->{dsn}) {
+            push @replicants, $replicant;
+        } else {
+            ## If there is no 'dsn' key, that means we should auto generate
+            ## a test db and request its connect info.
+            $replicant->{name} = defined $replicant->{name} ? $replicant->{name} : ($#replicants+1);
+            my %config = $self->prepare_replicant_config($replicant, @replicants);
+            my $deployed = $self->deploy_testdb(%config);
+            my $replicant_base_dir = $deployed->base_dir;
 
-				Test::More::diag(
-					"Starting replicant mysqld with: ".
-					$deployed->mysqld.
-					" --defaults-file=".$replicant_base_dir . '/etc/my.cnf'.
-					" --user=root"
-				);
+            Test::More::diag(
+                "Starting replicant mysqld with: ".
+                $deployed->mysqld.
+                " --defaults-file=".$replicant_base_dir . '/etc/my.cnf'.
+                " --user=root"
+            );
 
-				Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock','root','')");
-                push @deployed_replicants, $deployed;
-				push @replicants, 
-				  ["DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock",'root',''];
+            Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock','root','')");
+            push @deployed_replicants, $deployed;
+            push @replicants, 
+              ["DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock",'root',''];
 
-			}	
-		}
+        }	
+    }
 
-        $self->deployed_replicants(\@deployed_replicants);
-		$self->replicants(\@replicants);
-		$self->schema->storage->ensure_connected;
-		$self->schema->storage->connect_replicants($self->replicants);
+    $self->deployed_replicants(\@deployed_replicants);
+    $self->replicants(\@replicants);
+    $self->schema->storage->ensure_connected;
+    $self->schema->storage->connect_replicants($self->replicants);
 
-        foreach my $storage ($self->schema->storage->pool->all_replicant_storages) {
-            ## TODO, need to change this to dbh_do
-            my $dbh = $storage->_get_dbh;
-            $dbh->do("CHANGE MASTER TO  master_host='127.0.0.1',  master_port=3306,  master_user='root',  master_password=''") or warn $dbh->errstr;
-            $dbh->do("START SLAVE") or warn $dbh->errstr;
-        }
+    foreach my $storage ($self->schema->storage->pool->all_replicant_storages) {
+        ## TODO, need to change this to dbh_do
+        my $dbh = $storage->_get_dbh;
+        $dbh->do("CHANGE MASTER TO  master_host='127.0.0.1',  master_port=3306,  master_user='root',  master_password=''")
+            || die $dbh->errstr;
+        $dbh->do("START SLAVE")
+            || die $dbh->errstr;
+    }
 
-		return $self->$setup(@args);
-	};
-
-
+    return $self->$setup(@args);
+};
 
 sub prepare_config {
     my ($self, %extra) = @_;
