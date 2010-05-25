@@ -1063,7 +1063,7 @@ be installed via one of the fixture classes.
 Command class that installs data into the database.  Must provide a method
 called 'install_fixtures' that accepts a perl data structure and installs
 it into the database.  Must capture and report errors.  Default value is
-"::Populate", which loads L<Test::DBIx::Class::FixtureClass::Populate>, which
+"::Populate", which loads L<Test::DBIx::Class::FixtureCommand::Populate>, which
 is a command class based on L<DBIx::Class::Schema/populate>.
 
 =item resultsets
