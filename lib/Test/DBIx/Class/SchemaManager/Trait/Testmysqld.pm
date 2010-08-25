@@ -9,7 +9,7 @@ use Test::DBIx::Class::Types qw(ReplicantsConnectInfo);
 
 requires 'setup', 'cleanup';
 
-has '+force_drop_table' => (is=>'rw',default=>1);
+## has '+force_drop_table' => (is=>'rw',default=>1);
 
 has [qw/base_dir mysql_install_db mysqld/] => (
     is=>'ro', 
