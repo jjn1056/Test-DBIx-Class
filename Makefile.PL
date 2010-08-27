@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 all_from 'lib/Test/DBIx/Class.pm';
-repository 'git://github.com/jjn1056/Test-DBIx-Class.git'
+repository 'git://github.com/jjn1056/Test-DBIx-Class.git';
 
 requires 'Config::Any' => '0.19';
 requires 'DBIx::Class' => '0.08123';
