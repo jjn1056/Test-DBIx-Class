@@ -25,7 +25,10 @@ requires 'Scalar::Util' => '1.23';
 requires 'Sub::Exporter' => '0.982';
 requires 'Test::Builder' => '0.96';
 requires 'Test::Differences' => '0.5';
-requires 'Data::Dumper' => '2.126'; ## solve Test::Differences inconsistency for now
+
+## Trying to solve all the test failures related to number stringification
+requires 'Data::Dumper' => '2.126';
+requires 'DBD::SQLite' => '1.29';
 
 feature('MySql Support', -default => 0, 'Test::mysqld' => '0.11');
 feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.09');

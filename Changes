@@ -1,5 +1,9 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.13 30 August 2010
+    - Well, I guess I shouldn't blame Data::Dumper on my test failures :)
+    - Specifying more dependencies to try and narrow down failures.
+
 0.12 27 August 2010
     - Force Data::Dumper version to modern version to solve the number 
       stringification bug.  Hopefully we can solve this in Test::Differences
