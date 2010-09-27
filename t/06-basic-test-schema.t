@@ -69,6 +69,9 @@ is_deeply {map { $_->{name} => @$_{age} } hri_dump(Person)},
 
 fixtures_ok 'core';
 
+
+
+
 is_deeply {map { $_->{name} => @$_{age} } hri_dump(Person)},
    { John => 40, Vanessa => 35, Vincent => 15 },
   'Got Expected results';

@@ -6,7 +6,7 @@ use warnings;
 
 use base 'Test::Builder::Module';
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
 use Config::Any;
@@ -17,8 +17,19 @@ use Path::Class;
 use Scalar::Util ();
 use Sub::Exporter;
 use Test::DBIx::Class::SchemaManager;
-use Test::Differences;
+use Test::Deep ();
 use Test::More ();
+
+sub eq_or_diff2 {
+    my ($given, $expected, $message) = @_;
+    my ($ok, $stack) = Test::Deep::cmp_details($given, $expected);
+    if($ok) {
+        Test::More::pass($message);
+    } else {
+        my $diag = Test::Deep::deep_diag($stack);
+        Test::More::fail("$message: $diag");
+    }
+}
 
 sub import {
 	my ($class, @opts) = @_;
@@ -84,7 +95,7 @@ sub import {
 					my ($result1, $result2, $message) = @_;
 					$message = defined $message ? $message : ref($result1) . " equals " . ref($result2);
 					if( ref($result1) eq ref($result2) ) {
-						eq_or_diff(
+						eq_or_diff2(
 							{$result2->get_columns},
 							{$result1->get_columns},
 							$message,
@@ -108,7 +119,7 @@ sub import {
 							[@result];
 						} ($rs1, $rs2);
 
-						eq_or_diff([$rs2],[$rs1],$message);
+						eq_or_diff2([$rs2],[$rs1],$message);
 					} else {
 						Test::More::fail($message ." :ResultSet arguments not of same class");
 					}
@@ -214,7 +225,7 @@ sub import {
 							die "$_ is not an available field"
 							  unless $result->can($_); 
 							$_ => $result->$_ } @fields};
-						eq_or_diff($compare,$compare_rs,$message);
+						eq_or_diff2($compare,$compare_rs,$message);
 						return $compare;
 					} elsif (Scalar::Util::blessed($args[0]) && $args[0]->isa('DBIx::Class::ResultSet')) {
 
@@ -263,7 +274,7 @@ sub import {
                             ## Force comparison stuff in stringy form :(
 							$compare{$id} = { map { $_,"$row->{$_}"} keys %$row};
 						}
-						eq_or_diff(\%compare,\%compare_rs,$message);
+						eq_or_diff2(\%compare,\%compare_rs,$message);
 						return \@compare;
 					} else {
 						die "I'm not sure what to do with your arguments";

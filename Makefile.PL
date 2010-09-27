@@ -29,8 +29,7 @@ requires 'SQL::Translator' => '0.11006';
 requires 'Scalar::Util' => '1.23';
 requires 'Sub::Exporter' => '0.982';
 requires 'Test::Builder' => '0.96';
-requires 'Test::Differences' => '0.5';
-
+requires 'Test::Deep' => '0.106';
 
 feature('MySql Support', -default => 0, 'Test::mysqld' => '0.11');
 feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.09');
