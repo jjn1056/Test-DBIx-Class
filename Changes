@@ -1,5 +1,13 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.14 27 September 2010
+    - Replaced Test::Differences with Test::Deep in order to try and squash
+      the false positive error reported on cpan.  I personally like the less
+      noisy error output as well.
+    - Use more modern stuff in the Makefile.PL so is more like my current
+      automation process for developing and release cpan stuff.
+    - fixed the way the postgresql trait works so that it work on 9.0
+
 0.13 30 August 2010
     - Well, I guess I shouldn't blame Data::Dumper on my test failures :)
     - Specifying more dependencies to try and narrow down failures.
