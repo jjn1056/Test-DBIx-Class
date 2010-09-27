@@ -39,8 +39,6 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 			$self->force_drop_table(1);
 		}
 
-        use Data::Dump 'dump'; warn dump %config;
-
 		if(my $testdb = Test::postgresql->new(%config)) {
 			return $testdb;
 		} else {
