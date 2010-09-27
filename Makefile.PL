@@ -1,11 +1,16 @@
-use inc::Module::Install 1.00;
+#!/usr/bin/env perl
 
-use warnings;
 use strict;
+use warnings;
+use inc::Module::Install 1.00;
+use Module::Install::Repository 0.06;
+use Module::Install::AutoManifest 0.003;
+use Module::Install::ReadmeMarkdownFromPod 0.003;
+use Module::Install::Homepage 0.01;
+use Module::Install::AutoLicense 0.08;
+use Module::Install::ManifestSkip 0.14;
 
 all_from 'lib/Test/DBIx/Class.pm';
-repository 'git://github.com/jjn1056/Test-DBIx-Class.git';
-
 requires 'Config::Any' => '0.19';
 requires 'DBIx::Class' => '0.08123';
 requires 'DBIx::Class::Schema::PopulateMore' => '0.15';
@@ -26,16 +31,18 @@ requires 'Sub::Exporter' => '0.982';
 requires 'Test::Builder' => '0.96';
 requires 'Test::Differences' => '0.5';
 
-## Trying to solve all the test failures related to number stringification
-requires 'Data::Dumper' => '2.126';
-requires 'DBD::SQLite' => '1.29';
 
 feature('MySql Support', -default => 0, 'Test::mysqld' => '0.11');
 feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.09');
 
-build_requires 'Test::More' => '0.94';
-
-auto_install;
+test_requires 'Test::More' => '0.94';
 tests_recursive;
+
+readme_markdown_from_pod;
+auto_set_repository;
+auto_set_homepage;
+auto_manifest;
+auto_license;
+auto_install;
 WriteAll;
 

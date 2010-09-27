@@ -27,7 +27,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 
 		my %config = (
 			initdb_args => $Test::postgresql::Defaults{initdb_args} ."",
-			postmaster_args => $Test::postgresql::Defaults{initdb_args} ." --shared_buffers=64M",
+			postmaster_args => $Test::postgresql::Defaults{postmaster_args},
 		);
 
 		$config{base_dir} = $self->base_dir if $self->base_dir;	
@@ -37,7 +37,9 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 		if($self->base_dir && -e $self->base_dir) {
 			$self->builder->ok(-w $self->base_dir, "Path ".$self->base_dir." is accessible, forcing 'force_drop_table'");
 			$self->force_drop_table(1);
-		}	
+		}
+
+        use Data::Dump 'dump'; warn dump %config;
 
 		if(my $testdb = Test::postgresql->new(%config)) {
 			return $testdb;
@@ -57,8 +59,8 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
             ' -D ', $self->postgresqlobj->base_dir . '/data'
 		);
 
-		Test::More::diag("DBI->connect('DBI:Pg:dbname=template1;port=$port','postgres',''])");
-		return ["DBI:Pg:dbname=template1;port=$port",'postgres',''];
+		Test::More::diag("DBI->connect('DBI:Pg:dbname=template1;host=127.0.0.1;port=$port','postgres',''])");
+		return ["DBI:Pg:dbname=template1;host=127.0.0.1;port=$port",'postgres',''];
 	}
 
 	after 'cleanup' => sub {
