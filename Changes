@@ -1,5 +1,8 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.15 28 September 2010
+    - removed use MI:ManifestSkip since I'm not actually using it
+
 0.14 27 September 2010
     - Replaced Test::Differences with Test::Deep in order to try and squash
       the false positive error reported on cpan.  I personally like the less

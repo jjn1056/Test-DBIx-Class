@@ -8,7 +8,6 @@ use Module::Install::AutoManifest 0.003;
 use Module::Install::ReadmeMarkdownFromPod 0.003;
 use Module::Install::Homepage 0.01;
 use Module::Install::AutoLicense 0.08;
-use Module::Install::ManifestSkip 0.14;
 
 all_from 'lib/Test/DBIx/Class.pm';
 requires 'Config::Any' => '0.19';
