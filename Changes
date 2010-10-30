@@ -1,5 +1,10 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.16 30 October 2010
+    - added a bit to make sure we disambiguate column names in 'order by' by
+      the table it is in, to solve namespace clash when two tables have the
+      same column name.
+
 0.15 28 September 2010
     - removed use MI:ManifestSkip since I'm not actually using it
 
