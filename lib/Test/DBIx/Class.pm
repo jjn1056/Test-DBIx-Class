@@ -111,7 +111,8 @@ sub import {
 					$message = defined $message ? $message : ref($rs1) . " equals " . ref($rs2);
 					if( ref($rs1) eq ref($rs2) ) {
 						($rs1, $rs2) = map {
-							my @pks = $_->result_source->primary_columns;
+                            my $me = $_->current_source_alias;
+                            my @pks = map { "$me.$_"} $_->result_source->primary_columns;
 							my @result = $_->search({}, {
 								result_class => 'DBIx::Class::ResultClass::HashRefInflator',
 								order_by => [@pks],
