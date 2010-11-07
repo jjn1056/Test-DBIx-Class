@@ -2,12 +2,7 @@
 
 use strict;
 use warnings;
-use inc::Module::Install 1.00;
-use Module::Install::Repository 0.06;
-use Module::Install::AutoManifest 0.003;
-use Module::Install::ReadmeMarkdownFromPod 0.003;
-use Module::Install::Homepage 0.01;
-use Module::Install::AutoLicense 0.08;
+use inc::Module::Install;
 
 all_from 'lib/Test/DBIx/Class.pm';
 requires 'Config::Any' => '0.19';
@@ -36,11 +31,8 @@ feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.09');
 test_requires 'Test::More' => '0.94';
 tests_recursive;
 
-readme_markdown_from_pod;
-auto_set_repository;
-auto_set_homepage;
-auto_manifest;
-auto_license;
-auto_install;
+require 'author_Makefile.PL'
+  if $Module::Install::AUTHOR;
+
 WriteAll;
 

@@ -1,9 +1,8 @@
-package Test::DBIx::Class::Example::Schema; {
-	use base 'DBIx::Class::Schema';
-	__PACKAGE__->load_namespaces(default_resultset_class => 'DefaultRS');
-} 1
+package Test::DBIx::Class::Example::Schema;
+use base 'DBIx::Class::Schema';
+__PACKAGE__->load_namespaces(default_resultset_class => 'DefaultRS');
 
-__END__
+1;
 
 =head1 NAME
 

@@ -6,39 +6,31 @@
 \B\.svn\b
 \B\.git
 
-# Avoid Makemaker generated and utility files.
-\bMakefile$
-\bblib
-\bMakeMaker-\d
-\bpm_to_blib$
-\bblibdirs$
+^Makefile$
+^Makefile\.old$
+^pm_to_blib$
+^blib/
+^pod2htm.*
 ^MANIFEST\.SKIP$
-
-# for developers only :)
-^TODO$
-^VERSIONING\.SKETCH$
-
-# Avoid Module::Build generated and utility files.
-\bBuild$
-\b_build
-
-# Avoid temp and backup files.
-~$
-\.tmp$
-\.old$
-\.bak$
-\#$
-\b\.#
-
-# avoid OS X finder files
+^MANIFEST\.bak$
+^\.git/
+^\.gitignore
+^\.gitmodules
+/\.git/
+\.svn/
+^\.vimrc$
+\.sw[op]$
+^core$
+^out$
+^tmon.out$
+^\w$
+^foo.*
+^notes
+^todo
+^ToDo$
+## avoid OS X finder files
 \.DS_Store$
-
-#skip komodo project files
+## skip komodo project files
 \.kpf$
-
-
-# Don't ship the last dist we built :)
-\.tar\.gz$
-
-# Skip maint stuff
-^maint/
+## ignore emacs and vim backup files
+~$
