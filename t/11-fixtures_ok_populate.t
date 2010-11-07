@@ -9,7 +9,7 @@ use Test::More 'tests' => 8;
 
 use Test::DBIx::Class {
   schema_class => 'Test::DBIx::Class::Example::Schema',
-  connect_info => ['dbi:SQLite:dbname=:memory:','',''],
+  connect_info => ['dbi:SQLite:dbname=:memory:','','', {on_connect_call => 'use_foreign_keys'}],
   fixture_class => '::Populate',
 }, 'Person', 'Company';
 
