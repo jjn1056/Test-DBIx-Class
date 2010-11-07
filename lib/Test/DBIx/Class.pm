@@ -664,23 +664,22 @@ Perl testing script, such as "MyApp/t/schema/01-basic.t" which is run from the
 shell like "prove -l t/schema/01-basic.t" or during "make test".  That test 
 script could contain:
 
-	use Test::More; {
+	use Test::More;
 
-		use strict;
-		use warnings;
+    use strict;
+    use warnings;
 
-		use Test::DBIx::Class {
-			schema_class => 'MyApp::Schema',
-			connect_info => ['dbi:SQLite:dbname=:memory:','',''],
-			fixture_class => '::Populate',
-		}, 'Person', 'Person::Employee' => {-as => 'Employee'}, 'Job', 'Phone';
+    use Test::DBIx::Class {
+        schema_class => 'MyApp::Schema',
+        connect_info => ['dbi:SQLite:dbname=:memory:','',''],
+        fixture_class => '::Populate',
+    }, 'Person', 'Person::Employee' => {-as => 'Employee'}, 'Job', 'Phone';
 
-		## Your testing code below ##
+    ## Your testing code below ##
 
-		## Your testing code above ##
+    ## Your testing code above ##
 
-		done_testing();
-	}
+    done_testing;
 
 Yes, it looks like a lot of boilerplate, but sensible defaults are in place 
 (the above code example shows most of the existing defaults) and configuration
@@ -688,17 +687,16 @@ data can be loaded from a central file.  So your 'real life' example is going
 to look closer to (assuming you put all your test configuration in the standard
 place, "t/etc/schema.conf":
 
-	use Test::More; {
+	use Test::More;
 		
-		use strict;
-		use warnings;
-		use Test::DBIx::Class qw(:resultsets);
+    use strict;
+    use warnings;
+    use Test::DBIx::Class qw(:resultsets);
 
-		## Your testing code below ##
-		## Your testing code above ##
+    ## Your testing code below ##
+    ## Your testing code above ##
 
-		done_testing();
-	}
+    done_testing;
 
 Then, assuming the existance of a L<DBIx::Class::Schema> subclass called, 
 "MyApp::Schema" and some L<DBIx::Class::ResultSources> named like "Person", 
@@ -707,78 +705,78 @@ schema in the given database / storage (or auto deploy to an in-memory based
 L<DBD::SQLite> database), install fixtures and let you run some test cases, 
 such as:
 
-		## Your testing code below ##
+    ## Your testing code below ##
 
-		fixtures_ok 'basic'
-		  => 'installed the basic fixtures from configuration files';
+    fixtures_ok 'basic'
+      => 'installed the basic fixtures from configuration files';
 
-		fixtures_ok { 
-			Job => [
-				[qw/name description/],
-				[Programmer => 'She who writes the code'],
-				['Movie Star' => 'Knows nothing about the code'],
-			],
-		}, 'Installed some custom fixtures via the Populate fixture class',
+    fixtures_ok { 
+        Job => [
+            [qw/name description/],
+            [Programmer => 'She who writes the code'],
+            ['Movie Star' => 'Knows nothing about the code'],
+        ],
+    }, 'Installed some custom fixtures via the Populate fixture class',
 
-		
-		ok my $john = Person->find({email=>'jjnapiork@cpan.org'})
-		  => 'John has entered the building!';
+    
+    ok my $john = Person->find({email=>'jjnapiork@cpan.org'})
+      => 'John has entered the building!';
 
-		is_fields $john, {
-			name => 'John Napiorkowski', 
-			email => 'jjnapiork@cpan.org', 
-			age => 40,
-		}, 'John has the expected fields';
+    is_fields $john, {
+        name => 'John Napiorkowski', 
+        email => 'jjnapiork@cpan.org', 
+        age => 40,
+    }, 'John has the expected fields';
 
-		is_fields ['job_title'], $john->jobs, [
-			{job_title => 'programmer'},
-			{job_title => 'administrator'},
-		], 
-		is_fields 'job_title', $john->jobs, 
-			[qw/programmer administrator/],
-			'Same test as above, just different compare format;
+    is_fields ['job_title'], $john->jobs, [
+        {job_title => 'programmer'},
+        {job_title => 'administrator'},
+    ], 
+    is_fields 'job_title', $john->jobs, 
+        [qw/programmer administrator/],
+        'Same test as above, just different compare format;
 
 
-		is_fields [qw/job_title salary/], $john->jobs, [
-			['programmer', 100000],
-			['administrator, 120000],
-		], 'Got expected fields from $john->jobs';
+    is_fields [qw/job_title salary/], $john->jobs, [
+        ['programmer', 100000],
+        ['administrator, 120000],
+    ], 'Got expected fields from $john->jobs';
 
-		is_fields [qw/name age/], $john, ['John Napiorkowski', 40],
-		  => 'John has expected name and age';
+    is_fields [qw/name age/], $john, ['John Napiorkowski', 40],
+      => 'John has expected name and age';
 
-		is_fields_multi 'name', [
-			$john, ['John Napiorkowski'],
-			$vanessa, ['Vanessa Li'],
-			$vincent, ['Vincent Zhou'],
-		] => 'All names as expected';
+    is_fields_multi 'name', [
+        $john, ['John Napiorkowski'],
+        $vanessa, ['Vanessa Li'],
+        $vincent, ['Vincent Zhou'],
+    ] => 'All names as expected';
 
-		is_fields 'fullname', 
-			ResultSet('Country')->find('USA'), 
-			'United States of America',
-			'Found the USA';
+    is_fields 'fullname', 
+        ResultSet('Country')->find('USA'), 
+        'United States of America',
+        'Found the USA';
 
-		is_deeply [sort Schema->sources], [qw/
-			Person Person::Employee Job Country Phone
-		/], 'Found all expected sources in the schema';
+    is_deeply [sort Schema->sources], [qw/
+        Person Person::Employee Job Country Phone
+    /], 'Found all expected sources in the schema';
 
-		fixtures_ok my $first_album = sub {
-			my $schema = shift @_;
-			my $cd_rs = $schema->resultset('CD');
-			return $cd_rs->create({
-				name => 'My First Album',
-				track_rs => [
-					{position=>1, title=>'the first song'},
-					{position=>2, title=>'yet another song'},
-				],
-				cd_artist_rs=> [
-					{person_artist=>{person => $vanessa}},
-					{person_artist=>{person => $john}},
-				],
-			});
-		}, 'You can even use a code reference for custom fixtures';
+    fixtures_ok my $first_album = sub {
+        my $schema = shift @_;
+        my $cd_rs = $schema->resultset('CD');
+        return $cd_rs->create({
+            name => 'My First Album',
+            track_rs => [
+                {position=>1, title=>'the first song'},
+                {position=>2, title=>'yet another song'},
+            ],
+            cd_artist_rs=> [
+                {person_artist=>{person => $vanessa}},
+                {person_artist=>{person => $john}},
+            ],
+        });
+    }, 'You can even use a code reference for custom fixtures';
 
-		## Your testing code above ##
+    ## Your testing code above ##
 
 Please see the test cases for more examples.
 
@@ -1143,9 +1141,9 @@ Imported Source keywords use L<Sub::Exporter> so you have quite a few options
 for controling how the keywords are imported.  For example:
 
 	use Test::DBIx::Class 
-		'Person',
-		'Person::Employee' => {-as => 'Employee'},
-		'Person' => {search => {age=>{'>'=>55}}, -as => 'OlderPerson'};
+	  'Person',
+	  'Person::Employee' => {-as => 'Employee'},
+	  'Person' => {search => {age=>{'>'=>55}}, -as => 'OlderPerson'};
 
 This would import three local keywork methods, "Person", "Employee" and 
 "OlderPerson".  For "OlderPerson", the search parameter would automatically be
@@ -1386,7 +1384,7 @@ L<DBIx::Class>, L<DBIx::Class::Schema::PopulateMore>, L<DBIx::Class::Fixtures>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009, John Napiorkowski C<< <jjnapiork@cpan.org> >>
+Copyright 2010, John Napiorkowski C<< <jjnapiork@cpan.org> >>
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
