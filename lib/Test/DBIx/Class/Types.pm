@@ -4,6 +4,7 @@ package Test::DBIx::Class::Types; {
 	use warnings;
 
 	use Class::MOP;
+    use Scalar::Util qw(reftype);
 	use MooseX::Types::Moose qw(Str Int ClassName ArrayRef HashRef);
 	use MooseX::Types -declare => [qw/
 		TestBuilder SchemaManagerClass ConnectInfo FixtureClass
