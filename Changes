@@ -1,5 +1,12 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.17 07 November 2010
+    - Fixed a bug in Test::DBIx::Class::Types that prevented you from using the
+      4 argument version of 'connect_info' (reported by Colin Newell)
+    - Made some trivial reformatting of documentation that suits my current
+      formatting standards.  Split up the Makefile into install and developer
+      versions as part of a test to see if this could work better.
+
 0.16 30 October 2010
     - added a bit to make sure we disambiguate column names in 'order by' by
       the table it is in, to solve namespace clash when two tables have the
