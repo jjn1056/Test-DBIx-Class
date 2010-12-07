@@ -29,7 +29,7 @@ feature('MySql Support', -default => 0, 'Test::mysqld' => '0.11');
 feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.09');
 
 all_from 'lib/Test/DBIx/Class.pm';
-require 'author_Makefile.PL'
+require 'maint/Makefile.PL.include'
   if $Module::Install::AUTHOR;
 
 WriteAll;
