@@ -185,7 +185,7 @@ sub cleanup {
         $schema->storage->with_deferred_fk_checks(sub {
             foreach my $source ($schema->sources) {
                 my $table = $schema->source($source)->name;
-                $schema->storage->dbh->do("drop table $table;");
+                $schema->storage->dbh->do("drop table $table");
             }
         });
     }
