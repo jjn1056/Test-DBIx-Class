@@ -1,5 +1,11 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.18 07 December 2010
+    - Changed Makefile.PL and related toolchain stuff to reflect my more
+      current practice
+    - removed ";" from drop tables command so this works with more DBs
+      (RT https://rt.cpan.org/Ticket/Display.html?id=63660)
+
 0.17 07 November 2010
     - Fixed a bug in Test::DBIx::Class::Types that prevented you from using the
       4 argument version of 'connect_info' (reported by Colin Newell)
