@@ -24,3 +24,10 @@ auto_set_homepage;
 auto_manifest;
 auto_install;
 
+postamble <<"EOP";
+distclean :: manifest_skip_clean
+
+manifest_skip_clean:
+\t\$(RM_F) MANIFEST.SKIP
+EOP
+

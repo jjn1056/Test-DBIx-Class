@@ -1,10 +1,9 @@
 #!/usr/bin/env perl
 
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 use inc::Module::Install;
 
-all_from 'lib/Test/DBIx/Class.pm';
 requires 'Config::Any' => '0.19';
 requires 'DBIx::Class' => '0.08123';
 requires 'DBIx::Class::Schema::PopulateMore' => '0.15';
@@ -24,13 +23,12 @@ requires 'Scalar::Util' => '1.23';
 requires 'Sub::Exporter' => '0.982';
 requires 'Test::Builder' => '0.96';
 requires 'Test::Deep' => '0.106';
+test_requires 'Test::More' => '0.94';
 
 feature('MySql Support', -default => 0, 'Test::mysqld' => '0.11');
 feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.09');
 
-test_requires 'Test::More' => '0.94';
-tests_recursive;
-
+all_from 'lib/Test/DBIx/Class.pm';
 require 'author_Makefile.PL'
   if $Module::Install::AUTHOR;
 
