@@ -43,7 +43,7 @@ package Test::DBIx::Class::FixtureCommand::PopulateMore; {
 				definitions=>[@definitions],
 				schema=>$self->schema_manager->schema,
 				exception_cb=>sub {
-					$self->croak(@_);
+					$builder->croak(@_);
 				},
 			);
 		}; if ($@) {
