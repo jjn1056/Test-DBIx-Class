@@ -369,7 +369,7 @@ on your storage engine (such as SQLite or mysql) you will have other options.
 - config_path
 
 These are the relative paths searched for configuration file information. See
-L</Initialization Sources> for more.
+[Initialization Sources](#pod_Initialization Sources) for more.
 
 In the case were we have both inlined and file based configurations, the 
 inlined is merged last (that is, has highest authority to override configuration
@@ -412,7 +412,7 @@ is a command class based on L<DBIx::Class::Schema/populate>.
 - resultsets
 
 Lets you add in some result source definitions to be imported at test script
-runtime.  See L</Initialization Sources> for more.
+runtime.  See [Initialization Sources](#pod_Initialization Sources) for more.
 
 - force_drop_table
 
@@ -447,7 +447,7 @@ it get's automatically loaded you never need to load it yourself) and the
 top of [Test::mysqld](http://search.cpan.org/perldoc?Test::mysqld) and allows you the ability to deploy to and run tests
 against a temporary instance of Mysql.  For this trait Mysql and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql)
 needs to be installed, but Mysql does not need to be running, nor do you need
-to create a test database or user.  See L</TRAITS> for more.
+to create a test database or user.  See [TRAITS](#pod_TRAITS) for more.
 
 Please note that although all initialization options can be set inlined or in
 a configuration file, some options can also be set via %ENV variables. %ENV
