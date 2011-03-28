@@ -1,6 +1,6 @@
 # NAME
 
-Test::DBIx::Class - Easier test cases for your [DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class) applications
+Test::DBIx::Class - Easier test cases for your DBIx::Class applications
 
 # SYNOPSIS
 
@@ -721,7 +721,9 @@ The following modules or resources may be of interest.
     Tristan Pratt
     Tomas Doran C<< <bobtfish@bobtfish.net> >>
     Kyle Hasselbacher C<< kyleha@gmail.com >>
-    cvince 
+    cvince
+    colinnewell 
+    rbuels
 
 # COPYRIGHT & LICENSE
 

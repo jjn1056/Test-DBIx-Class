@@ -6,7 +6,7 @@ use warnings;
 
 use base 'Test::Builder::Module';
 
-our $VERSION = '0.19';
+our $VERSION = '0.20';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
 use Config::Any;
@@ -655,7 +655,7 @@ __END__
 
 =head1 NAME
 
-Test::DBIx::Class - Easier test cases for your L<DBIx::Class> applications
+Test::DBIx::Class - Easier test cases for your DBIx::Class applications
 
 =head1 SYNOPSIS
 
@@ -1380,7 +1380,9 @@ L<DBIx::Class>, L<DBIx::Class::Schema::PopulateMore>, L<DBIx::Class::Fixtures>
     Tristan Pratt
     Tomas Doran C<< <bobtfish@bobtfish.net> >>
     Kyle Hasselbacher C<< kyleha@gmail.com >>
-    cvince 
+    cvince
+    colinnewell 
+    rbuels
 
 =head1 COPYRIGHT & LICENSE
 

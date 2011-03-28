@@ -1,5 +1,10 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.20 28 March 2011
+    - Patch to cope with virtual views (colinnewell++)
+    - updated the author maint stuff
+    - stop the slave (in case it's running) before changing it)
+
 0.19 02 March 2011
     - applied patch to fix bug in reporting error messages when using the
       PopulateMore fixture command.  (mjg++)
