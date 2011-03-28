@@ -1,20 +1,37 @@
+BEGIN {
+  my @modules = qw(
+    ReadmeMarkdownFromPod
+    ManifestSkip
+    AutoLicense
+    Repository
+    Homepage
+    AutoManifest
+  );
+  for my $module (@modules) {
+    eval "use Module::Install::$module; 1"
+	  || die <<"ERR";
 
-## --------------------------------------------------------------------------##
-## This stuff is used by CPAN authors and developers who need to build this  ##
-## code, create tarballs, run extended author tests, etc.  It also has some  ##
-## features for helping to manage dependencies, although if you are using a  ##
-## modern cpan or cpanminus, they are less valuable.  If you just want to    ##
-## install code for use you don't need to worry about this code.  If you are ##
-## a developer you will need to bootstrap your Perl setup with a SDK such as ##
-## L<Task::BeLike::JJNAPIORK>                                                ##
-## --------------------------------------------------------------------------##
+You are in author mode but are missing Module::Install::$module
 
-use Module::Install::ReadmeMarkdownFromPod;
-use Module::Install::ManifestSkip;
-use Module::Install::AutoLicense;
-use Module::Install::Repository;
-use Module::Install::Homepage;
-use Module::Install::AutoManifest;
+You are getting an error message because you are in author mode and are missing
+some author only dependencies.  You should only see this message if you have 
+checked this code out from a repository.  If you are just trying to install
+the code please use the CPAN version.  If you are an author you will need to
+install the missing modules, or you can bootstrap all the requirements using
+the stable version of Task::BeLike::JJNAPIORK with:
+
+  cpanm Task::BeLike::JJNAPIORK
+
+Or you can install each missing author only dependency with:
+
+  cpanm MISSING_MODULE_NAME
+
+If you think you are seeing this this message in error, please report it as a
+bug to the author.
+
+ERR
+  }
+}
 
 readme_markdown_from_pod;
 manifest_skip;

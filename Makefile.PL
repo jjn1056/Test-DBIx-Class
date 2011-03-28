@@ -6,7 +6,7 @@ use inc::Module::Install;
 
 requires 'Config::Any' => '0.19';
 requires 'DBIx::Class' => '0.08123';
-requires 'DBIx::Class::Schema::PopulateMore' => '0.15';
+requires 'DBIx::Class::Schema::PopulateMore' => '0.16';
 requires 'DBIx::Class::TimeStamp' => '0.13';
 requires 'DBIx::Class::UUIDColumns' => '0.02005';
 requires 'Data::UUID' => '1.215';
@@ -25,7 +25,7 @@ requires 'Test::Builder' => '0.96';
 requires 'Test::Deep' => '0.106';
 test_requires 'Test::More' => '0.94';
 
-feature('MySql Support', -default => 0, 'Test::mysqld' => '0.11');
+feature('MySql Support', -default => 0, 'Test::mysqld' => '0.12');
 feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.09');
 
 all_from 'lib/Test/DBIx/Class.pm';
