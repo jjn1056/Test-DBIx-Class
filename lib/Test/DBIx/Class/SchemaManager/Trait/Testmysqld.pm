@@ -200,6 +200,7 @@ around 'setup' => sub {
     foreach my $storage ($self->schema->storage->pool->all_replicant_storages) {
         ## TODO, need to change this to dbh_do
         my $dbh = $storage->_get_dbh;
+        $dbh->do("STOP SLAVE") || die $dbh->errst;
         $dbh->do("CHANGE MASTER TO  master_host='127.0.0.1',  master_port=8001,  master_user='root',  master_password=''")
             || die $dbh->errstr;
         $dbh->do("START SLAVE")
