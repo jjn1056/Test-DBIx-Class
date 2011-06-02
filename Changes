@@ -1,5 +1,8 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.21 02 June 2011
+    - Fixed a bug when the test is named 'schema.t'
+
 0.20 28 March 2011
     - Patch to cope with virtual views (colinnewell++)
     - updated the author maint stuff
