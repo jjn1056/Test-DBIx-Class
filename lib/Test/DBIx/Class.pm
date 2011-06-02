@@ -620,10 +620,20 @@ sub _default_paths {
 	my $script_dir = $script_path->dir;
 	my @dir_parts = $script_dir->dir_list(1);
 
-	return [
+    if(
+        $script_path->basename eq 'schema' &&
+        (scalar(@dir_parts) == 0 )
+    ) {
+      return [
+		Path::Class::file(qw/t etc schema/),
+	  ];
+
+    } else {
+      return [
 		Path::Class::file(qw/t etc schema/),
 		Path::Class::file(qw/t etc /, @dir_parts, $script_path->basename),
-	];
+	  ];
+}
 }
 
 sub _initialize_schema {
