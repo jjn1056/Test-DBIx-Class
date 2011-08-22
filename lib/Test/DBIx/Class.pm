@@ -720,13 +720,13 @@ such as:
     fixtures_ok 'basic'
       => 'installed the basic fixtures from configuration files';
 
-    fixtures_ok { 
+    fixtures_ok [ 
         Job => [
             [qw/name description/],
             [Programmer => 'She who writes the code'],
             ['Movie Star' => 'Knows nothing about the code'],
         ],
-    }, 'Installed some custom fixtures via the Populate fixture class',
+    ], 'Installed some custom fixtures via the Populate fixture class',
 
     
     ok my $john = Person->find({email=>'jjnapiork@cpan.org'})
@@ -865,19 +865,19 @@ is used when you need a lot of control over installing your fixtures.  Example:
 The above gets executed at runtime and if there is an error it is trapped,
 reported and we move on to the next test.
 
-=item hashref
+=item arrayref
 
-Given a hash reference, attempt to process it via the default fixtures loader
+Given a array reference, attempt to process it via the default fixtures loader
 or through the specified loader.
 
-    fixtures_ok {
+    fixtures_ok [
         Person => [
             ['name', 'age', 'email'],
             ['John', 40, 'john@nowehere.com'],
             ['Vincent', 15, 'vincent@home.com'],
             ['Vanessa', 35, 'vanessa@school.com'],
         ],
-    }, 'Installed fixtures';
+    ], 'Installed fixtures';
 
 This is a good option to use while you are building up your fixture sets or
 when your sets are going to be small and not reused across lots of tests.  This
@@ -1191,7 +1191,7 @@ in one file:
         'Person' => { '-as' => 'NotTeenager', search => {age=>{'>'=>18}}},
       ],
       'fixture_sets' => {
-        'basic' => {
+        'basic' => [
           'Person' => [
             [
               'name',
@@ -1214,7 +1214,7 @@ in one file:
               'vanessa@school.com'
             ]
           ]
-        }
+        ]
       },
     };
 
