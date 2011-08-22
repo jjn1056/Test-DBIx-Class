@@ -32,338 +32,338 @@ sub eq_or_diff2 {
 }
 
 sub import {
-	my ($class, @opts) = @_;
-	my ($schema_manager, $merged_config, @exports) = $class->_initialize(@opts);
-	my $exporter = Sub::Exporter::build_exporter({
-		exports => [
-			dump_settings => sub {
-				return sub {
-					return $merged_config, @exports;
-				};
-			},
-			Schema => sub {
-				return sub {
-					return $schema_manager->schema;
-				}
-			},
-			ResultSet => sub {
-				my ($local_class, $name, $arg) = @_;
-				return sub {
-					my $source = shift @_;
-					my $search = shift @_;
-					my $resultset = $schema_manager->schema->resultset($source);
-
-					if(my $global_search = $arg->{search}) {
-						my @global_search = ref $global_search eq 'ARRAY' ? @$global_search : ($global_search);
-						$resultset = $resultset->search(@global_search);
-					}
-
-					if(my $global_cb = $arg->{exec}) {
-						$resultset = $global_cb->($resultset);
-					}
-
-					if($search) {
-						my @search = ref $search ? @$search : ($search, @_);
-						$resultset = $resultset->search(@search);
-					}
-
-					return $resultset;
-				}
-			},
-			is_result => sub {
-				my ($local_class, $name, $arg) = @_;
-				my $global_class = defined $arg->{isa_class} ? $arg->{isa_class} : '';
-				return sub {
-					my $rs = shift @_;
-					my $compare = shift @_ || $global_class || "DBIx::Class";
-					my $message = shift @_;
-					Test::More::isa_ok($rs, $compare, $message);
-				}
-			},
-			is_resultset => sub {
-				my ($local_class, $name, $arg) = @_;
-				my $global_class = defined $arg->{isa_class} ? $arg->{isa_class} : '';
-				return sub {
-					my $rs = shift @_;
-					my $compare = shift @_ || $global_class || "DBIx::Class::ResultSet";
-					my $message = shift @_;
-					Test::More::isa_ok($rs, $compare, $message);
-				}
-			},
-			eq_result => sub {
-				return sub {
-					my ($result1, $result2, $message) = @_;
-					$message = defined $message ? $message : ref($result1) . " equals " . ref($result2);
-					if( ref($result1) eq ref($result2) ) {
-						eq_or_diff2(
-							{$result2->get_columns},
-							{$result1->get_columns},
-							$message,
-						);
-					} else {
-						Test::More::fail($message ." :Result arguments not of same class");
-					}
-				},
-			},
-			eq_resultset => sub {
-				return sub {
-					my ($rs1, $rs2, $message) = @_;
-					$message = defined $message ? $message : ref($rs1) . " equals " . ref($rs2);
-					if( ref($rs1) eq ref($rs2) ) {
-						($rs1, $rs2) = map {
-                            my $me = $_->current_source_alias;
-                            my @pks = map { "$me.$_"} $_->result_source->primary_columns;
-							my @result = $_->search({}, {
-								result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-								order_by => [@pks],
-							})->all;
-							[@result];
-						} ($rs1, $rs2);
-
-						eq_or_diff2([$rs2],[$rs1],$message);
-					} else {
-						Test::More::fail($message ." :ResultSet arguments not of same class");
-					}
-				},
-			},
-			hri_dump => sub {
-				return sub {
-					(shift)->search ({}, {
-						result_class => 'DBIx::Class::ResultClass::HashRefInflator'
-					});
-				}
-			},
-			fixtures_ok => sub {
-				return sub {
-					my ($arg, $message) = @_;
-					$message = defined $message ? $message : 'Fixtures Installed';
-
-					if ($arg && ref $arg && (ref $arg eq 'CODE')) {
-						eval {
-							$arg->($schema_manager->schema);
-						}; if($@) {
-							Test::More::fail($message);
-							$schema_manager->builder->diag($@);
-
-						} else {
-							Test::More::pass($message);
-						}
-					} elsif( $arg && ref $arg && (ref $arg eq 'HASH' || ref $arg eq 'ARRAY') ) {
-						my @return;
-						eval {
-							@return = $schema_manager->install_fixtures($arg);
-						}; if($@) {
-							Test::More::fail($message);
-							$schema_manager->builder->diag($@);
-						} else {
-							Test::More::pass($message);
-							return @return;
-						}
-					} elsif( $arg ) {
-						my @sets = ref $arg ? @$arg : ($arg);
-						my @fixtures = $schema_manager->get_fixture_sets(@sets);
-						my @return;
-						foreach my $fixture (@fixtures) {
-							eval {
-								push @return, $schema_manager->install_fixtures($fixture);
-							}; if($@) {
-								Test::More::fail($message);
-								$schema_manager->builder->diag($@);
-							} else {
-								Test::More::pass($message);
-								return @return;
-							}
-						}
-					} else {
-						Test::More::fail("Can't figure out what fixtures you want");
-					}
-				}
-			},
-			is_fields => sub {
-				my ($local_class, $name, $arg) = @_;
-				my @default_fields = ();
-				if(defined $arg && ref $arg eq 'HASH' && defined $arg->{fields}) {
-					@default_fields = ref $arg->{fields} ? @{$arg->{fields}} : ($arg->{fields});
-				}
-				return sub {
-					my @args = @_;
-					my @fields = @default_fields;
-					if(!ref($args[0]) || (ref($args[0]) eq 'ARRAY')) {
-						my $fields = shift(@args);
-						@fields = ref $fields ? @$fields : ($fields); 
-					} 
-					if(Scalar::Util::blessed($args[0]) && 
-						$args[0]->isa('DBIx::Class') && 
-						!$args[0]->isa('DBIx::Class::ResultSet')
-					) {
-						my $result = shift(@args);
-						unless(@fields) {
-							my @pks = $result->result_source->primary_columns;
-							push @fields, grep {
-								my $field = $_; 
-								$field ne ((grep { $field eq $_ } @pks)[0] || '')
-							} ($result->result_source->columns);
-						}
-						my $compare = shift(@args);
-						if(ref $compare eq 'HASH') {
-						} elsif(ref $compare eq 'ARRAY') {
-							my @localfields = @fields;
-							$compare = {map {
-								my $value = $_;
-								my $key = shift(@localfields);
-								$key => $value } @$compare};
-							Test::More::fail('Too many fields!') if @localfields;
-						} elsif(!ref $compare) {
-							my @localfields = @fields;
-							$compare = {map {
-								my $value = $_;
-								my $key = shift(@localfields);
-								$key => $value } ($compare)};
-							Test::More::fail('Too many fields!') if @localfields;
-						}
-						my $message = shift(@args) || 'Fields match';
-						my $compare_rs = {map {
-							die "$_ is not an available field"
-							  unless $result->can($_); 
-							$_ => $result->$_ } @fields};
-						eq_or_diff2($compare,$compare_rs,$message);
-						return $compare;
-					} elsif (Scalar::Util::blessed($args[0]) && $args[0]->isa('DBIx::Class::ResultSet')) {
-
-						my $resultset = shift(@args);
-						unless(@fields) {
-							my @pks = $resultset->result_source->primary_columns;
-							push @fields, grep {
-								my $field = $_; 
-								$field ne ((grep { $field eq $_ } @pks)[0] || '')
-							} ($resultset->result_source->columns);
-						}
-						my @compare = @{shift(@args)};
-						foreach (@compare) {
-							if(!ref $_) {
-								my @localfields = @fields;
-								$_ = {map {
-									my $value = $_;
-									my $key = shift(@localfields);
-									$key => $value } ($_)};
-								Test::More::fail('Too many fields!') if @localfields;
-							} elsif(ref $_ eq 'ARRAY') {
-								my @localfields = @fields;
-								$_ = {map {
-									my $value = $_;
-									my $key = shift(@localfields);
-									$key => $value } (@$_)};
-								Test::More::fail('Too many fields!') if @localfields;
-							}
-						}
-						my $message = shift(@args) || 'Fields match';
-
-						my @resultset = $resultset->search({}, {
-								result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-								columns => [@fields],
-							})->all;
-						my %compare_rs;
-						foreach my $row(@resultset) {
-							no warnings 'uninitialized';
-							my $id = Digest::MD5::md5_hex(join('.', map {$row->{$_}} sort keys %$row));
-							$compare_rs{$id} = { map { $_,"$row->{$_}"} keys %$row};
-						}
-						my %compare;
-						foreach my $row(@compare) {
-							no warnings 'uninitialized';
-							my $id = Digest::MD5::md5_hex(join('.', map {$row->{$_}} sort keys %$row));
-                            ## Force comparison stuff in stringy form :(
-							$compare{$id} = { map { $_,"$row->{$_}"} keys %$row};
-						}
-						eq_or_diff2(\%compare,\%compare_rs,$message);
-						return \@compare;
-					} else {
-						die "I'm not sure what to do with your arguments";
-					}
-				};
-			},
-			reset_schema => sub {
-				return sub {
-					my $message = shift @_ || 'Schema reset complete';
-					$schema_manager->reset;
-					Test::More::pass($message);
-				}
-			},
-            cleanup_schema => sub {
+    my ($class, @opts) = @_;
+    my ($schema_manager, $merged_config, @exports) = $class->_initialize(@opts);
+    my $exporter = Sub::Exporter::build_exporter({
+        exports => [
+            dump_settings => sub {
                 return sub {
-					my $message = shift @_ || 'Schema cleanup complete';
-					$schema_manager->cleanup;
-					Test::More::pass($message);
+                    return $merged_config, @exports;
+                };
+            },
+            Schema => sub {
+                return sub {
+                    return $schema_manager->schema;
                 }
             },
-			map {
-				my $source = $_;
- 				$source => sub {
-					my ($local_class, $name, $arg) = @_;
-					my $resultset = $schema_manager->schema->resultset($source);
-					if(my $search = $arg->{search}) {
-						my @search = ref $search eq 'ARRAY' ? @$search : ($search);
-						$resultset = $resultset->search(@search);
-					}
-					return sub {
-						my $search = shift @_;
-						if($search) {
-							my @search = ();
-							if(ref $search && ref $search eq 'HASH') {
-								@search = ($search, @_); 
-							} else {
-								@search = ({$search, @_});
-							}
-							return $resultset->search(@search);
-						}
-						return $resultset;
-					}
-				};
-			} $schema_manager->schema->sources,
-		],
-		groups => {
-			resultsets => [$schema_manager->schema->sources],
-		},
-		into_level => 1,	
-	});
+            ResultSet => sub {
+                my ($local_class, $name, $arg) = @_;
+                return sub {
+                    my $source = shift @_;
+                    my $search = shift @_;
+                    my $resultset = $schema_manager->schema->resultset($source);
 
-	$class->$exporter(
-		qw/Schema ResultSet is_result is_resultset hri_dump fixtures_ok reset_schema
-			eq_result eq_resultset is_fields dump_settings cleanup_schema /,
-		 @exports
-	);
+                    if(my $global_search = $arg->{search}) {
+                        my @global_search = ref $global_search eq 'ARRAY' ? @$global_search : ($global_search);
+                        $resultset = $resultset->search(@global_search);
+                    }
+
+                    if(my $global_cb = $arg->{exec}) {
+                        $resultset = $global_cb->($resultset);
+                    }
+
+                    if($search) {
+                        my @search = ref $search ? @$search : ($search, @_);
+                        $resultset = $resultset->search(@search);
+                    }
+
+                    return $resultset;
+                }
+            },
+            is_result => sub {
+                my ($local_class, $name, $arg) = @_;
+                my $global_class = defined $arg->{isa_class} ? $arg->{isa_class} : '';
+                return sub {
+                    my $rs = shift @_;
+                    my $compare = shift @_ || $global_class || "DBIx::Class";
+                    my $message = shift @_;
+                    Test::More::isa_ok($rs, $compare, $message);
+                }
+            },
+            is_resultset => sub {
+                my ($local_class, $name, $arg) = @_;
+                my $global_class = defined $arg->{isa_class} ? $arg->{isa_class} : '';
+                return sub {
+                    my $rs = shift @_;
+                    my $compare = shift @_ || $global_class || "DBIx::Class::ResultSet";
+                    my $message = shift @_;
+                    Test::More::isa_ok($rs, $compare, $message);
+                }
+            },
+            eq_result => sub {
+                return sub {
+                    my ($result1, $result2, $message) = @_;
+                    $message = defined $message ? $message : ref($result1) . " equals " . ref($result2);
+                    if( ref($result1) eq ref($result2) ) {
+                        eq_or_diff2(
+                            {$result2->get_columns},
+                            {$result1->get_columns},
+                            $message,
+                        );
+                    } else {
+                        Test::More::fail($message ." :Result arguments not of same class");
+                    }
+                },
+            },
+            eq_resultset => sub {
+                return sub {
+                    my ($rs1, $rs2, $message) = @_;
+                    $message = defined $message ? $message : ref($rs1) . " equals " . ref($rs2);
+                    if( ref($rs1) eq ref($rs2) ) {
+                        ($rs1, $rs2) = map {
+                            my $me = $_->current_source_alias;
+                            my @pks = map { "$me.$_"} $_->result_source->primary_columns;
+                            my @result = $_->search({}, {
+                                result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+                                order_by => [@pks],
+                            })->all;
+                            [@result];
+                        } ($rs1, $rs2);
+
+                        eq_or_diff2([$rs2],[$rs1],$message);
+                    } else {
+                        Test::More::fail($message ." :ResultSet arguments not of same class");
+                    }
+                },
+            },
+            hri_dump => sub {
+                return sub {
+                    (shift)->search ({}, {
+                        result_class => 'DBIx::Class::ResultClass::HashRefInflator'
+                    });
+                }
+            },
+            fixtures_ok => sub {
+                return sub {
+                    my ($arg, $message) = @_;
+                    $message = defined $message ? $message : 'Fixtures Installed';
+
+                    if ($arg && ref $arg && (ref $arg eq 'CODE')) {
+                        eval {
+                            $arg->($schema_manager->schema);
+                        }; if($@) {
+                            Test::More::fail($message);
+                            $schema_manager->builder->diag($@);
+
+                        } else {
+                            Test::More::pass($message);
+                        }
+                    } elsif( $arg && ref $arg && (ref $arg eq 'HASH' || ref $arg eq 'ARRAY') ) {
+                        my @return;
+                        eval {
+                            @return = $schema_manager->install_fixtures($arg);
+                        }; if($@) {
+                            Test::More::fail($message);
+                            $schema_manager->builder->diag($@);
+                        } else {
+                            Test::More::pass($message);
+                            return @return;
+                        }
+                    } elsif( $arg ) {
+                        my @sets = ref $arg ? @$arg : ($arg);
+                        my @fixtures = $schema_manager->get_fixture_sets(@sets);
+                        my @return;
+                        foreach my $fixture (@fixtures) {
+                            eval {
+                                push @return, $schema_manager->install_fixtures($fixture);
+                            }; if($@) {
+                                Test::More::fail($message);
+                                $schema_manager->builder->diag($@);
+                            } else {
+                                Test::More::pass($message);
+                                return @return;
+                            }
+                        }
+                    } else {
+                        Test::More::fail("Can't figure out what fixtures you want");
+                    }
+                }
+            },
+            is_fields => sub {
+                my ($local_class, $name, $arg) = @_;
+                my @default_fields = ();
+                if(defined $arg && ref $arg eq 'HASH' && defined $arg->{fields}) {
+                    @default_fields = ref $arg->{fields} ? @{$arg->{fields}} : ($arg->{fields});
+                }
+                return sub {
+                    my @args = @_;
+                    my @fields = @default_fields;
+                    if(!ref($args[0]) || (ref($args[0]) eq 'ARRAY')) {
+                        my $fields = shift(@args);
+                        @fields = ref $fields ? @$fields : ($fields); 
+                    } 
+                    if(Scalar::Util::blessed($args[0]) && 
+                        $args[0]->isa('DBIx::Class') && 
+                        !$args[0]->isa('DBIx::Class::ResultSet')
+                    ) {
+                        my $result = shift(@args);
+                        unless(@fields) {
+                            my @pks = $result->result_source->primary_columns;
+                            push @fields, grep {
+                                my $field = $_; 
+                                $field ne ((grep { $field eq $_ } @pks)[0] || '')
+                            } ($result->result_source->columns);
+                        }
+                        my $compare = shift(@args);
+                        if(ref $compare eq 'HASH') {
+                        } elsif(ref $compare eq 'ARRAY') {
+                            my @localfields = @fields;
+                            $compare = {map {
+                                my $value = $_;
+                                my $key = shift(@localfields);
+                                $key => $value } @$compare};
+                            Test::More::fail('Too many fields!') if @localfields;
+                        } elsif(!ref $compare) {
+                            my @localfields = @fields;
+                            $compare = {map {
+                                my $value = $_;
+                                my $key = shift(@localfields);
+                                $key => $value } ($compare)};
+                            Test::More::fail('Too many fields!') if @localfields;
+                        }
+                        my $message = shift(@args) || 'Fields match';
+                        my $compare_rs = {map {
+                            die "$_ is not an available field"
+                              unless $result->can($_); 
+                            $_ => $result->$_ } @fields};
+                        eq_or_diff2($compare,$compare_rs,$message);
+                        return $compare;
+                    } elsif (Scalar::Util::blessed($args[0]) && $args[0]->isa('DBIx::Class::ResultSet')) {
+
+                        my $resultset = shift(@args);
+                        unless(@fields) {
+                            my @pks = $resultset->result_source->primary_columns;
+                            push @fields, grep {
+                                my $field = $_; 
+                                $field ne ((grep { $field eq $_ } @pks)[0] || '')
+                            } ($resultset->result_source->columns);
+                        }
+                        my @compare = @{shift(@args)};
+                        foreach (@compare) {
+                            if(!ref $_) {
+                                my @localfields = @fields;
+                                $_ = {map {
+                                    my $value = $_;
+                                    my $key = shift(@localfields);
+                                    $key => $value } ($_)};
+                                Test::More::fail('Too many fields!') if @localfields;
+                            } elsif(ref $_ eq 'ARRAY') {
+                                my @localfields = @fields;
+                                $_ = {map {
+                                    my $value = $_;
+                                    my $key = shift(@localfields);
+                                    $key => $value } (@$_)};
+                                Test::More::fail('Too many fields!') if @localfields;
+                            }
+                        }
+                        my $message = shift(@args) || 'Fields match';
+
+                        my @resultset = $resultset->search({}, {
+                                result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+                                columns => [@fields],
+                            })->all;
+                        my %compare_rs;
+                        foreach my $row(@resultset) {
+                            no warnings 'uninitialized';
+                            my $id = Digest::MD5::md5_hex(join('.', map {$row->{$_}} sort keys %$row));
+                            $compare_rs{$id} = { map { $_,"$row->{$_}"} keys %$row};
+                        }
+                        my %compare;
+                        foreach my $row(@compare) {
+                            no warnings 'uninitialized';
+                            my $id = Digest::MD5::md5_hex(join('.', map {$row->{$_}} sort keys %$row));
+                            ## Force comparison stuff in stringy form :(
+                            $compare{$id} = { map { $_,"$row->{$_}"} keys %$row};
+                        }
+                        eq_or_diff2(\%compare,\%compare_rs,$message);
+                        return \@compare;
+                    } else {
+                        die "I'm not sure what to do with your arguments";
+                    }
+                };
+            },
+            reset_schema => sub {
+                return sub {
+                    my $message = shift @_ || 'Schema reset complete';
+                    $schema_manager->reset;
+                    Test::More::pass($message);
+                }
+            },
+            cleanup_schema => sub {
+                return sub {
+                    my $message = shift @_ || 'Schema cleanup complete';
+                    $schema_manager->cleanup;
+                    Test::More::pass($message);
+                }
+            },
+            map {
+                my $source = $_;
+                 $source => sub {
+                    my ($local_class, $name, $arg) = @_;
+                    my $resultset = $schema_manager->schema->resultset($source);
+                    if(my $search = $arg->{search}) {
+                        my @search = ref $search eq 'ARRAY' ? @$search : ($search);
+                        $resultset = $resultset->search(@search);
+                    }
+                    return sub {
+                        my $search = shift @_;
+                        if($search) {
+                            my @search = ();
+                            if(ref $search && ref $search eq 'HASH') {
+                                @search = ($search, @_); 
+                            } else {
+                                @search = ({$search, @_});
+                            }
+                            return $resultset->search(@search);
+                        }
+                        return $resultset;
+                    }
+                };
+            } $schema_manager->schema->sources,
+        ],
+        groups => {
+            resultsets => [$schema_manager->schema->sources],
+        },
+        into_level => 1,    
+    });
+
+    $class->$exporter(
+        qw/Schema ResultSet is_result is_resultset hri_dump fixtures_ok reset_schema
+            eq_result eq_resultset is_fields dump_settings cleanup_schema /,
+         @exports
+    );
 }
 
 sub _initialize {
-	my ($class, @opts) = @_;
-	my ($config, @exports) = $class->_normalize_opts(@opts);
-	my $merged_config = $class->_prepare_config($config);
+    my ($class, @opts) = @_;
+    my ($config, @exports) = $class->_normalize_opts(@opts);
+    my $merged_config = $class->_prepare_config($config);
 
-	if(my $resultsets = delete $merged_config->{resultsets}) {
-		if(ref $resultsets eq 'ARRAY') {
-			push @exports, @$resultsets;
-		} else {
-			die '"resultsets" options must be a Array Reference.';
-		}
-	}
-	my $merged_with_fixtures_config = $class->_prepare_fixtures($merged_config);
-	my $visitor = Data::Visitor::Callback->new(plain_value=>\&_visit_config_values);
-	$visitor->visit($merged_with_fixtures_config);
+    if(my $resultsets = delete $merged_config->{resultsets}) {
+        if(ref $resultsets eq 'ARRAY') {
+            push @exports, @$resultsets;
+        } else {
+            die '"resultsets" options must be a Array Reference.';
+        }
+    }
+    my $merged_with_fixtures_config = $class->_prepare_fixtures($merged_config);
+    my $visitor = Data::Visitor::Callback->new(plain_value=>\&_visit_config_values);
+    $visitor->visit($merged_with_fixtures_config);
 
-	my $schema_manager = $class->_initialize_schema($merged_with_fixtures_config);
+    my $schema_manager = $class->_initialize_schema($merged_with_fixtures_config);
 
-	return (
-		$schema_manager,
-		$merged_config,
-		@exports,
-	);
+    return (
+        $schema_manager,
+        $merged_config,
+        @exports,
+    );
 }
 
 sub _visit_config_values {
-	return unless $_;
+    return unless $_;
 
-	&_config_substitutions($_);
-	
+    &_config_substitutions($_);
+    
 }
 
 sub _config_substitutions {
@@ -387,54 +387,54 @@ sub _config_substitutions {
 }
 
 sub _normalize_opts {
-	my ($class, @opts) = @_;
-	my ($config, @exports) = ({},());
+    my ($class, @opts) = @_;
+    my ($config, @exports) = ({},());
 
-	if(ref $opts[0]) {
-		if(ref $opts[0] eq 'HASH') {
-			$config = shift(@opts);
-		} else {
-			die 'First argument to "use Test::DBIx::Class @args" not properly formed.';
-		}
-	}
+    if(ref $opts[0]) {
+        if(ref $opts[0] eq 'HASH') {
+            $config = shift(@opts);
+        } else {
+            die 'First argument to "use Test::DBIx::Class @args" not properly formed.';
+        }
+    }
 
-	while( my $opt = shift(@opts)) {
-		if($opt =~m/^-(.+)/) {
-			if($config->{$1}) {
-				die "$1 already is defined as $config->{$1}";
-			} else {
-				$config->{$1} = shift(@opts);
-			}
-		} else {
-			@exports = ($opt, @opts);
-			last;
-		}
-	}
+    while( my $opt = shift(@opts)) {
+        if($opt =~m/^-(.+)/) {
+            if($config->{$1}) {
+                die "$1 already is defined as $config->{$1}";
+            } else {
+                $config->{$1} = shift(@opts);
+            }
+        } else {
+            @exports = ($opt, @opts);
+            last;
+        }
+    }
 
-	if(my $resultsets = delete $config->{resultsets}) {
-		if(ref $resultsets eq 'ARRAY') {
-			push @exports, @$resultsets;
-		} else {
-			die '"resultsets" options must be a Array Reference.';
-		}
-	}
+    if(my $resultsets = delete $config->{resultsets}) {
+        if(ref $resultsets eq 'ARRAY') {
+            push @exports, @$resultsets;
+        } else {
+            die '"resultsets" options must be a Array Reference.';
+        }
+    }
 
-	@exports = map { ref $_ && ref $_ eq 'ARRAY' ? @$_:$_ } @exports;
+    @exports = map { ref $_ && ref $_ eq 'ARRAY' ? @$_:$_ } @exports;
 
-	return ($config, @exports);
+    return ($config, @exports);
 }
 
 sub _prepare_fixtures {
-	my ($class, $config) = @_;
+    my ($class, $config) = @_;
 
-	my @dirs;
-	if(my $fixture_path = delete $config->{fixture_path}) {
-		@dirs = $class->_normalize_config_path(
-			$class->_default_fixture_paths, $fixture_path, 
-		);
-	} else {
-		@dirs = $class->_normalize_config_path($class->_default_fixture_paths);
-	}
+    my @dirs;
+    if(my $fixture_path = delete $config->{fixture_path}) {
+        @dirs = $class->_normalize_config_path(
+            $class->_default_fixture_paths, $fixture_path, 
+        );
+    } else {
+        @dirs = $class->_normalize_config_path($class->_default_fixture_paths);
+    }
 
     my @extensions = $class->_allowed_extensions;
     my @files = (
@@ -449,7 +449,7 @@ sub _prepare_fixtures {
         use_ext => 1,
     });
 
-	my %merged_fixtures;
+    my %merged_fixtures;
     foreach my $fixture_definition(@$fixture_definitions) {
         my ($path, $fixture) = %$fixture_definition;
         ## hack to normalize arrayref fixtures.  needs work!!!
@@ -476,187 +476,187 @@ sub _prepare_fixtures {
         $config->{fixture_sets} = \%merged_fixtures;
     }
 
-	return $config;
+    return $config;
 }
 
 sub _is_allowed_extension {
-	my ($class, $file) = @_;
-	my @extensions = $class->_allowed_extensions;
-	foreach my $extension(@extensions) {
-		if($file =~ m/\.$extension$/) {
-			return $file;
-		}
-	}
-	return;
+    my ($class, $file) = @_;
+    my @extensions = $class->_allowed_extensions;
+    foreach my $extension(@extensions) {
+        if($file =~ m/\.$extension$/) {
+            return $file;
+        }
+    }
+    return;
 }
 
 sub _prepare_config {
-	my ($class, $config) = @_;
+    my ($class, $config) = @_;
 
-	if(my $extra_config = delete $config->{config_path}) {
-		my @config_data = $class->_load_via_config_any($extra_config);
-		foreach my $config_datum(reverse @config_data) {
-			$config = Hash::Merge::merge($config, $config_datum);
-		}
-	} else {
-		my @config_data = $class->_load_via_config_any();
-		foreach my $config_datum(reverse @config_data) {
-			$config = Hash::Merge::merge($config, $config_datum);
-		}
-	}
+    if(my $extra_config = delete $config->{config_path}) {
+        my @config_data = $class->_load_via_config_any($extra_config);
+        foreach my $config_datum(reverse @config_data) {
+            $config = Hash::Merge::merge($config, $config_datum);
+        }
+    } else {
+        my @config_data = $class->_load_via_config_any();
+        foreach my $config_datum(reverse @config_data) {
+            $config = Hash::Merge::merge($config, $config_datum);
+        }
+    }
 
-	if(my $post_config = delete $config->{config_path}) {
-		my @post_config_paths = $class->_normalize_external_paths($post_config); 
-		my @extensions = $class->_allowed_extensions;
-		my @post_config_files =  grep { -e $_} map {
-			my $path = $_; 
-			map {
-			$ENV{TEST_DBIC_CONFIG_SUFFIX} ? 
-			  ("$path.$_", "$path$ENV{TEST_DBIC_CONFIG_SUFFIX}.$_") : 
-			  ("$path.$_");
-			} @extensions;
-		} map {
-			my @local_path = ref $_ ? @$_ : ($_);
-			Path::Class::file(@local_path);
-		} @post_config_paths;
+    if(my $post_config = delete $config->{config_path}) {
+        my @post_config_paths = $class->_normalize_external_paths($post_config); 
+        my @extensions = $class->_allowed_extensions;
+        my @post_config_files =  grep { -e $_} map {
+            my $path = $_; 
+            map {
+            $ENV{TEST_DBIC_CONFIG_SUFFIX} ? 
+              ("$path.$_", "$path$ENV{TEST_DBIC_CONFIG_SUFFIX}.$_") : 
+              ("$path.$_");
+            } @extensions;
+        } map {
+            my @local_path = ref $_ ? @$_ : ($_);
+            Path::Class::file(@local_path);
+        } @post_config_paths;
 
-	    my $post_config = $class->_config_any_load_files(@post_config_files);
-		foreach my $config_datum(reverse map { values %$_ } @$post_config) {
-			$config = Hash::Merge::merge($config, $config_datum);
-		}
-	}
+        my $post_config = $class->_config_any_load_files(@post_config_files);
+        foreach my $config_datum(reverse map { values %$_ } @$post_config) {
+            $config = Hash::Merge::merge($config, $config_datum);
+        }
+    }
 
-	return $config;
+    return $config;
 }
 
 sub _load_via_config_any {
-	my ($class, $extra_paths) = @_;
-	my @files = $class->_valid_config_files($class->_default_paths, $extra_paths);
-	my $config = $class->_config_any_load_files(@files);
+    my ($class, $extra_paths) = @_;
+    my @files = $class->_valid_config_files($class->_default_paths, $extra_paths);
+    my $config = $class->_config_any_load_files(@files);
 
-	my @config_data = map { values %$_ } @$config;
-	return @config_data;
+    my @config_data = map { values %$_ } @$config;
+    return @config_data;
 }
 
 sub _config_any_load_files {
-	my ($class, @files) = @_;
+    my ($class, @files) = @_;
 
     return Config::Any->load_files({
-		files => \@files,
-		use_ext => 1,
-	});
+        files => \@files,
+        use_ext => 1,
+    });
 }
 
 sub _valid_config_files {
-	my ($class, $default_paths, $extra_paths) = @_;
-	my @extensions = $class->_allowed_extensions;
-	my @paths = $class->_normalize_config_path($default_paths, $extra_paths);
-	my @config_files = grep { -e $_} map { 
-		my $path = $_; 
-		map { 
-			$ENV{TEST_DBIC_CONFIG_SUFFIX} ? 
-			  ("$path.$_", "$path$ENV{TEST_DBIC_CONFIG_SUFFIX}.$_") : 
-			  ("$path.$_");
-		} @extensions;
-	 } @paths;
+    my ($class, $default_paths, $extra_paths) = @_;
+    my @extensions = $class->_allowed_extensions;
+    my @paths = $class->_normalize_config_path($default_paths, $extra_paths);
+    my @config_files = grep { -e $_} map { 
+        my $path = $_; 
+        map { 
+            $ENV{TEST_DBIC_CONFIG_SUFFIX} ? 
+              ("$path.$_", "$path$ENV{TEST_DBIC_CONFIG_SUFFIX}.$_") : 
+              ("$path.$_");
+        } @extensions;
+     } @paths;
 
-	return @config_files;
+    return @config_files;
 }
 
 sub _allowed_extensions {
-	return @{ Config::Any->extensions };
+    return @{ Config::Any->extensions };
 }
 
 sub _normalize_external_paths {
-	my ($class, $extra_paths) = @_;
-	my @extra_paths;
-	if(!ref $extra_paths) {
-		@extra_paths = ([$extra_paths]); ## "t/etc" => (["t/etc"])
-	} elsif(ref $extra_paths eq 'ARRAY') {
-		if(!ref $extra_paths->[0]) {
-			@extra_paths = ($extra_paths); ## [qw( t etc )]
-		} elsif( ref $extra_paths->[0] eq 'ARRAY') {
-			@extra_paths = @$extra_paths;
-		}
-	}
-	return @extra_paths;
+    my ($class, $extra_paths) = @_;
+    my @extra_paths;
+    if(!ref $extra_paths) {
+        @extra_paths = ([$extra_paths]); ## "t/etc" => (["t/etc"])
+    } elsif(ref $extra_paths eq 'ARRAY') {
+        if(!ref $extra_paths->[0]) {
+            @extra_paths = ($extra_paths); ## [qw( t etc )]
+        } elsif( ref $extra_paths->[0] eq 'ARRAY') {
+            @extra_paths = @$extra_paths;
+        }
+    }
+    return @extra_paths;
 }
 
 sub _normalize_config_path {
-	my ($class, $default_paths, $extra_paths) = @_;
+    my ($class, $default_paths, $extra_paths) = @_;
 
-	if(defined $extra_paths) {
-		my @extra_paths = map { "$_" eq "+" ? @$default_paths : $_ } map {
-			my @local_path = ref $_ ? @$_ : ($_);
-			Path::Class::file(@local_path);
-		} $class->_normalize_external_paths($extra_paths);
+    if(defined $extra_paths) {
+        my @extra_paths = map { "$_" eq "+" ? @$default_paths : $_ } map {
+            my @local_path = ref $_ ? @$_ : ($_);
+            Path::Class::file(@local_path);
+        } $class->_normalize_external_paths($extra_paths);
 
-		return @extra_paths;	
-	} else {
-		return @$default_paths;
-	}
+        return @extra_paths;    
+    } else {
+        return @$default_paths;
+    }
 }
 
 sub _script_path {
-	return ($0 =~m/^(.+)\.t$/)[0];
+    return ($0 =~m/^(.+)\.t$/)[0];
 }
 
 sub _default_fixture_paths {
-	my ($class) = @_;
-	my $script_path = Path::Class::file($class->_script_path);
-	my $script_dir = $script_path->dir;
-	my @dir_parts = $script_dir->dir_list(1);
+    my ($class) = @_;
+    my $script_path = Path::Class::file($class->_script_path);
+    my $script_dir = $script_path->dir;
+    my @dir_parts = $script_dir->dir_list(1);
 
-	return [
-		Path::Class::file(qw/t etc fixtures/),
-		Path::Class::file(qw/t etc fixtures/, @dir_parts, $script_path->basename),
-	];
+    return [
+        Path::Class::file(qw/t etc fixtures/),
+        Path::Class::file(qw/t etc fixtures/, @dir_parts, $script_path->basename),
+    ];
 
 }
 
 sub _default_paths {
-	my ($class) = @_;
-	my $script_path = Path::Class::file($class->_script_path);
-	my $script_dir = $script_path->dir;
-	my @dir_parts = $script_dir->dir_list(1);
+    my ($class) = @_;
+    my $script_path = Path::Class::file($class->_script_path);
+    my $script_dir = $script_path->dir;
+    my @dir_parts = $script_dir->dir_list(1);
 
     if(
         $script_path->basename eq 'schema' &&
         (scalar(@dir_parts) == 0 )
     ) {
       return [
-		Path::Class::file(qw/t etc schema/),
-	  ];
+        Path::Class::file(qw/t etc schema/),
+      ];
 
     } else {
       return [
-		Path::Class::file(qw/t etc schema/),
-		Path::Class::file(qw/t etc /, @dir_parts, $script_path->basename),
-	  ];
+        Path::Class::file(qw/t etc schema/),
+        Path::Class::file(qw/t etc /, @dir_parts, $script_path->basename),
+      ];
 }
 }
 
 sub _initialize_schema {
-	my $class = shift @_;
-	my $config  = shift @_;
-	my $builder = __PACKAGE__->builder;
-	
-	my $schema_manager;
-	 eval {
-		$schema_manager = Test::DBIx::Class::SchemaManager->initialize_schema({
-			%$config, 
-			builder => $builder,
-		});
-	}; if ($@ or !$schema_manager) {
-		Test::More::diag("Can't initialize a schema with the given configuration");
-		Test::More::diag("Returned Error: ".$@) if $@;
-		Test::More::diag(
-			Test::More::explain("configuration: " => $config)
-		);
-		$builder->skip_all("Skipping remaining tests since we don't have a schema");
-	}
+    my $class = shift @_;
+    my $config  = shift @_;
+    my $builder = __PACKAGE__->builder;
+    
+    my $schema_manager;
+     eval {
+        $schema_manager = Test::DBIx::Class::SchemaManager->initialize_schema({
+            %$config, 
+            builder => $builder,
+        });
+    }; if ($@ or !$schema_manager) {
+        Test::More::diag("Can't initialize a schema with the given configuration");
+        Test::More::diag("Returned Error: ".$@) if $@;
+        Test::More::diag(
+            Test::More::explain("configuration: " => $config)
+        );
+        $builder->skip_all("Skipping remaining tests since we don't have a schema");
+    }
 
-	return $schema_manager
+    return $schema_manager
 }
 
 1;
@@ -674,7 +674,7 @@ Perl testing script, such as "MyApp/t/schema/01-basic.t" which is run from the
 shell like "prove -l t/schema/01-basic.t" or during "make test".  That test 
 script could contain:
 
-	use Test::More;
+    use Test::More;
 
     use strict;
     use warnings;
@@ -697,8 +697,8 @@ data can be loaded from a central file.  So your 'real life' example is going
 to look closer to (assuming you put all your test configuration in the standard
 place, "t/etc/schema.conf":
 
-	use Test::More;
-		
+    use Test::More;
+        
     use strict;
     use warnings;
     use Test::DBIx::Class qw(:resultsets);
@@ -822,13 +822,13 @@ Although you can import your sources as local keywords, sometimes you might
 need to get a particular resultset when you don't wish to import it globally.
 Use like
 
-	ok ResultSet('Job'), "Yeah, some jobs in the database";
-	ok ResultSet( Job => {hourly_pay=>{'>'=>100}}), "Good paying jobs available!";
+    ok ResultSet('Job'), "Yeah, some jobs in the database";
+    ok ResultSet( Job => {hourly_pay=>{'>'=>100}}), "Good paying jobs available!";
 
 Since this returns a normal L<DBIx::Class::ResultSet>, you can just call the
 normal methods against it.
 
-	ok ResultSet('Job')->search({hourly_pay=>{'>'=>100}}), "Good paying jobs available!";
+    ok ResultSet('Job')->search({hourly_pay=>{'>'=>100}}), "Good paying jobs available!";
 
 This is the same as the test above.
 
@@ -845,22 +845,22 @@ argument styles:
 Given a code reference, execute it against the currently defined schema.  This
 is used when you need a lot of control over installing your fixtures.  Example:
 
-	fixtures_ok sub {
-		my $schema = shift @_;
-		my $cd_rs = $schema->resultset('CD');
-		return $cd_rs->create({
-			name => 'My First Album',
-			track_rs => [
-				{position=>1, title=>'the first song'},
-				{position=>2, title=>'yet another song'},
-			],
-			cd_artist_rs=> [
-				{person_artist=>{person => $vanessa}},
-				{person_artist=>{person => $john}},
-			],
-		});
+    fixtures_ok sub {
+        my $schema = shift @_;
+        my $cd_rs = $schema->resultset('CD');
+        return $cd_rs->create({
+            name => 'My First Album',
+            track_rs => [
+                {position=>1, title=>'the first song'},
+                {position=>2, title=>'yet another song'},
+            ],
+            cd_artist_rs=> [
+                {person_artist=>{person => $vanessa}},
+                {person_artist=>{person => $john}},
+            ],
+        });
 
-	}, 'Installed fixtures';
+    }, 'Installed fixtures';
 
 The above gets executed at runtime and if there is an error it is trapped,
 reported and we move on to the next test.
@@ -870,14 +870,14 @@ reported and we move on to the next test.
 Given a hash reference, attempt to process it via the default fixtures loader
 or through the specified loader.
 
-	fixtures_ok {
-		Person => [
-			['name', 'age', 'email'],
-			['John', 40, 'john@nowehere.com'],
-			['Vincent', 15, 'vincent@home.com'],
-			['Vanessa', 35, 'vanessa@school.com'],
-		],
-	}, 'Installed fixtures';
+    fixtures_ok {
+        Person => [
+            ['name', 'age', 'email'],
+            ['John', 40, 'john@nowehere.com'],
+            ['Vincent', 15, 'vincent@home.com'],
+            ['Vanessa', 35, 'vanessa@school.com'],
+        ],
+    }, 'Installed fixtures';
 
 This is a good option to use while you are building up your fixture sets or
 when your sets are going to be small and not reused across lots of tests.  This
@@ -887,8 +887,8 @@ will get you rolling without messing around with configuration files.
 
 Given a fixture name, or array reference of names, install the fixtures.
 
-	fixtures_ok 'core';
-	fixtures_ok [qw/core extra/];
+    fixtures_ok 'core';
+    fixtures_ok [qw/core extra/];
 
 Fixtures are installed in the order specified.
 
@@ -948,54 +948,54 @@ Result.
 
 Example usage for testing a result follows.
 
-	ok my $john = Person->find('john');
+    ok my $john = Person->find('john');
 
-	is_fields 'name', $john, ['John Napiorkowski'],
-	  'Found name of $john';
+    is_fields 'name', $john, ['John Napiorkowski'],
+      'Found name of $john';
 
-	is_fields [qw/name age/], $john, ['John Napiorkowski', 40],
-	  'Found $johns name and age';
+    is_fields [qw/name age/], $john, ['John Napiorkowski', 40],
+      'Found $johns name and age';
 
-	is_fields $john, {
-		name => 'John Napiorkowski',
-		age => 40,
-		email => 'john@home.com'};  # Assuming $john has only the three columns listed
+    is_fields $john, {
+        name => 'John Napiorkowski',
+        age => 40,
+        email => 'john@home.com'};  # Assuming $john has only the three columns listed
 
 In the case were we need to infer the match pattern, we get the columns of the
 given result but remove the primary key.  Please note the following would also
 work:
 
-	is_fields [qw/name age/] $john, {
-		name => 'John Napiorkowski',
-		age => 40}, 'Still got the name and age correct'; 
+    is_fields [qw/name age/] $john, {
+        name => 'John Napiorkowski',
+        age => 40}, 'Still got the name and age correct'; 
 
 You should choose the method that makes most sense in your tests.
 
 Example usage for testing a resultset follows.
 
-	is_fields 'name', Person, [
-		'John',
-		'Vanessa',
-		'Vincent',
-	];
+    is_fields 'name', Person, [
+        'John',
+        'Vanessa',
+        'Vincent',
+    ];
 
-	is_fields ['name'], Person, [
-		'John',
-		'Vanessa',
-		'Vincent',
-	];
+    is_fields ['name'], Person, [
+        'John',
+        'Vanessa',
+        'Vincent',
+    ];
 
-	is_fields ['name','age'], Person, [
-		['John',40],
-		['Vincent',15],
-		['Vanessa',35],
-	];
+    is_fields ['name','age'], Person, [
+        ['John',40],
+        ['Vincent',15],
+        ['Vanessa',35],
+    ];
 
-	is_fields ['name','age'], Person, [
-		{name=>'John', age=>40},
-		{name=>'Vanessa',age=>35},
-		{name=>'Vincent', age=>15},
-	];
+    is_fields ['name','age'], Person, [
+        {name=>'John', age=>40},
+        {name=>'Vanessa',age=>35},
+        {name=>'Vincent', age=>15},
+    ];
 
 I find the array version is most consise.  Please note that the match is not
 ordered.  If you need to test that a given Resultset is in a particular order,
@@ -1006,14 +1006,14 @@ You should examine the test cases for more examples.
 
 =head2 is_fields_multi
 
-	TBD: Not yet written.
+    TBD: Not yet written.
 
 =head1 SETUP AND INITIALIZATION
 
 The generic usage for this would look like one of the following:
 
-	use Test::DBIx::Class \%options, @sources
-	use Test::DBIx::Class %options, @sources
+    use Test::DBIx::Class \%options, @sources
+    use Test::DBIx::Class %options, @sources
 
 Where %options are key value pairs and @sources an array as specified below.
 
@@ -1025,8 +1025,8 @@ you are inlining a lot of configuration the hash reference version may look
 neater, while if you are only setting one or two options the hash version
 might be more readable.  For example, the following are the same:
 
-	use Test::DBIx::Class -config_path=>[qw(t etc config)], 'Person', 'Job';
-	use Test::DBIx::Class {config_path=>[qw(t etc config)]}, 'Person', 'Job';
+    use Test::DBIx::Class -config_path=>[qw(t etc config)], 'Person', 'Job';
+    use Test::DBIx::Class {config_path=>[qw(t etc config)]}, 'Person', 'Job';
 
 The following options are currently standard and always available.  Depending
 on your storage engine (such as SQLite or mysql) you will have other options.
@@ -1125,12 +1125,12 @@ configuration file.  As of this time we don't merge %ENV settings, they only
 provider overrides to the default settings. Example use (assumes you are
 using the default SQLite database)
 
-	DBNAME=test.db KEEP_DB=1 prove -lv t/schema/check-person.t
+    DBNAME=test.db KEEP_DB=1 prove -lv t/schema/check-person.t
 
 After running the test there will be a new file called 'test.db' in the home
 directory of your distribution.  You can use:
 
-	sqlite3 test.db
+    sqlite3 test.db
 
 to open and view the tables and their data as loaded by any fixtures or create
 statements. See L<Test::DBIx::Class::SchemaManager::Trait::SQLite> for more.
@@ -1143,17 +1143,17 @@ I thought the most useful.  Patches and suggestions welcomed.
 The @sources are a list of result sources that you want helper methods injected
 into your test script namespace.  This is the 'Source' part of:
 
-	$schema->resultset('Source');
+    $schema->resultset('Source');
 
 Injecting methods are optional since you can also use the 'ResultSet' keyword
 
 Imported Source keywords use L<Sub::Exporter> so you have quite a few options
 for controling how the keywords are imported.  For example:
 
-	use Test::DBIx::Class 
-	  'Person',
-	  'Person::Employee' => {-as => 'Employee'},
-	  'Person' => {search => {age=>{'>'=>55}}, -as => 'OlderPerson'};
+    use Test::DBIx::Class 
+      'Person',
+      'Person::Employee' => {-as => 'Employee'},
+      'Person' => {search => {age=>{'>'=>55}}, -as => 'OlderPerson'};
 
 This would import three local keywork methods, "Person", "Employee" and 
 "OlderPerson".  For "OlderPerson", the search parameter would automatically be
@@ -1164,15 +1164,15 @@ your test script as a way to promote reusability.
 In addition to the 'search' parameter, there is also an 'exec' parameter
 which let's you process your resultset programatically.  For example:
 
-	'Person' => {exec => sub { shift->older_than(55) }, -as => 'OlderPerson'};
+    'Person' => {exec => sub { shift->older_than(55) }, -as => 'OlderPerson'};
 
 This code reference gets passed the resultset object.  So you can use any 
 method on $resultset.  For example:
 
-	'Person' => {exec => sub { shift->find('john') }, -as => 'John'}; 
+    'Person' => {exec => sub { shift->find('john') }, -as => 'John'}; 
 
-	is_result John;
-	is John->name, 'John Napiorkowski', "Got Correct Name";
+    is_result John;
+    is John->name, 'John Napiorkowski', "Got Correct Name";
 
 Although since fixtures will not yet be installed, the above is probably not
 going to be a normally working example :)
@@ -1183,40 +1183,40 @@ this means you can predefine and result resultsets across all your tests.  Here
 is an example 't/etc/schema.pl' file where I initialize pretty much everything
 in one file:
 
-	 {
-	  'schema_class' => 'Test::DBIx::Class::Example::Schema',
-	  'resultsets' => [
-		'Person',
-		'Job',
-		'Person' => { '-as' => 'NotTeenager', search => {age=>{'>'=>18}}},
-	  ],
-	  'fixture_sets' => {
-		'basic' => {
-		  'Person' => [
-			[
-			  'name',
-			  'age',
-			  'email'
-			],
-			[
-			  'John',
-			  '40',
-			  'john@nowehere.com'
-			],
-			[
-			  'Vincent',
-			  '15',
-			  'vincent@home.com'
-			],
-			[
-			  'Vanessa',
-			  '35',
-			  'vanessa@school.com'
-			]
-		  ]
-		}
-	  },
-	};
+     {
+      'schema_class' => 'Test::DBIx::Class::Example::Schema',
+      'resultsets' => [
+        'Person',
+        'Job',
+        'Person' => { '-as' => 'NotTeenager', search => {age=>{'>'=>18}}},
+      ],
+      'fixture_sets' => {
+        'basic' => {
+          'Person' => [
+            [
+              'name',
+              'age',
+              'email'
+            ],
+            [
+              'John',
+              '40',
+              'john@nowehere.com'
+            ],
+            [
+              'Vincent',
+              '15',
+              'vincent@home.com'
+            ],
+            [
+              'Vanessa',
+              '35',
+              'vanessa@school.com'
+            ]
+          ]
+        }
+      },
+    };
 
 In this case you can simple do "use Test::DBIx::Class" and everything will
 happen automatically.
@@ -1225,8 +1225,8 @@ happen automatically.
 
 By default, we try to load configuration fileis from the following locations:
 
-	 ./t/etc/schema.*
-	 ./t/etc/[test file path].*
+     ./t/etc/schema.*
+     ./t/etc/[test file path].*
 
 Where "." is the root of the distribution and "*" is any of the configuration
 file types supported by L<Config::Any> configuration loader.  This allows you
@@ -1244,7 +1244,7 @@ You can override this search path with the "-config_path" key in options. For
 example, the following searches for "t/etc/myconfig.*" (or whatever is the
 correct directory separator for your operating system):
 
-	use Test::DBIx::Class -config_path => [qw/t etc myconfig/];
+    use Test::DBIx::Class -config_path => [qw/t etc myconfig/];
 
 Relative paths are rooted to the distribution home directory (ie, the one that
 contains your 'lib' and 't' directories).  Full paths are searched without
@@ -1253,19 +1253,19 @@ modification.
 You can specify multiply paths.  The following would search for both "schema.*"
 and "share/schema".
 
-	use Test::DBIx::Class -config_path => [[qw/share schema/], [qw/schema/]];
+    use Test::DBIx::Class -config_path => [[qw/share schema/], [qw/schema/]];
 
 Lastly, you can use the special symbol "+" to indicate that your custom path
 adds to or prepends to the default search path.  Since as indicated we merge
 all the configurations found, this means it's easy to create user level 
 configuration settings mixed with global settings, as in:
 
-	use Test::DBIx::Class
-		-config_path => [ 
-			[qw(/ etc myapp test-schema)],
-			'+',
-			[qw(~ etc test-schema)],
-		];
+    use Test::DBIx::Class
+        -config_path => [ 
+            [qw(/ etc myapp test-schema)],
+            '+',
+            [qw(~ etc test-schema)],
+        ];
 
 Which would search and combine "/etc/myapp/test-schema.*", "./t/etc/schema.*",
 "./etc/[test script name].*" and "~/etc/test-schema.*".  This would let you set
@@ -1285,25 +1285,25 @@ that $ENV{TEST_DBIC_CONFIG_SUFFIX} is set, we attempt to find configuration file
 with the suffix appended to each of the items in the config_path option.  So, if
 you have:
 
-	use Test::DBIx::Class
-		-config_path => [ 
-			[qw(/ etc myapp test-schema)],
-			'+',
-			[qw(~ etc test-schema)],
-		];
-		
+    use Test::DBIx::Class
+        -config_path => [ 
+            [qw(/ etc myapp test-schema)],
+            '+',
+            [qw(~ etc test-schema)],
+        ];
+        
 and $ENV{TEST_DBIC_CONFIG_SUFFIX} = '-mysql' we will check the following paths
 for valid and loading configuration files (assuming unix filesystem conventions)
 
-	/etc/myapp/test-schema.*
-	/etc/myapp/test-schema-mysql.*
-	./t/etc/schema.*	
-	./t/etc/schema-mysql.*
-	./etc/[test script name].*
-	./etc/[test script name]-mysql.*
-	~/etc/test-schema.*
-	~/etc/test-schema-mysql.*
-	
+    /etc/myapp/test-schema.*
+    /etc/myapp/test-schema-mysql.*
+    ./t/etc/schema.*    
+    ./t/etc/schema-mysql.*
+    ./etc/[test script name].*
+    ./etc/[test script name]-mysql.*
+    ~/etc/test-schema.*
+    ~/etc/test-schema-mysql.*
+    
 Each path is testing in turn and all found configurations are merged from top to
 bottom.  This feature is intended to make it easier to switch between sets of
 configuration files when developing.  For example, you can create a test suite
@@ -1324,15 +1324,15 @@ such as from %ENV.  There are currently two macro substitutions:
 Given a value in %ENV, substitute the keyword for the value of the named
 substitution.  For example, if you had:
 
-	email = 'vanessa__ENV(TEST_DBIC_LAST_NAME)__@school.com'
+    email = 'vanessa__ENV(TEST_DBIC_LAST_NAME)__@school.com'
 
 in your configuration filem your could:
 
-	TEST_DBIC_LAST_NAME=_lee prove -lv t/schema-your-test.t
+    TEST_DBIC_LAST_NAME=_lee prove -lv t/schema-your-test.t
 
 and then:
 
-	is $vanessa->email, 'vanessa_lee@school.com', 'Got expected email';
+    is $vanessa->email, 'vanessa_lee@school.com', 'Got expected email';
 
 You might find this useful for configuring localized username and passwords
 although personally I'd rather set that via configuration in the user home
