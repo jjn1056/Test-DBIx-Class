@@ -1,5 +1,11 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.22 22 August 2011
+    - Documentation prefers the arrayref and not the hashref form when 
+      installing fixtures.  We will leave support for both in code for
+      now to support backcompat, but at some point will warning and 
+      eventually remove.  (hippich++)
+
 0.21 02 June 2011
     - Fixed a bug when the test is named 'schema.t'
 
