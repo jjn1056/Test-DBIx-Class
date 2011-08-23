@@ -1,0 +1,3 @@
+[submodule "maint"]
+	path = maint
+	url = git@github.com:jjn1056/Maker.git
