@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use maint::Maker;
+use ext::lib::Maker;
 
 all_from 'lib/Test/DBIx/Class.pm';
 requires 'Config::Any' => '0.19';
