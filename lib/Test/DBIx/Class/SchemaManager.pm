@@ -13,16 +13,16 @@ has 'force_drop_table' => (
     traits=>['ENV'],
     is=>'rw',
     isa=>'Bool',
-    required=>1, 
-    default=>0,	
+    required=>1,
+    default=>0,
 );
 
 has 'keep_db' => (
     traits=>['ENV'],
     is=>'ro',
     isa=>'Bool',
-    required=>1, 
-    default=>0,	
+    required=>1,
+    default=>0,
 );
 
 has 'builder' => (
@@ -58,7 +58,7 @@ has 'fixture_class' => (
     isa => FixtureClass,
     required => 1,
     coerce => 1,
-    default => '::Populate',		
+    default => '::Populate',
 );
 
 has 'fixture_command' => (
@@ -129,7 +129,7 @@ sub initialize_schema {
         $connect_info = to_ConnectInfo($connect_info);
         my ($driver) = $connect_info->{dsn} =~ /dbi:([^:]+):/i;
                     if(lc $driver eq "sqlite") {
-                        push @traits, 'SQLite';    
+                        push @traits, 'SQLite';
                     }
                     # Don't assume mysql means we want Testmysqld; we may
                     # want to connect to a real mysql server to test.
@@ -141,7 +141,7 @@ sub initialize_schema {
     $config->{traits} = \@traits;
     my $self = Moose::Util::with_traits($class, @traits)->new($config);
     if($self) {
-        $self->schema->storage->ensure_connected; 
+        $self->schema->storage->ensure_connected;
         $self->setup;
         return $self;
     } else {
@@ -171,7 +171,7 @@ sub setup {
             Test::More::fail("Error Deploying Schema: $@");
         }
         return $self;
-    } 
+    }
     return;
 }
 
@@ -186,7 +186,7 @@ sub cleanup {
             foreach my $source ($schema->sources) {
                 my $table = $schema->source($source)->name;
                 $schema->storage->dbh->do("drop table $table")
-                    if !($schema->source($source)->can('is_virtual') && 
+                    if !($schema->source($source)->can('is_virtual') &&
                         $schema->source($source)->is_virtual);
             }
         });
@@ -224,7 +224,7 @@ sub DEMOLISH {
         $self->cleanup;
     }
 }
-	
+
 1;
 
 __END__
