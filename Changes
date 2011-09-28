@@ -1,5 +1,11 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.23 28 September 2011
+    - Patch from richard.foley++ who also submitted the RT bug
+      (https://rt.cpan.org/Public/Bug/Display.html?id=71305) to make some
+      types of errors in the cleanup not cause cleanup to fail in a messy
+      way.
+      
 0.22 22 August 2011
     - Documentation prefers the arrayref and not the hashref form when 
       installing fixtures.  We will leave support for both in code for

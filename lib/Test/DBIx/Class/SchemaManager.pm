@@ -180,11 +180,14 @@ sub cleanup {
     my $schema = $self->schema;
 
     return unless $schema;
+    return unless $schema->storage;
 
     unless ($self->keep_db) {
         $schema->storage->with_deferred_fk_checks(sub {
             foreach my $source ($schema->sources) {
-                my $table = $schema->source($source)->name;
+                my $tablesource = $schema->source($source);
+                next unless $tablesource;
+                my $table = $tablesource->name;
                 $schema->storage->dbh->do("drop table $table")
                     if !($schema->source($source)->can('is_virtual') &&
                         $schema->source($source)->is_virtual);
@@ -248,7 +251,7 @@ inline configuration or use a configuration file).
 =item FORCE_DROP_TABLE
 
 Set to a true value will force dropping tables in the deploy phase.  This will
-generate warnings in a database (like sqlite) that can't detect if a table 
+generate warnings in a database (like sqlite) that can't detect if a table
 exists before attempting to drop it.  Safe for Mysql though.
 
 =item KEEP_DB
