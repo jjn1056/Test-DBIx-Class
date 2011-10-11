@@ -201,9 +201,16 @@ mostly harmless warnings, similar to:
 	drop cascades to constraint cd_artist_fk_cd_id_fkey on table cd_artist
 	NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "cd_pkey" for table "cd"
 
-In general these are harmless and can be ignored.  I will work with the author
-of L<Test::postgresql> to see if we can find a way to redirect these to a log 
-file somewhere.
+In general these are harmless and can be ignored.
+
+If you like to avoid these messages, you could change your connect_info like this:
+
+    connect_info => {
+        dsn => 'dbi:Pg:dbname=dbname', 
+        user => 'user', 
+        pass => 'secret',
+        on_connect_do => 'SET client_min_messages=WARNING;',
+    },
 
 =head1 AUTHOR
 
