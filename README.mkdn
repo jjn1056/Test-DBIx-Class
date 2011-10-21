@@ -722,8 +722,9 @@ The following modules or resources may be of interest.
     Tomas Doran C<< <bobtfish@bobtfish.net> >>
     Kyle Hasselbacher C<< kyleha@gmail.com >>
     cvince
-    colinnewell 
+    colinnewell
     rbuels
+    wlk
 
 # COPYRIGHT & LICENSE
 
