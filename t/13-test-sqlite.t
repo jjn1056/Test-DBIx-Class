@@ -30,7 +30,13 @@ use File::Temp qw(tempdir);
     ok -f $dbname, 'SQLite DB was created'; 
   }
 
+  ok my $schema_manager =
+    Test::DBIx::Class->_initialize_schema(build_config($dbname, 1, 1)),
+            'Initialize schema with deploy_db => 0';
+
+
   ok -f $dbname, 'SQLite DB was kept, respecting to keep_db';
+
 
   unlink $dbname;
 }
@@ -55,12 +61,13 @@ done_testing;
 exit;
 
 sub build_config {
-  my ($dbname, $keep) = @_;
+  my ($dbname, $keep, $do_not_deploy) = @_;
   return {
     schema_class     => 'Test::DBIx::Class::Example::Schema',
     connect_info     => ["dbi:SQLite:dbname=$dbname",'',''],
     fixture_class    => '::Populate',
     keep_db          => $keep,
+    deploy_db        => !$do_not_deploy,
   };
 }
 
