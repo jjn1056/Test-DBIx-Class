@@ -93,6 +93,8 @@ sub _build_schema {
     my $schema_class = $self->schema_class;
     my $connect_info = $self->connect_info;
 
+    return unless $schema_class;
+
     $schema_class = $self->prepare_schema_class($schema_class);
 
     return $schema_class->connect($connect_info);
