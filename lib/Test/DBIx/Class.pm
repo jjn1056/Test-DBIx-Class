@@ -1098,6 +1098,12 @@ set the previously mentioned option 'force_drop_table' to true as well, or we
 will attempt to create tables and populate them when they are already populated
 and created.
 
+=item deploy_db
+
+By default a fresh version of the schema is deployed when 'Test::DBIx::Class'
+is invoked.  If you want to skip the schema deployment and instead connect
+to an already existing and populated database, set this option to false.
+
 =item traits
 
 Traits are L<Moose::Role>s that are applied to the class managing the connection
