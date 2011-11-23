@@ -1,5 +1,12 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.26 22 November 2011
+    - A tweak to prevent errors when cleaning up and the schema has disappeared
+      (hippich++)
+    - New Feature: Preserve existing DB rather than deploy from scratch each
+      test case.  Can speed things up when your fixtures are consistent.  See
+      docs and test cases (yanick++)
+
 0.25 21 October 2011
     - A tweak to the documentation on how to silence some warnings when using
       Postgresql (wlk++)
