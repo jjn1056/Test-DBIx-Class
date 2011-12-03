@@ -243,6 +243,7 @@ sub get_default_connect_info {
         "Starting mysqld with: ".
         $deployed_db->mysqld.
         " --defaults-file=".$base_dir . '/etc/my.cnf'.
+        " --tmpdir=".$base_dir . '/tmp'.
         " --user=root"
     );
 
@@ -281,7 +282,7 @@ sub is_port_open {
     return 0; 
 }
 
-our $next_port = 8000;
+our $next_port = 8000 + int(rand(2000));
 sub first_unused_port {
     ++$next_port;
     my $port = $next_port;
