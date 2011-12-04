@@ -46,7 +46,7 @@ has default_cnf => (
 );
 
 sub _build_default_cnf {
-    my $port = first_unused_port();
+    my $port = $_[0]->first_unused_port();
     return {
         'server-id'=>1,
         'log-bin'=>'mysql-bin',
@@ -54,6 +54,12 @@ sub _build_default_cnf {
         'port'=>$port,
     };
 }
+
+has port_to_try_first => (
+    is=>'rw',
+#    default=> sub { 8000 + int(rand(2000)) }, 
+    default => 8000,
+);
 
 has my_cnf => (
     is=>'ro', 
@@ -119,7 +125,7 @@ has my_replicant_cnf => (
 sub prepare_replicant_config {
     my ($self, $replicant, @replicants,%extra) = @_;
     my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
-    my $port = first_unused_port();
+    my $port = $self->first_unused_port();
     my %config = (
         my_cnf => {
             'port'=>$port,
@@ -282,9 +288,9 @@ sub is_port_open {
     return 0; 
 }
 
-our $next_port = 8000 + int(rand(2000));
+our $next_port;
 sub first_unused_port {
-    ++$next_port;
+    $next_port ||= $_[0]->port_to_try_first;
     my $port = $next_port;
     while (is_port_open($port)) {
         $port++;
@@ -292,6 +298,7 @@ sub first_unused_port {
             die "no ports available\n";
         }
     }
+    ++$next_port;
     return $port;
 }
 
@@ -355,10 +362,22 @@ you have some specific needs you can leave this empty, since we set the few
 things most needed to get a server running.  You will need to review the
 documentation on the Mysql website for options related to this.
 
+=head2 port_to_try_first
+
+This is the port that will be used when starting mysqld. We check that this
+port is available for use before starting mysqld. If it is not available we
+increment by 1 and try again. We use the first free port found.
+
+By default this is a random port between 8000 and 10000. The randomness is
+an attempt to avoid race condition issues when running tests in parallel,
+between checking the availability of a port and actually starting the server.
+Spreading the "first port" numbers used greatly reduces the chance of these
+issues occuring.
+
 =head2 mysql_install_db or mysqld
 
 If your mysqld is not in the $PATH you might need to specify the location to
-one of there binaries.  If you have a normal mysql setup this should not be
+one of their binaries.  If you have a normal mysql setup this should not be
 a problem and you can leave this blank.
 
 For example, I often use L<MySQL::Sandbox> to setup various versions of mysql
