@@ -1,5 +1,13 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.27 04 December 2011
+    - Randomize the starting port for whne we create an instance of mysql.
+      This solves a problem where sometimes when doing parallel testing we get
+      port collisions. (lecstor++)
+    - forward support for controlling a temporary directory location in mysql
+      (support pending in test::mysql so we won't document feature for now.
+      (lecstor++)
+
 0.26 22 November 2011
     - A tweak to prevent errors when cleaning up and the schema has disappeared
       (hippich++)
