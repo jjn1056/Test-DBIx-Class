@@ -57,7 +57,8 @@ sub _build_default_cnf {
 
 has port_to_try_first => (
     is=>'rw',
-    default=> sub { 8000 + int(rand(2000)) }, 
+#    default=> sub { 8000 + int(rand(2000)) }, 
+    default => 8000,
 );
 
 has my_cnf => (
@@ -287,7 +288,7 @@ sub is_port_open {
     return 0; 
 }
 
-our $next_port; # = 8000 + int(rand(2000));
+our $next_port;
 sub first_unused_port {
     $next_port ||= $_[0]->port_to_try_first;
     my $port = $next_port;
