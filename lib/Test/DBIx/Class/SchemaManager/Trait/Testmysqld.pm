@@ -248,7 +248,6 @@ sub get_default_connect_info {
         "Starting mysqld with: ".
         $deployed_db->mysqld.
         " --defaults-file=".$base_dir . '/etc/my.cnf'.
-        " --tmpdir=".$base_dir . '/tmp'.
         " --user=root"
     );
 
