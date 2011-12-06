@@ -46,7 +46,7 @@ has default_cnf => (
 );
 
 sub _build_default_cnf {
-    my $port = first_unused_port();
+    my $port = $_[0]->first_unused_port();
     return {
         'server-id'=>1,
         'log-bin'=>'mysql-bin',
@@ -54,6 +54,11 @@ sub _build_default_cnf {
         'port'=>$port,
     };
 }
+
+has port_to_try_first => (
+    is=>'rw',
+    default=> sub { 8000 + int(rand(2000)) }, 
+);
 
 has my_cnf => (
     is=>'ro', 
@@ -243,7 +248,6 @@ sub get_default_connect_info {
         "Starting mysqld with: ".
         $deployed_db->mysqld.
         " --defaults-file=".$base_dir . '/etc/my.cnf'.
-        " --tmpdir=".$base_dir . '/tmp'.
         " --user=root"
     );
 
@@ -282,9 +286,9 @@ sub is_port_open {
     return 0; 
 }
 
-our $next_port = 8000 + int(rand(2000));
+our $next_port;
 sub first_unused_port {
-    ++$next_port;
+    $next_port ||= $_[0]->port_to_try_first;
     my $port = $next_port;
     while (is_port_open($port)) {
         $port++;
@@ -292,6 +296,7 @@ sub first_unused_port {
             die "no ports available\n";
         }
     }
+    ++$next_port;
     return $port;
 }
 
@@ -354,6 +359,18 @@ which is the primary configuration file for the mysql instance.  Again, unless
 you have some specific needs you can leave this empty, since we set the few
 things most needed to get a server running.  You will need to review the
 documentation on the Mysql website for options related to this.
+
+=head2 port_to_try_first
+
+This is the port that will be used when starting mysqld. We check that this
+port is available for use before starting mysqld. If it is not available we
+increment by 1 and try again. We use the first free port found.
+
+By default this is a random port between 8000 and 10000. The randomness is
+an attempt to avoid race condition issues when running tests in parallel,
+between checking the availability of a port and actually starting the server.
+Spreading the "first port" numbers used greatly reduces the chance of these
+issues occuring.
 
 =head2 mysql_install_db or mysqld
 
