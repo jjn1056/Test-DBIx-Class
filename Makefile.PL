@@ -22,6 +22,8 @@ requires 'Scalar::Util' => '1.23';
 requires 'Sub::Exporter' => '0.982';
 requires 'Test::Builder' => '0.96';
 requires 'Test::Deep' => '0.106';
+requires 'File::Temp';
+requires 'File::Path';
 
 feature('MySql Support', -default => 0, 'Test::mysqld' => '0.12');
 feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.09');

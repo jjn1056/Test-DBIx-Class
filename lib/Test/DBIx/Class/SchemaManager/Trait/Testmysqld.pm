@@ -1,19 +1,22 @@
 package Test::DBIx::Class::SchemaManager::Trait::Testmysqld;
-	
+
 use Moose::Role;
 use MooseX::Attribute::ENV;
 use Test::mysqld;
 use Test::More ();
 use Path::Class qw(dir);
 use Test::DBIx::Class::Types qw(ReplicantsConnectInfo);
+use Socket;
+use File::Temp qw(tempdir);
+use File::Path qw(make_path);
 
 requires 'setup', 'cleanup';
 
 ## has '+force_drop_table' => (is=>'rw',default=>1);
 
 has [qw/base_dir mysql_install_db mysqld/] => (
-    is=>'ro', 
-    traits=>['ENV'], 
+    is=>'ro',
+    traits=>['ENV'],
 );
 
 has test_db_manager => (
@@ -38,15 +41,15 @@ sub _build_test_db_manager {
 }
 
 has default_cnf => (
-    is=>'ro', 
-    init_arg=>undef, 
-    isa=>'HashRef', 
-    auto_deref=>1, 
+    is=>'ro',
+    init_arg=>undef,
+    isa=>'HashRef',
+    auto_deref=>1,
     lazy_build=>1,
 );
 
 sub _build_default_cnf {
-    my $port = $_[0]->first_unused_port();
+    my $port = $_[0]->find_next_unused_port();
     return {
         'server-id'=>1,
         'log-bin'=>'mysql-bin',
@@ -57,12 +60,12 @@ sub _build_default_cnf {
 
 has port_to_try_first => (
     is=>'rw',
-    default=> sub { 8000 + int(rand(2000)) }, 
+    default=> sub { 8000 + int(rand(2000)) },
 );
 
 has my_cnf => (
-    is=>'ro', 
-    isa=>'HashRef', 
+    is=>'ro',
+    isa=>'HashRef',
     auto_deref=>1,
 );
 
@@ -102,29 +105,29 @@ has balancer_args => (
         return {
             auto_validate_every=>10,
             master_read_weight => 1,
-        },	
+        },
     },
 );
 
 has default_replicant_cnf => (
-    is=>'ro', 
-    init_arg=>undef, 
-    isa=>'HashRef', 
-    auto_deref=>1, 
+    is=>'ro',
+    init_arg=>undef,
+    isa=>'HashRef',
+    auto_deref=>1,
     required=>1,
     default=> sub { +{} },
 );
 
 has my_replicant_cnf => (
-    is=>'ro', 
-    isa=>'HashRef', 
+    is=>'ro',
+    isa=>'HashRef',
     auto_deref=>1,
 );
 
 sub prepare_replicant_config {
     my ($self, $replicant, @replicants,%extra) = @_;
     my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
-    my $port = first_unused_port();
+    my $port = find_next_unused_port();
     my %config = (
         my_cnf => {
             'port'=>$port,
@@ -137,12 +140,12 @@ sub prepare_replicant_config {
     );
 
     my $replicant_name =$replicant->{name};
-    my $base_dir = $self->test_db_manager->base_dir . "/$replicant_name";
+    my $base_dir = $self->test_db_manager->base_dir . "/$port" .'_'. "$replicant_name";
 
-    $config{base_dir} = $base_dir;	
-    $config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	
-    $config{mysqld} = $self->mysqld if $self->mysqld;	
-    
+    $config{base_dir} = $base_dir;
+    $config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;
+    $config{mysqld} = $self->mysqld if $self->mysqld;
+
     return %config;
 }
 
@@ -164,13 +167,13 @@ around 'prepare_schema_class' => sub {
 
 around 'setup' => sub {
     my ($setup, $self, @args) = @_;
- 
+
     return $self->$setup(@args) unless $self->has_replicants;
 
     ## Do we need to invent replicants?
     my @replicants = ();
     my @deployed_replicants = ();
-    foreach	my $replicant ($self->replicants) { 
+    foreach	my $replicant ($self->replicants) {
         if($replicant->{dsn}) {
             push @replicants, $replicant;
         } else {
@@ -178,6 +181,10 @@ around 'setup' => sub {
             ## a test db and request its connect info.
             $replicant->{name} = defined $replicant->{name} ? $replicant->{name} : ($#replicants+1);
             my %config = $self->prepare_replicant_config($replicant, @replicants);
+
+            use Devel::Dwarn;
+            Dwarn \%config;
+
             my $deployed = $self->deploy_testdb(%config);
             my $replicant_base_dir = $deployed->base_dir;
 
@@ -190,10 +197,10 @@ around 'setup' => sub {
 
             Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock','root','')");
             push @deployed_replicants, $deployed;
-            push @replicants, 
+            push @replicants,
               ["DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock",'root',''];
 
-        }	
+        }
     }
 
 
@@ -201,12 +208,13 @@ around 'setup' => sub {
     $self->replicants(\@replicants);
     $self->schema->storage->connect_replicants($self->replicants);
     $self->schema->storage->ensure_connected;
+    my $port =  $self->default_cnf->{port};  ## TODO I doubt this is correct.....
 
     foreach my $storage ($self->schema->storage->pool->all_replicant_storages) {
         ## TODO, need to change this to dbh_do
         my $dbh = $storage->_get_dbh;
         $dbh->do("STOP SLAVE") || die $dbh->errst;
-        $dbh->do("CHANGE MASTER TO  master_host='127.0.0.1',  master_port=8001,  master_user='root',  master_password=''")
+        $dbh->do("CHANGE MASTER TO  master_host='127.0.0.1',  master_port=$port,  master_user='root',  master_password=''")
             || die $dbh->errstr;
         $dbh->do("START SLAVE")
             || die $dbh->errstr;
@@ -220,17 +228,19 @@ sub prepare_config {
     my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
     my %config = (
         my_cnf => {
-            $self->default_cnf, 
-            $self->my_cnf, 
+            $self->default_cnf,
+            $self->my_cnf,
             %my_cnf_extra,
         },
         %extra,
     );
+    my $port = $self->default_cnf->{port};
+    my $cleanup = ($ENV{TEST_MYSQLD_PRESERVE} || $self->keep_db) ? undef : 1;
+    $config{base_dir} = $self->base_dir ? $self->base_dir ."/$port" : tempdir(CLEANUP => $cleanup) . "/$port";
+    make_path($config{base_dir}) unless -e $config{base_dir};
+    $config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;
+    $config{mysqld} = $self->mysqld if $self->mysqld;
 
-    $config{base_dir} = $self->base_dir if $self->base_dir;	
-    $config{mysql_install_db} = $self->mysql_install_db if $self->mysql_install_db;	
-    $config{mysqld} = $self->mysqld if $self->mysqld;	
- 
     return %config;
 }
 
@@ -248,6 +258,7 @@ sub get_default_connect_info {
         "Starting mysqld with: ".
         $deployed_db->mysqld.
         " --defaults-file=".$base_dir . '/etc/my.cnf'.
+        " --tmpdir=".$base_dir . '/tmp'.
         " --user=root"
     );
 
@@ -265,13 +276,12 @@ after 'cleanup' => sub {
     }
 };
 
-use Socket;
 sub is_port_open {
     my ($port) = @_;
     my ($host, $iaddr, $paddr, $proto);
 
     $host  =  '127.0.0.1';
-    $iaddr   = inet_aton($host)               
+    $iaddr   = inet_aton($host)
         or die "no host: $host";
     $paddr   = sockaddr_in($port, $iaddr);
 
@@ -283,11 +293,11 @@ sub is_port_open {
             or die "error closing test socket: $!";
         return 1;
     }
-    return 0; 
+    return 0;
 }
 
 our $next_port;
-sub first_unused_port {
+sub find_next_unused_port {
     $next_port ||= $_[0]->port_to_try_first;
     my $port = $next_port;
     while (is_port_open($port)) {
@@ -321,8 +331,8 @@ Please review L<Test::mysqld> for help if you get stuck.
 =head1 CONFIGURATION
 
 This trait supports all the existing features but adds some additional options
-you can put into your inlined of configuration files.  These following 
-additional configuration options basically map to the options supported by 
+you can put into your inlined of configuration files.  These following
+additional configuration options basically map to the options supported by
 L<Test::mysqld> and the docs are adapted shamelessly from that module.
 
 For the most part, if you have mysql installed in a normal, findable manner
@@ -386,14 +396,14 @@ in the future)
 
 =head1 NOTES
 
-The following are notes regarding the way this trait alters or extends the 
+The following are notes regarding the way this trait alters or extends the
 core functionality as described in the basic documentation.
 
 =head2 force_drop_table
 
 Since it is always safe to use the 'force_drop_table' option with mysql, we set
 the default to true.  We recommend you leave it this way, particularly if you
-want to 'roundtrip' the same test database. 
+want to 'roundtrip' the same test database.
 
 =head2 keep_db
 
@@ -429,7 +439,7 @@ You can now log into the test generated database instance with:
 
 	mysql --socket=/tmp/WT0P0VutAe/tmp/mysql.sock -u root test
 
-You may need to specify the full path to 'mysql' if it's not in your search 
+You may need to specify the full path to 'mysql' if it's not in your search
 $PATH.
 
 When you are finished you can then kill the process.  In this case our reported
@@ -441,7 +451,7 @@ And then you might wish to 'tidy' up temp
 
 	rm -rf /tmp/WT0P0VutAe
 
-All the above assume you are on a unix or unixlike system.  Would welcome 
+All the above assume you are on a unix or unixlike system.  Would welcome
 document patches for how to do all the above on windows.
 
 =head1 AUTHOR
