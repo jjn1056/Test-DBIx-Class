@@ -271,6 +271,17 @@ created, etc.  Sometimes you might want to preserve the database after testing
 so that you can 'poke around'.  Personally I think it's better to write tests
 for the poking, but sometimes you just need a quick look.
 
+Please Note that KEEP_DB is not intended for use as a way to preserve deployed
+databases across tests or test runs.  I realize you may wish to try this as a
+way to reduce testing time, since starting and deploying databases can be time
+consuming, however it negates the goal we have to properly isolate the test
+cases.
+
+If there is tremendous need for this type of feature, we may in the future try
+to develop a good working system.  For now I recomment using the C<reset_schema>
+(see L<Test::DBIx::Class/reset_schema> for more) and subtests if you want to
+try this for a given test run..
+
 =back
 
 =head1 SEE ALSO
