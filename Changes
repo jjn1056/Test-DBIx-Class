@@ -1,5 +1,25 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.28 13 December 2011
+    - POSSIBLE BACKCOMPAT BREAKAGE: We now randomize the port under which an
+      instance of mysql is created, to help better support replication and
+      parallel testing.  As a result you can't rely on the starting port for
+      your custom tests, should you wish it.  We also now insert the port
+      into the tmp directory path where your instance of mysql is running so
+      that we can better support parallel testing.  If you used to rely on 
+      using KEEP_DB and reusing a database at a given path your code may not
+      work.  Please let the authors know if this is causing you trouble.
+    - for the mysql trait, we now control the temporary directory where the
+      instance of mysql is created, if you choose to let us make one.  This
+      means temporary directories created this way will properly support the
+      KEEP_DB option, and we can do a better job of cleaning up
+    - support new tmpdir option in Test::mysqld (lecstor++)
+    - As a result of above changes, I feel that support for mysql native
+      replication is no longer alpha code.  I still reserve the right to make
+      changes required to make this stable, but I think those changes should
+      be smaller in the future.
+    - documentation for above
+    - Added replication stress testing to test suite
 0.27 04 December 2011
     - Randomize the starting port for when we create an instance of mysql.
       This solves a problem where sometimes when doing parallel testing we get

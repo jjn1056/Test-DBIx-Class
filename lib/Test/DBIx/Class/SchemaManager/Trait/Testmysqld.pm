@@ -181,10 +181,6 @@ around 'setup' => sub {
             ## a test db and request its connect info.
             $replicant->{name} = defined $replicant->{name} ? $replicant->{name} : ($#replicants+1);
             my %config = $self->prepare_replicant_config($replicant, @replicants);
-
-            use Devel::Dwarn;
-            Dwarn \%config;
-
             my $deployed = $self->deploy_testdb(%config);
             my $replicant_base_dir = $deployed->base_dir;
 
