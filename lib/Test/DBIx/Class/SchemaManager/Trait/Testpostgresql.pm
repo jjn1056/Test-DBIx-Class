@@ -14,7 +14,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 	);
 
 
-	has [qw/base_dir initdb postmaster/] => (
+	has [qw/initdb postmaster/] => (
 		is=>'ro', 
 		traits=>['ENV'], 
 	);
@@ -50,14 +50,16 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 		my ($self) = @_;
 		my $port = $self->postgresqlobj->port;
 
-		Test::More::diag(
-			"Starting postgresql with: ".
-            $self->postgresqlobj->postmaster.
-            ' -p ', $port,
-            ' -D ', $self->postgresqlobj->base_dir . '/data'
-		);
+        if ($self->debug || ($self->keep_db && !$self->base_dir)){
+            Test::More::diag(
+                "Starting postgresql with: ".
+                $self->postgresqlobj->postmaster.
+                ' -p ', $port,
+                ' -D ', $self->postgresqlobj->base_dir . '/data'
+            );
 
-		Test::More::diag("DBI->connect('DBI:Pg:dbname=template1;host=127.0.0.1;port=$port','postgres',''])");
+            Test::More::diag("DBI->connect('DBI:Pg:dbname=template1;host=127.0.0.1;port=$port','postgres',''])");
+        }
 		return ["DBI:Pg:dbname=template1;host=127.0.0.1;port=$port",'postgres',''];
 	}
 
@@ -156,6 +158,11 @@ that should be generated at the top of your test.  It will look similar to:
 	# Starting postgresql with: /Library/PostgreSQL/8.4/bin/postmaster \
 	 -p 15432 -D /tmp/E4tuZF5uFR/data
 	# DBI->connect('DBI:Pg:dbname=template1;port=15432','postgres',''])
+
+If you have specified the base_dir to use, this output will not be displayed by
+default. You can force it's display by setting debug to true. eg.
+
+    DEBUG=1 BASE_DIR=t/tmp KEEP_DB=1 prove -lv t/my-postgresql-test.t
 
 You can then start the database instance yourself with something like:
 
