@@ -421,7 +421,7 @@ that should be generated at the top of your test.  It will look similar to:
 	# Starting mysqld with: /usr/local/mysql/bin/mysqld --defaults-file=/tmp/KHKfJf0Yf6/etc/my.cnf --user=root
 
 If you have specified the base_dir to use, this output will not be displayed by
-default. You can force it's display by setting the env variable DEBUG to true. eg.
+default. You can force it's display by setting debug to true. eg.
 
 	DEBUG=1 BASE_DIR=t/tmp KEEP_DB=1 prove -lv t/my-mysql-test.t
 
