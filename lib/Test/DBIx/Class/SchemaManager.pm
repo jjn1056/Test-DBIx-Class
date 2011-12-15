@@ -17,7 +17,7 @@ has 'force_drop_table' => (
     default=>0,
 );
 
-has 'keep_db' => (
+has [qw/keep_db tdbic_debug/] => (
     traits=>['ENV'],
     is=>'ro',
     isa=>'Bool',
@@ -222,7 +222,7 @@ sub install_fixtures {
         or (ref $args[0] eq 'HASH' && $args[0]->{command}) ) {
         my $arg = ref $args[0] ?  $args[0]->{command} : $args[0];
         my $fixture_class = to_FixtureClass($arg);
-        $self->builder->diag("Override default FixtureClass '".$self->fixture_class."' with $fixture_class");
+        $self->builder->diag("Override default FixtureClass '".$self->fixture_class."' with $fixture_class") if $self->tdbic_debug;
         $fixture_command = $fixture_class->new(schema_manager=>$self);
         shift(@args);
     }
