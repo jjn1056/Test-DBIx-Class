@@ -184,14 +184,16 @@ around 'setup' => sub {
             my $deployed = $self->deploy_testdb(%config);
             my $replicant_base_dir = $deployed->base_dir;
 
-            Test::More::diag(
-                "Starting replicant mysqld with: ".
-                $deployed->mysqld.
-                " --defaults-file=".$replicant_base_dir . '/etc/my.cnf'.
-                " --user=root"
-            );
+            if ($self->tdbic_debug || ($self->keep_db && !$self->base_dir)){
+                Test::More::diag(
+                    "Starting replicant mysqld with: ".
+                    $deployed->mysqld.
+                    " --defaults-file=".$replicant_base_dir . '/etc/my.cnf'.
+                    " --user=root"
+                );
+                Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock','root','')");
+            }
 
-            Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock','root','')");
             push @deployed_replicants, $deployed;
             push @replicants,
               ["DBI:mysql:test;mysql_socket=$replicant_base_dir/tmp/mysql.sock",'root',''];
@@ -250,15 +252,17 @@ sub get_default_connect_info {
     my $deployed_db = shift(@_) || $self->test_db_manager;
     my $base_dir = $deployed_db->base_dir;
 
-    Test::More::diag(
-        "Starting mysqld with: ".
-        $deployed_db->mysqld.
-        " --defaults-file=".$base_dir . '/etc/my.cnf'.
-        " --tmpdir=".$base_dir . '/tmp'.
-        " --user=root"
-    );
+    if ($self->tdbic_debug || ($self->keep_db && !$self->base_dir)){
+        Test::More::diag(
+            "Starting mysqld with: ".
+            $deployed_db->mysqld.
+            " --defaults-file=".$base_dir . '/etc/my.cnf'.
+            " --user=root"
+        );
 
-    Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$base_dir/tmp/mysql.sock','root','')");
+        Test::More::diag("DBI->connect('DBI:mysql:test;mysql_socket=$base_dir/tmp/mysql.sock','root','')");
+    }
+
     return ["DBI:mysql:test;mysql_socket=$base_dir/tmp/mysql.sock",'root',''];
 }
 
@@ -327,9 +331,9 @@ Please review L<Test::mysqld> for help if you get stuck.
 =head1 CONFIGURATION
 
 This trait supports all the existing features but adds some additional options
-you can put into your inlined of configuration files.  These following
-additional configuration options basically map to the options supported by
-L<Test::mysqld> and the docs are adapted shamelessly from that module.
+you can put into your inlined configuration files.  These following additional
+configuration options basically map to the options supported by L<Test::mysqld>
+and the docs are adapted shamelessly from that module.
 
 For the most part, if you have mysql installed in a normal, findable manner
 you should be able to leave all these options blank.
@@ -415,6 +419,11 @@ database instance, you can start the database by noticing the diagnostic output
 that should be generated at the top of your test.  It will look similar to:
 
 	# Starting mysqld with: /usr/local/mysql/bin/mysqld --defaults-file=/tmp/KHKfJf0Yf6/etc/my.cnf --user=root
+
+If you have specified the base_dir to use, this output will not be displayed by
+default. You can force it's display by setting tdbic_debug to true. eg.
+
+	TDBIC_DEBUG=1 BASE_DIR=t/tmp KEEP_DB=1 prove -lv t/my-mysql-test.t
 
 You can then start the database instance yourself with something like:
 
