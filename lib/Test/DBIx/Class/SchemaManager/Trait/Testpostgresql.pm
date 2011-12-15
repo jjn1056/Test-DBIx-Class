@@ -14,7 +14,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 	);
 
 
-	has [qw/initdb postmaster/] => (
+	has [qw/base_dir initdb postmaster/] => (
 		is=>'ro', 
 		traits=>['ENV'], 
 	);
@@ -50,7 +50,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 		my ($self) = @_;
 		my $port = $self->postgresqlobj->port;
 
-        if ($self->debug || ($self->keep_db && !$self->base_dir)){
+        if ($self->tdbic_debug || ($self->keep_db && !$self->base_dir)){
             Test::More::diag(
                 "Starting postgresql with: ".
                 $self->postgresqlobj->postmaster.
@@ -160,9 +160,9 @@ that should be generated at the top of your test.  It will look similar to:
 	# DBI->connect('DBI:Pg:dbname=template1;port=15432','postgres',''])
 
 If you have specified the base_dir to use, this output will not be displayed by
-default. You can force it's display by setting debug to true. eg.
+default. You can force it's display by setting tdbic_debug to true. eg.
 
-    DEBUG=1 BASE_DIR=t/tmp KEEP_DB=1 prove -lv t/my-postgresql-test.t
+    TDBIC_DEBUG=1 BASE_DIR=t/tmp KEEP_DB=1 prove -lv t/my-postgresql-test.t
 
 You can then start the database instance yourself with something like:
 

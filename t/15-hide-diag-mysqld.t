@@ -17,9 +17,9 @@ use Test::More; {
 
 
     #-------------------
-    note('debug=1');
+    note('tdbic_debug=1');
 
-    $config->{debug} = 1;
+    $config->{tdbic_debug} = 1;
     $fh = '';
 
     my $manager = Test::DBIx::Class::SchemaManager->initialize_schema({
@@ -30,9 +30,9 @@ use Test::More; {
     cmp_ok $fh, '=~', '# Starting mysqld with:', 'diag emitted';
 
     #-------------------
-    note('debug=0');
+    note('tdbic_debug=0');
 
-    $config->{debug} = 0;
+    $config->{tdbic_debug} = 0;
     $fh = '';
 
     my $manager2 = Test::DBIx::Class::SchemaManager->initialize_schema({

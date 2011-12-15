@@ -7,7 +7,7 @@ use Test::More; {
 
 	ok my $config = {
 		schema_class => 'Test::DBIx::Class::Example::Schema',
-        debug => 0,
+        tdbic_debug => 0,
 	}, 'Created Sample inline configuration';
 
 
@@ -45,9 +45,7 @@ use Test::More; {
 
         ok !$fh, 'no diag emitted';
 
-#warn "##$fh##";
-
-        $config->{debug} = 1;
+        $config->{tdbic_debug} = 1;
         ok $schema_manager = Test::DBIx::Class->_initialize_schema($config)
           => 'Connected and deployed a testable schema';
 

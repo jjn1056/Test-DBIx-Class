@@ -14,7 +14,7 @@ requires 'setup', 'cleanup';
 
 ## has '+force_drop_table' => (is=>'rw',default=>1);
 
-has [qw/mysql_install_db mysqld/] => (
+has [qw/base_dir mysql_install_db mysqld/] => (
     is=>'ro',
     traits=>['ENV'],
 );
@@ -184,7 +184,7 @@ around 'setup' => sub {
             my $deployed = $self->deploy_testdb(%config);
             my $replicant_base_dir = $deployed->base_dir;
 
-            if ($self->debug || ($self->keep_db && !$self->base_dir)){
+            if ($self->tdbic_debug || ($self->keep_db && !$self->base_dir)){
                 Test::More::diag(
                     "Starting replicant mysqld with: ".
                     $deployed->mysqld.
@@ -252,7 +252,7 @@ sub get_default_connect_info {
     my $deployed_db = shift(@_) || $self->test_db_manager;
     my $base_dir = $deployed_db->base_dir;
 
-    if ($self->debug || ($self->keep_db && !$self->base_dir)){
+    if ($self->tdbic_debug || ($self->keep_db && !$self->base_dir)){
         Test::More::diag(
             "Starting mysqld with: ".
             $deployed_db->mysqld.
@@ -421,9 +421,9 @@ that should be generated at the top of your test.  It will look similar to:
 	# Starting mysqld with: /usr/local/mysql/bin/mysqld --defaults-file=/tmp/KHKfJf0Yf6/etc/my.cnf --user=root
 
 If you have specified the base_dir to use, this output will not be displayed by
-default. You can force it's display by setting debug to true. eg.
+default. You can force it's display by setting tdbic_debug to true. eg.
 
-	DEBUG=1 BASE_DIR=t/tmp KEEP_DB=1 prove -lv t/my-mysql-test.t
+	TDBIC_DEBUG=1 BASE_DIR=t/tmp KEEP_DB=1 prove -lv t/my-mysql-test.t
 
 You can then start the database instance yourself with something like:
 
