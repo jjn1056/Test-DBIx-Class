@@ -1,5 +1,10 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.29 15 December 2011
+    - New option to enable verbose debugging output.  Now, by default you
+      should have more clean test output.  If you want the old, verbose test
+      output set env TDBC_DEBUG=1 when running the tests. (lecstor++)
+
 0.28 13 December 2011
     - POSSIBLE BACKCOMPAT BREAKAGE: We now randomize the port under which an
       instance of mysql is created, to help better support replication and
