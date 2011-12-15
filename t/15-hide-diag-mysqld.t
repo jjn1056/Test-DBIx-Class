@@ -2,6 +2,13 @@ use Test::More; {
 
 	use strict;
 	use warnings;
+
+	BEGIN {
+		eval "use Test::mysqld"; if($@) {
+			plan skip_all => 'Test::mysqld not installed';
+		}
+	}
+
 	use File::Path qw!rmtree!;
 
 	require_ok 'Test::DBIx::Class';
