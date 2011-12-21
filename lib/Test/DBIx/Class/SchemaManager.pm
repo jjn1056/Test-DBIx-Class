@@ -60,6 +60,17 @@ has 'connect_info' => (
     lazy_build => 1,
 );
 
+has 'connect_opts' => (
+    is => 'ro',
+    isa => 'HashRef',
+);
+
+has 'connect_info_with_opts' => (
+    is => 'ro',
+    isa => 'HashRef',
+    lazy_build => 1,
+);
+
 has 'fixture_class' => (
     traits => ['ENV'],
     is => 'ro',
@@ -99,7 +110,7 @@ sub get_fixture_sets {
 sub _build_schema {
     my $self = shift @_;
     my $schema_class = $self->schema_class;
-    my $connect_info = $self->connect_info;
+    my $connect_info = $self->connect_info_with_opts;
 
     return unless $schema_class;
 
@@ -115,6 +126,11 @@ sub _build_connect_info {
     } else {
         Test::More::fail("Can't build a default connect info");
     }
+}
+
+sub _build_connect_info_with_opts{
+    my ($self) = @_;
+    return { %{$self->connect_info}, %{$self->connect_opts || {}} };
 }
 
 sub _build_fixture_command {
