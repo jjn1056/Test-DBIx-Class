@@ -682,6 +682,7 @@ script could contain:
     use Test::DBIx::Class {
         schema_class => 'MyApp::Schema',
         connect_info => ['dbi:SQLite:dbname=:memory:','',''],
+        connect_opts => { name_sep => '.', quote_char => '`', },
         fixture_class => '::Populate',
     }, 'Person', 'Person::Employee' => {-as => 'Employee'}, 'Job', 'Phone';
 
@@ -1061,6 +1062,12 @@ your database schema.
 Required. This will accept anything you can send to L<DBIx::Class/connect>.
 Defaults to: ['dbi:SQLite:dbname=:memory:','',''] if left blank (but see
 'traits' below for more)
+
+=item connect_opts
+
+Use this to customise connect_info if you have left that blank in order to
+have the dsn auto-generated, but require extra attributes such as name_sep
+and quote_char.
 
 =item fixture_path
 
