@@ -1,5 +1,11 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.30 18 January 2012
+    - New feature connect_opts that lets you customize DBIC connection options
+    - Less noisy output during tests
+    - documentation improvments
+    - lecstor++
+
 0.29 15 December 2011
     - New option to enable verbose debugging output.  Now, by default you
       should have more clean test output.  If you want the old, verbose test
@@ -27,7 +33,7 @@ This file documents the revision history for Perl extension Test-DBIx-Class.
     - Added replication stress testing to test suite
 0.27 04 December 2011
     - Randomize the starting port for when we create an instance of mysql.
-      This solves a problem where sometimes when doing parallel testing we get
+      This solves a problem where sometimes when doing parallel testing we 
       port collisions. (lecstor++)
     - forward support for controlling a temporary directory location in mysql
       (support pending in test::mysql so we won't document feature for now.
