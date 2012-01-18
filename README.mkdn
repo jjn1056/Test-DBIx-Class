@@ -733,6 +733,7 @@ The following modules or resources may be of interest.
     wlk
     yanick
     hippich
+    lecstor
 
 # COPYRIGHT & LICENSE
 
