@@ -17,6 +17,7 @@ script could contain:
     use Test::DBIx::Class {
         schema_class => 'MyApp::Schema',
         connect_info => ['dbi:SQLite:dbname=:memory:','',''],
+        connect_opts => { name_sep => '.', quote_char => '`', },
         fixture_class => '::Populate',
     }, 'Person', 'Person::Employee' => {-as => 'Employee'}, 'Job', 'Phone';
 
@@ -395,6 +396,12 @@ Required. This will accept anything you can send to ["connect" in DBIx::Class](h
 Defaults to: ['dbi:SQLite:dbname=:memory:','',''] if left blank (but see
 'traits' below for more)
 
+- connect_opts
+
+Use this to customise connect_info if you have left that blank in order to
+have the dsn auto-generated, but require extra attributes such as name_sep
+and quote_char.
+
 - fixture_path
 
 These are a list of relative paths search for fixtures.  Each item should be
@@ -737,7 +744,7 @@ The following modules or resources may be of interest.
 
 # COPYRIGHT & LICENSE
 
-Copyright 2011, John Napiorkowski `<jjnapiork@cpan.org>`
+Copyright 2012, John Napiorkowski `<jjnapiork@cpan.org>`
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
