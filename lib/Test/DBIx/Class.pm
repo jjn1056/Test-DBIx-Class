@@ -1121,13 +1121,19 @@ installs the ability to automatically discover and deploy to an in memory or a
 filesystem SQLite database.  If you are just getting started with testing, this
 is probably your easiest option.
 
-Currently there are only two traits, the SQLite trait just described (and since
-it get's automatically loaded you never need to load it yourself) and the
+Currently there are only three traits, the SQLite trait just described (and since
+it get's automatically loaded you never need to load it yourself). The
 L<Test::DBIx::Class::SchemaManager::Trait::Testmysqld> trait, which is built on
 top of L<Test::mysqld> and allows you the ability to deploy to and run tests
-against a temporary instance of Mysql.  For this trait Mysql and L<DBD::mysql>
+against a temporary instance of Mysql. For this trait Mysql and L<DBD::mysql>
 needs to be installed, but Mysql does not need to be running, nor do you need
-to create a test database or user.  See L</TRAITS> for more.
+to create a test database or user.   The third one is the 
+L<Test::DBIx::Class::SchemaManager::Trait::Testpostgresql> trait, which is
+built on top of L<Test::postgresql> and allows you to deploy to and run tests
+against a temporary instance of Postgresql.  For this trait Postgresql
+and L<DBD::Pg> needs to be installed, but Postgresql does not need to be
+running, nor do you need to create a test database or user.  
+See L</TRAITS> for more.
 
 =back
 
@@ -1382,7 +1388,7 @@ See L<Test::DBIx::Class::SchemaManager::Trait::Testmysqld> for more.
 
 =head2 Testpostgresql
 
-If Postgresql is install on the testing machine, along with L<DBD::Pg>, we try
+If Postgresql is installed on the testing machine, along with L<DBD::Pg>, we try
 to auto create an instance of Postgresql in a testing area and deploy our tests
 and fixtures to it.
 
