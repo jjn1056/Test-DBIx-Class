@@ -454,13 +454,19 @@ installs the ability to automatically discover and deploy to an in memory or a
 filesystem SQLite database.  If you are just getting started with testing, this
 is probably your easiest option.
 
-Currently there are only two traits, the SQLite trait just described (and since
-it get's automatically loaded you never need to load it yourself) and the
+Currently there are only three traits, the SQLite trait just described (and since
+it get's automatically loaded you never need to load it yourself). The
 [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testmysqld) trait, which is built on
 top of [Test::mysqld](http://search.cpan.org/perldoc?Test::mysqld) and allows you the ability to deploy to and run tests
-against a temporary instance of Mysql.  For this trait Mysql and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql)
+against a temporary instance of Mysql. For this trait Mysql and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql)
 needs to be installed, but Mysql does not need to be running, nor do you need
-to create a test database or user.  See ["TRAITS"](#TRAITS) for more.
+to create a test database or user.   The third one is the 
+[Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) trait, which is
+built on top of [Test::postgresql](http://search.cpan.org/perldoc?Test::postgresql) and allows you to deploy to and run tests
+against a temporary instance of Postgresql.  For this trait Postgresql
+and [DBD::Pg](http://search.cpan.org/perldoc?DBD::Pg) needs to be installed, but Postgresql does not need to be
+running, nor do you need to create a test database or user.  
+See ["TRAITS"](#TRAITS) for more.
 
 Please note that although all initialization options can be set inlined or in
 a configuration file, some options can also be set via %ENV variables. %ENV
@@ -713,7 +719,7 @@ See [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](http://search.cpan.org
 
 ## Testpostgresql
 
-If Postgresql is install on the testing machine, along with [DBD::Pg](http://search.cpan.org/perldoc?DBD::Pg), we try
+If Postgresql is installed on the testing machine, along with [DBD::Pg](http://search.cpan.org/perldoc?DBD::Pg), we try
 to auto create an instance of Postgresql in a testing area and deploy our tests
 and fixtures to it.
 
