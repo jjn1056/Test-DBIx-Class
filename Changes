@@ -1,7 +1,8 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.32 18 April 2012
     - Made drop statement configurable and made the Postgres trait do a
-      drop ... cascade to ensure all tables are dropped cleanly.
+      drop ... cascade to ensure all tables are dropped cleanly. (colinnewell++)
 
 0.31 12 March 2012
     - Documentation fixes (Volker++)

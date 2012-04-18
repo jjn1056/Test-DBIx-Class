@@ -172,7 +172,7 @@ normal methods against it.
 
 This is the same as the test above.
 
-## fixtures_ok
+## fixtures\_ok
 
 This is used to install and verify installation of fixtures, either inlined,
 from a fixture set in a file, or through a custom sub reference.  Accept three
@@ -232,42 +232,42 @@ Fixtures are installed in the order specified.
 
 All different types can be mixed and matched in a given test file.
 
-## is_result ($result, ?$result)
+## is\_result ($result, ?$result)
 
 Quick test to make sure $result does inherit from [DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class) or that it
 inherits from a subclass of [DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class).
 
-## is_resultset ($resultset, ?$resultset)
+## is\_resultset ($resultset, ?$resultset)
 
 Quick test to make sure $resultset does inherit from [DBIx::Class::ResultSet](http://search.cpan.org/perldoc?DBIx::Class::ResultSet)
 or from a subclass of [DBIx::Class::ResultSet](http://search.cpan.org/perldoc?DBIx::Class::ResultSet).
 
-## eq_resultset ($resultset, $resultset, ?$message)
+## eq\_resultset ($resultset, $resultset, ?$message)
 
 Given two ResultSets, determine if the are equal based on class type and data.
 This is a true set equality that ignores sorting order of items inside the
 set.
 
-## eq_result ($resultset, $resultset, ?$message)
+## eq\_result ($resultset, $resultset, ?$message)
 
 Given two row objects, make sure they are the same.
 
-## hri_dump ($resultset)
+## hri\_dump ($resultset)
 
 Not a test, just returns a version of the ResultSet that has its inflator set
 to [DBIx::Class::ResultClass::HashRefInflator](http://search.cpan.org/perldoc?DBIx::Class::ResultClass::HashRefInflator), which returns a set of hashes
 and makes it easier to stop issues.  This return value is suitable for dumping
 via [Data::Dump](http://search.cpan.org/perldoc?Data::Dump), for example.
 
-## reset_schema
+## reset\_schema
 
 Wipes and reloads the schema.
 
-## cleanup_schema
+## cleanup\_schema
 
 Wipes schema and disconnects.
 
-## dump_settings
+## dump\_settings
 
 Returns the configuration and related settings used to initialize this testing
 module.  This is mostly to help you debug trouble with configuration and to help
@@ -275,7 +275,7 @@ the authors find and fix bugs.  At some point this won't be exported by default
 so don't use it for your real tests, just to help you understand what is going
 on.  You've been warned!
 
-## is_fields
+## is\_fields
 
 A 'Swiss Army Knife' method to check your results or resultsets.  Tests the 
 values of a Result or ResultSet against expected via a pattern.  A pattern
@@ -340,7 +340,7 @@ this I'd be willing to write a test for it, or gladly accept a patch to add it.
 
 You should examine the test cases for more examples.
 
-## is_fields_multi
+## is\_fields\_multi
 
     TBD: Not yet written.
 
@@ -367,7 +367,7 @@ might be more readable.  For example, the following are the same:
 The following options are currently standard and always available.  Depending
 on your storage engine (such as SQLite or mysql) you will have other options.
 
-- config_path
+- config\_path
 
 These are the relative paths searched for configuration file information. See
 ["Initialization Sources"](#Initialization Sources) for more.
@@ -377,41 +377,41 @@ inlined is merged last (that is, has highest authority to override configuration
 files.
 
 When the final merging of all configurations (both anything inlined at 'use'
-time, and anything found in any of the specified config_paths, we do a single
-'post' config_path check.  This allows you to add in a configuration file from
+time, and anything found in any of the specified config\_paths, we do a single
+'post' config\_path check.  This allows you to add in a configuration file from
 inside a configuration file.  For safety and sanity you can only do this once.
 This feature makes it easier to globalize any additional configuration files.
-For example, I often store user specific settings in "~/etc/conf.*".  This
-feature allows me to add that into my standard "t/etc/schema.*" so it's 
+For example, I often store user specific settings in "~/etc/conf.\*".  This
+feature allows me to add that into my standard "t/etc/schema.\*" so it's 
 available to all my test cases.
 
-- schema_class
+- schema\_class
 
 Required. This must be your subclass of [DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema) that defines
 your database schema. 
 
-- connect_info
+- connect\_info
 
 Required. This will accept anything you can send to ["connect" in DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class#connect).
-Defaults to: ['dbi:SQLite:dbname=:memory:','',''] if left blank (but see
+Defaults to: \['dbi:SQLite:dbname=:memory:','',''\] if left blank (but see
 'traits' below for more)
 
-- connect_opts
+- connect\_opts
 
-Use this to customise connect_info if you have left that blank in order to
-have the dsn auto-generated, but require extra attributes such as name_sep
-and quote_char.
+Use this to customise connect\_info if you have left that blank in order to
+have the dsn auto-generated, but require extra attributes such as name\_sep
+and quote\_char.
 
-- fixture_path
+- fixture\_path
 
 These are a list of relative paths search for fixtures.  Each item should be
 a directory that contains files loadable by [Config::Any](http://search.cpan.org/perldoc?Config::Any) and suitable to
 be installed via one of the fixture classes.
 
-- fixture_class
+- fixture\_class
 
 Command class that installs data into the database.  Must provide a method
-called 'install_fixtures' that accepts a perl data structure and installs
+called 'install\_fixtures' that accepts a perl data structure and installs
 it into the database.  Must capture and report errors.  Default value is
 "::Populate", which loads [Test::DBIx::Class::FixtureCommand::Populate](http://search.cpan.org/perldoc?Test::DBIx::Class::FixtureCommand::Populate), which
 is a command class based on ["populate" in DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema#populate).
@@ -421,24 +421,24 @@ is a command class based on ["populate" in DBIx::Class::Schema](http://search.cp
 Lets you add in some result source definitions to be imported at test script
 runtime.  See ["Initialization Sources"](#Initialization Sources) for more.
 
-- force_drop_table
+- force\_drop\_table
 
 When deploying the database this option allows you add a 'drop table' statement
 before the create ddl.  Since this will return an error if you attempt to drop
 a table that doesn't exist, this is off by default for SQLite storage engines.
-You may need to enble it you you are using the following 'keep_db' option.
+You may need to enble it you you are using the following 'keep\_db' option.
 
-- keep_db
+- keep\_db
 
 By default your testing database is 'cleaned up' after you are finished.  This
 drops all the created tables (but currently doesn't delete any related files
 or database users, if any).  If you want to keep your testing database after
 all the tests are run, you can set this to true.  If so, you may also need to
-set the previously mentioned option 'force_drop_table' to true as well, or we
+set the previously mentioned option 'force\_drop\_table' to true as well, or we
 will attempt to create tables and populate them when they are already populated
 and created.
 
-- deploy_db
+- deploy\_db
 
 By default a fresh version of the schema is deployed when 'Test::DBIx::Class'
 is invoked.  If you want to skip the schema deployment and instead connect
@@ -448,7 +448,7 @@ to an already existing and populated database, set this option to false.
 
 Traits are [Moose::Role](http://search.cpan.org/perldoc?Moose::Role)s that are applied to the class managing the connection
 to your database.  If you leave this option blank and you don't specify anything
-for 'connect_info' (above), we automatically load the SQLite trait (which can
+for 'connect\_info' (above), we automatically load the SQLite trait (which can
 be reviewed at [Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite)).  This trait
 installs the ability to automatically discover and deploy to an in memory or a
 filesystem SQLite database.  If you are just getting started with testing, this
@@ -484,7 +484,7 @@ directory of your distribution.  You can use:
 
 to open and view the tables and their data as loaded by any fixtures or create
 statements. See [Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite) for more.
-Note that you can specify both 'dbpath' and 'keep_db' in your configuration
+Note that you can specify both 'dbpath' and 'keep\_db' in your configuration
 files if you prefer.  I tried to expose a subset of configuration to %ENV that
 I thought the most useful.  Patches and suggestions welcomed.
 
@@ -578,20 +578,20 @@ By default, we try to load configuration fileis from the following locations:
      ./t/etc/schema.*
      ./t/etc/[test file path].*
 
-Where "." is the root of the distribution and "*" is any of the configuration
+Where "." is the root of the distribution and "\*" is any of the configuration
 file types supported by [Config::Any](http://search.cpan.org/perldoc?Config::Any) configuration loader.  This allows you
 to store configuration in the format of your choice.
 
-"[test file path]" is the relative path part under the "t" directory of the
+"\[test file path\]" is the relative path part under the "t" directory of the
 calling test script.  For example, if your test script is "t/mytest.t" we add
-the path "./t/etc/mytest.*" to the path.
+the path "./t/etc/mytest.\*" to the path.
 
 Additionally, we do a a merge using [Hash::Merge](http://search.cpan.org/perldoc?Hash::Merge) of all the matching found
 configurations.  This allows you to do 'cascading' configuration from the most
 global to the most local settings.
 
-You can override this search path with the "-config_path" key in options. For
-example, the following searches for "t/etc/myconfig.*" (or whatever is the
+You can override this search path with the "-config\_path" key in options. For
+example, the following searches for "t/etc/myconfig.\*" (or whatever is the
 correct directory separator for your operating system):
 
     use Test::DBIx::Class -config_path => [qw/t etc myconfig/];
@@ -600,7 +600,7 @@ Relative paths are rooted to the distribution home directory (ie, the one that
 contains your 'lib' and 't' directories).  Full paths are searched without
 modification.
 
-You can specify multiply paths.  The following would search for both "schema.*"
+You can specify multiply paths.  The following would search for both "schema.\*"
 and "share/schema".
 
     use Test::DBIx::Class -config_path => [[qw/share schema/], [qw/schema/]];
@@ -617,22 +617,22 @@ configuration settings mixed with global settings, as in:
             [qw(~ etc test-schema)],
         ];
 
-Which would search and combine "/etc/myapp/test-schema.*", "./t/etc/schema.*",
-"./etc/[test script name].*" and "~/etc/test-schema.*".  This would let you set
+Which would search and combine "/etc/myapp/test-schema.\*", "./t/etc/schema.\*",
+"./etc/\[test script name\].\*" and "~/etc/test-schema.\*".  This would let you set
 up server level global settings, distribution level settings and finally user
 level settings.
 
 Please note that in all the examples given, paths are written as an array
 reference of path parts, rather than as a string with delimiters (i.e. we do
-[qw(t etc)] rather than "t/etc").  This is not required but recommended.  All
+\[qw(t etc)\] rather than "t/etc").  This is not required but recommended.  All
 arguments, either string or array references, are passed to [Path::Class](http://search.cpan.org/perldoc?Path::Class) so
 that we can maintain better compatibility with non unix filesystems.  If you
 are writing for CPAN, please consider our non Unix filesystem friends :)
 
 Lastly, there is an %ENV variable named '' which, if it
 exists, can be used to further customize your configuration path.  If we find
-that $ENV{TEST_DBIC_CONFIG_SUFFIX} is set, we attempt to find configuration files
-with the suffix appended to each of the items in the config_path option.  So, if
+that $ENV{TEST\_DBIC\_CONFIG\_SUFFIX} is set, we attempt to find configuration files
+with the suffix appended to each of the items in the config\_path option.  So, if
 you have:
 
     use Test::DBIx::Class
@@ -643,7 +643,7 @@ you have:
         ];
         
 
-and $ENV{TEST_DBIC_CONFIG_SUFFIX} = '-mysql' we will check the following paths
+and $ENV{TEST\_DBIC\_CONFIG\_SUFFIX} = '-mysql' we will check the following paths
 for valid and loading configuration files (assuming unix filesystem conventions)
 
     /etc/myapp/test-schema.*
@@ -704,7 +704,7 @@ Available traits are as follows.
 ## SQLite
 
 This is the default trait which will be loaded if no other traits are installed
-and there is not 'connect_info' in the configuration.  In this case we assume
+and there is not 'connect\_info' in the configuration.  In this case we assume
 you want us to go and create a tempory SQLite database for testing.  Please see
 [Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite) for more.
 
