@@ -73,6 +73,12 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 		}
 	};
 
+    override drop_table_sql => sub {
+        my $self = shift;
+        my $table = shift;
+        return "drop table $table cascade";
+    };
+
 } 1;
 
 __END__
