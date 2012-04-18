@@ -214,7 +214,7 @@ sub cleanup {
                 my $tablesource = $schema->source($source);
                 next unless $tablesource;
                 my $table = $tablesource->name;
-                $schema->storage->dbh->do("drop table $table")
+                $schema->storage->dbh->do($self->drop_table_sql($table))
                     if !($schema->source($source)->can('is_virtual') &&
                         $schema->source($source)->is_virtual);
             }
@@ -222,6 +222,15 @@ sub cleanup {
     }
 
     $self->schema->storage->disconnect;
+}
+
+# this has been pushed out to a method so that it can be overriden
+# by the traits.
+sub drop_table_sql
+{
+    my $self = shift;
+    my $table = shift;
+    return "drop table $table";
 }
 
 sub reset {
