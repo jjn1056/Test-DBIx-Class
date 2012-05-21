@@ -29,4 +29,4 @@ feature('MySql Support', -default => 0, 'Test::mysqld' => '0.14');
 feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.09');
 
 test_requires 'Test::More' => '0.94';
-test_recursive;
+tests_recursive;

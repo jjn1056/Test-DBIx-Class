@@ -1,5 +1,8 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.33 21 May 2012
+    - fixed typo in Makefile.PL which Perl 5.16.0 is actually noticing
+
 0.32 18 April 2012
     - Made drop statement configurable and made the Postgres trait do a
       drop ... cascade to ensure all tables are dropped cleanly. (colinnewell++)
