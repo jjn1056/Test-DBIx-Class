@@ -49,7 +49,6 @@ has 'schema_class' => (
 
 has 'schema' => (
     is => 'ro',
-    init_arg => undef,
     lazy_build => 1,
 );
 
