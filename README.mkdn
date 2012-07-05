@@ -747,6 +747,7 @@ The following modules or resources may be of interest.
     yanick
     hippich
     lecstor
+    bphillips
 
 # COPYRIGHT & LICENSE
 
