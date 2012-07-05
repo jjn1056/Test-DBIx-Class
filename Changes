@@ -1,5 +1,10 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.34 05 July 2012
+    - new configure option to let you specify a pre-existing $schema, rather
+      than let Test::DBIx::Class build one for you.  Might be useful in sub
+      tests or when you want to use it with a web framework. (bphillips++)
+
 0.33 21 May 2012
     - fixed typo in Makefile.PL which Perl 5.16.0 is actually noticing
 
