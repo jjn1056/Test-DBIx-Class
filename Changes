@@ -1,7 +1,8 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.35
     - ::Example::Schema::Result::Person's email column is now nullable as
-      intended
+      intended (abraxxa++)
 
 0.34 05 July 2012
     - new configure option to let you specify a pre-existing $schema, rather

@@ -180,55 +180,55 @@ argument styles:
 
 - coderef
 
-Given a code reference, execute it against the currently defined schema.  This
-is used when you need a lot of control over installing your fixtures.  Example:
+    Given a code reference, execute it against the currently defined schema.  This
+    is used when you need a lot of control over installing your fixtures.  Example:
 
-    fixtures_ok sub {
-        my $schema = shift @_;
-        my $cd_rs = $schema->resultset('CD');
-        return $cd_rs->create({
-            name => 'My First Album',
-            track_rs => [
-                {position=>1, title=>'the first song'},
-                {position=>2, title=>'yet another song'},
-            ],
-            cd_artist_rs=> [
-                {person_artist=>{person => $vanessa}},
-                {person_artist=>{person => $john}},
-            ],
-        });
+        fixtures_ok sub {
+            my $schema = shift @_;
+            my $cd_rs = $schema->resultset('CD');
+            return $cd_rs->create({
+                name => 'My First Album',
+                track_rs => [
+                    {position=>1, title=>'the first song'},
+                    {position=>2, title=>'yet another song'},
+                ],
+                cd_artist_rs=> [
+                    {person_artist=>{person => $vanessa}},
+                    {person_artist=>{person => $john}},
+                ],
+            });
 
-    }, 'Installed fixtures';
+        }, 'Installed fixtures';
 
-The above gets executed at runtime and if there is an error it is trapped,
-reported and we move on to the next test.
+    The above gets executed at runtime and if there is an error it is trapped,
+    reported and we move on to the next test.
 
 - arrayref
 
-Given a array reference, attempt to process it via the default fixtures loader
-or through the specified loader.
+    Given a array reference, attempt to process it via the default fixtures loader
+    or through the specified loader.
 
-    fixtures_ok [
-        Person => [
-            ['name', 'age', 'email'],
-            ['John', 40, 'john@nowehere.com'],
-            ['Vincent', 15, 'vincent@home.com'],
-            ['Vanessa', 35, 'vanessa@school.com'],
-        ],
-    ], 'Installed fixtures';
+        fixtures_ok [
+            Person => [
+                ['name', 'age', 'email'],
+                ['John', 40, 'john@nowehere.com'],
+                ['Vincent', 15, 'vincent@home.com'],
+                ['Vanessa', 35, 'vanessa@school.com'],
+            ],
+        ], 'Installed fixtures';
 
-This is a good option to use while you are building up your fixture sets or
-when your sets are going to be small and not reused across lots of tests.  This
-will get you rolling without messing around with configuration files.
+    This is a good option to use while you are building up your fixture sets or
+    when your sets are going to be small and not reused across lots of tests.  This
+    will get you rolling without messing around with configuration files.
 
 - fixture set name
 
-Given a fixture name, or array reference of names, install the fixtures.
+    Given a fixture name, or array reference of names, install the fixtures.
 
-    fixtures_ok 'core';
-    fixtures_ok [qw/core extra/];
+        fixtures_ok 'core';
+        fixtures_ok [qw/core extra/];
 
-Fixtures are installed in the order specified.
+    Fixtures are installed in the order specified.
 
 All different types can be mixed and matched in a given test file.
 
@@ -369,104 +369,104 @@ on your storage engine (such as SQLite or mysql) you will have other options.
 
 - config\_path
 
-These are the relative paths searched for configuration file information. See
-["Initialization Sources"](#Initialization Sources) for more.
+    These are the relative paths searched for configuration file information. See
+    ["Initialization Sources"](#Initialization Sources) for more.
 
-In the case were we have both inlined and file based configurations, the 
-inlined is merged last (that is, has highest authority to override configuration
-files.
+    In the case were we have both inlined and file based configurations, the 
+    inlined is merged last (that is, has highest authority to override configuration
+    files.
 
-When the final merging of all configurations (both anything inlined at 'use'
-time, and anything found in any of the specified config\_paths, we do a single
-'post' config\_path check.  This allows you to add in a configuration file from
-inside a configuration file.  For safety and sanity you can only do this once.
-This feature makes it easier to globalize any additional configuration files.
-For example, I often store user specific settings in "~/etc/conf.\*".  This
-feature allows me to add that into my standard "t/etc/schema.\*" so it's 
-available to all my test cases.
+    When the final merging of all configurations (both anything inlined at 'use'
+    time, and anything found in any of the specified config\_paths, we do a single
+    'post' config\_path check.  This allows you to add in a configuration file from
+    inside a configuration file.  For safety and sanity you can only do this once.
+    This feature makes it easier to globalize any additional configuration files.
+    For example, I often store user specific settings in "~/etc/conf.\*".  This
+    feature allows me to add that into my standard "t/etc/schema.\*" so it's 
+    available to all my test cases.
 
 - schema\_class
 
-Required. This must be your subclass of [DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema) that defines
-your database schema. 
+    Required. This must be your subclass of [DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema) that defines
+    your database schema. 
 
 - connect\_info
 
-Required. This will accept anything you can send to ["connect" in DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class#connect).
-Defaults to: \['dbi:SQLite:dbname=:memory:','',''\] if left blank (but see
-'traits' below for more)
+    Required. This will accept anything you can send to ["connect" in DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class#connect).
+    Defaults to: \['dbi:SQLite:dbname=:memory:','',''\] if left blank (but see
+    'traits' below for more)
 
 - connect\_opts
 
-Use this to customise connect\_info if you have left that blank in order to
-have the dsn auto-generated, but require extra attributes such as name\_sep
-and quote\_char.
+    Use this to customise connect\_info if you have left that blank in order to
+    have the dsn auto-generated, but require extra attributes such as name\_sep
+    and quote\_char.
 
 - fixture\_path
 
-These are a list of relative paths search for fixtures.  Each item should be
-a directory that contains files loadable by [Config::Any](http://search.cpan.org/perldoc?Config::Any) and suitable to
-be installed via one of the fixture classes.
+    These are a list of relative paths search for fixtures.  Each item should be
+    a directory that contains files loadable by [Config::Any](http://search.cpan.org/perldoc?Config::Any) and suitable to
+    be installed via one of the fixture classes.
 
 - fixture\_class
 
-Command class that installs data into the database.  Must provide a method
-called 'install\_fixtures' that accepts a perl data structure and installs
-it into the database.  Must capture and report errors.  Default value is
-"::Populate", which loads [Test::DBIx::Class::FixtureCommand::Populate](http://search.cpan.org/perldoc?Test::DBIx::Class::FixtureCommand::Populate), which
-is a command class based on ["populate" in DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema#populate).
+    Command class that installs data into the database.  Must provide a method
+    called 'install\_fixtures' that accepts a perl data structure and installs
+    it into the database.  Must capture and report errors.  Default value is
+    "::Populate", which loads [Test::DBIx::Class::FixtureCommand::Populate](http://search.cpan.org/perldoc?Test::DBIx::Class::FixtureCommand::Populate), which
+    is a command class based on ["populate" in DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema#populate).
 
 - resultsets
 
-Lets you add in some result source definitions to be imported at test script
-runtime.  See ["Initialization Sources"](#Initialization Sources) for more.
+    Lets you add in some result source definitions to be imported at test script
+    runtime.  See ["Initialization Sources"](#Initialization Sources) for more.
 
 - force\_drop\_table
 
-When deploying the database this option allows you add a 'drop table' statement
-before the create ddl.  Since this will return an error if you attempt to drop
-a table that doesn't exist, this is off by default for SQLite storage engines.
-You may need to enble it you you are using the following 'keep\_db' option.
+    When deploying the database this option allows you add a 'drop table' statement
+    before the create ddl.  Since this will return an error if you attempt to drop
+    a table that doesn't exist, this is off by default for SQLite storage engines.
+    You may need to enble it you you are using the following 'keep\_db' option.
 
 - keep\_db
 
-By default your testing database is 'cleaned up' after you are finished.  This
-drops all the created tables (but currently doesn't delete any related files
-or database users, if any).  If you want to keep your testing database after
-all the tests are run, you can set this to true.  If so, you may also need to
-set the previously mentioned option 'force\_drop\_table' to true as well, or we
-will attempt to create tables and populate them when they are already populated
-and created.
+    By default your testing database is 'cleaned up' after you are finished.  This
+    drops all the created tables (but currently doesn't delete any related files
+    or database users, if any).  If you want to keep your testing database after
+    all the tests are run, you can set this to true.  If so, you may also need to
+    set the previously mentioned option 'force\_drop\_table' to true as well, or we
+    will attempt to create tables and populate them when they are already populated
+    and created.
 
 - deploy\_db
 
-By default a fresh version of the schema is deployed when 'Test::DBIx::Class'
-is invoked.  If you want to skip the schema deployment and instead connect
-to an already existing and populated database, set this option to false.
+    By default a fresh version of the schema is deployed when 'Test::DBIx::Class'
+    is invoked.  If you want to skip the schema deployment and instead connect
+    to an already existing and populated database, set this option to false.
 
 - traits
 
-Traits are [Moose::Role](http://search.cpan.org/perldoc?Moose::Role)s that are applied to the class managing the connection
-to your database.  If you leave this option blank and you don't specify anything
-for 'connect\_info' (above), we automatically load the SQLite trait (which can
-be reviewed at [Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite)).  This trait
-installs the ability to automatically discover and deploy to an in memory or a
-filesystem SQLite database.  If you are just getting started with testing, this
-is probably your easiest option.
+    Traits are [Moose::Role](http://search.cpan.org/perldoc?Moose::Role)s that are applied to the class managing the connection
+    to your database.  If you leave this option blank and you don't specify anything
+    for 'connect\_info' (above), we automatically load the SQLite trait (which can
+    be reviewed at [Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite)).  This trait
+    installs the ability to automatically discover and deploy to an in memory or a
+    filesystem SQLite database.  If you are just getting started with testing, this
+    is probably your easiest option.
 
-Currently there are only three traits, the SQLite trait just described (and since
-it get's automatically loaded you never need to load it yourself). The
-[Test::DBIx::Class::SchemaManager::Trait::Testmysqld](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testmysqld) trait, which is built on
-top of [Test::mysqld](http://search.cpan.org/perldoc?Test::mysqld) and allows you the ability to deploy to and run tests
-against a temporary instance of Mysql. For this trait Mysql and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql)
-needs to be installed, but Mysql does not need to be running, nor do you need
-to create a test database or user.   The third one is the 
-[Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) trait, which is
-built on top of [Test::postgresql](http://search.cpan.org/perldoc?Test::postgresql) and allows you to deploy to and run tests
-against a temporary instance of Postgresql.  For this trait Postgresql
-and [DBD::Pg](http://search.cpan.org/perldoc?DBD::Pg) needs to be installed, but Postgresql does not need to be
-running, nor do you need to create a test database or user.  
-See ["TRAITS"](#TRAITS) for more.
+    Currently there are only three traits, the SQLite trait just described (and since
+    it get's automatically loaded you never need to load it yourself). The
+    [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testmysqld) trait, which is built on
+    top of [Test::mysqld](http://search.cpan.org/perldoc?Test::mysqld) and allows you the ability to deploy to and run tests
+    against a temporary instance of Mysql. For this trait Mysql and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql)
+    needs to be installed, but Mysql does not need to be running, nor do you need
+    to create a test database or user.   The third one is the 
+    [Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) trait, which is
+    built on top of [Test::postgresql](http://search.cpan.org/perldoc?Test::postgresql) and allows you to deploy to and run tests
+    against a temporary instance of Postgresql.  For this trait Postgresql
+    and [DBD::Pg](http://search.cpan.org/perldoc?DBD::Pg) needs to be installed, but Postgresql does not need to be
+    running, nor do you need to create a test database or user.  
+    See ["TRAITS"](#TRAITS) for more.
 
 Please note that although all initialization options can be set inlined or in
 a configuration file, some options can also be set via %ENV variables. %ENV
@@ -671,87 +671,87 @@ such as from %ENV.  There are currently two macro substitutions:
 
 - ENV
 
-Given a value in %ENV, substitute the keyword for the value of the named
-substitution.  For example, if you had:
+    Given a value in %ENV, substitute the keyword for the value of the named
+    substitution.  For example, if you had:
 
-    email = 'vanessa__ENV(TEST_DBIC_LAST_NAME)__@school.com'
+        email = 'vanessa__ENV(TEST_DBIC_LAST_NAME)__@school.com'
 
-in your configuration filem your could:
+    in your configuration filem your could:
 
-    TEST_DBIC_LAST_NAME=_lee prove -lv t/schema-your-test.t
+        TEST_DBIC_LAST_NAME=_lee prove -lv t/schema-your-test.t
 
-and then:
+    and then:
 
-    is $vanessa->email, 'vanessa_lee@school.com', 'Got expected email';
+        is $vanessa->email, 'vanessa_lee@school.com', 'Got expected email';
 
-You might find this useful for configuring localized username and passwords
-although personally I'd rather set that via configuration in the user home
-directory.
+    You might find this useful for configuring localized username and passwords
+    although personally I'd rather set that via configuration in the user home
+    directory.
 
-# TRAITS
+    # TRAITS
 
-As described, a trait is a [Moose::Role](http://search.cpan.org/perldoc?Moose::Role) that is applied to the class managing
-your database and test instance.  Currently we only have the default 'SQLite'
-trait and the 'Testmysqld' trait, but we eventually intend to have traits to
-add easy support for creating Postgresql databases and supporting testing on
-replicated systems.
+    As described, a trait is a [Moose::Role](http://search.cpan.org/perldoc?Moose::Role) that is applied to the class managing
+    your database and test instance.  Currently we only have the default 'SQLite'
+    trait and the 'Testmysqld' trait, but we eventually intend to have traits to
+    add easy support for creating Postgresql databases and supporting testing on
+    replicated systems.
 
-Traits are installed by the 'traits' configuration option, which expects an
-ArrayRef as its input (however will also normalize a scalar to an ArrayRef).
+    Traits are installed by the 'traits' configuration option, which expects an
+    ArrayRef as its input (however will also normalize a scalar to an ArrayRef).
 
-Available traits are as follows.
+    Available traits are as follows.
 
-## SQLite
+    ## SQLite
 
-This is the default trait which will be loaded if no other traits are installed
-and there is not 'connect\_info' in the configuration.  In this case we assume
-you want us to go and create a tempory SQLite database for testing.  Please see
-[Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite) for more.
+    This is the default trait which will be loaded if no other traits are installed
+    and there is not 'connect\_info' in the configuration.  In this case we assume
+    you want us to go and create a tempory SQLite database for testing.  Please see
+    [Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite) for more.
 
-## Testmysqld
+    ## Testmysqld
 
-If Mysql is installed on the testing machine, and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql), we try to auto
-create an instance of Mysql and deploy our tests to that.  Similarly to the way
-the SQLite trait works, we attempt to create the database without requiring any
-other using effort or setup.
+    If Mysql is installed on the testing machine, and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql), we try to auto
+    create an instance of Mysql and deploy our tests to that.  Similarly to the way
+    the SQLite trait works, we attempt to create the database without requiring any
+    other using effort or setup.
 
-See [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testmysqld) for more.
+    See [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testmysqld) for more.
 
-## Testpostgresql
+    ## Testpostgresql
 
-If Postgresql is installed on the testing machine, along with [DBD::Pg](http://search.cpan.org/perldoc?DBD::Pg), we try
-to auto create an instance of Postgresql in a testing area and deploy our tests
-and fixtures to it.
+    If Postgresql is installed on the testing machine, along with [DBD::Pg](http://search.cpan.org/perldoc?DBD::Pg), we try
+    to auto create an instance of Postgresql in a testing area and deploy our tests
+    and fixtures to it.
 
-See [Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) for more.
+    See [Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) for more.
 
-# SEE ALSO
+    # SEE ALSO
 
-The following modules or resources may be of interest.
+    The following modules or resources may be of interest.
 
-[DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class), [DBIx::Class::Schema::PopulateMore](http://search.cpan.org/perldoc?DBIx::Class::Schema::PopulateMore), [DBIx::Class::Fixtures](http://search.cpan.org/perldoc?DBIx::Class::Fixtures)
+    [DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class), [DBIx::Class::Schema::PopulateMore](http://search.cpan.org/perldoc?DBIx::Class::Schema::PopulateMore), [DBIx::Class::Fixtures](http://search.cpan.org/perldoc?DBIx::Class::Fixtures)
 
-# AUTHOR
+    # AUTHOR
 
-    John Napiorkowski C<< <jjnapiork@cpan.org> >>
+        John Napiorkowski C<< <jjnapiork@cpan.org> >>
 
-# CONTRIBUTORS
+    # CONTRIBUTORS
 
-    Tristan Pratt
-    Tomas Doran C<< <bobtfish@bobtfish.net> >>
-    Kyle Hasselbacher C<< kyleha@gmail.com >>
-    cvince
-    colinnewell
-    rbuels
-    wlk
-    yanick
-    hippich
-    lecstor
-    bphillips
+        Tristan Pratt
+        Tomas Doran C<< <bobtfish@bobtfish.net> >>
+        Kyle Hasselbacher C<< kyleha@gmail.com >>
+        cvince
+        colinnewell
+        rbuels
+        wlk
+        yanick
+        hippich
+        lecstor
+        bphillips
 
-# COPYRIGHT & LICENSE
+    # COPYRIGHT & LICENSE
 
-Copyright 2012, John Napiorkowski `<jjnapiork@cpan.org>`
+    Copyright 2012, John Napiorkowski `<jjnapiork@cpan.org>`
 
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
+    This program is free software; you can redistribute it and/or modify
+    it under the same terms as Perl itself.
