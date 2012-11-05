@@ -21,6 +21,7 @@ package Test::DBIx::Class::Example::Schema::Result::Person; {
 		email => {
 			data_type => 'varchar',
 			size=>'128',
+			is_nullable => 1,
 		},
 		created => {
 			data_type => 'timestamp', 
