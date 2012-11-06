@@ -27,11 +27,11 @@ script could contain:
 
     done_testing;
 
-Yes, it looks like a lot of boilerplate, but sensible defaults are in place 
+Yes, it looks like a lot of boilerplate, but sensible defaults are in place
 (the above code example shows most of the existing defaults) and configuration
-data can be loaded from a central file.  So your 'real life' example is going
-to look closer to (assuming you put all your test configuration in the standard
-place, "t/etc/schema.conf":
+data [can be loaded from a central file](#CONFIGURATION BY FILE).  So,
+assuming you put all of your test configuration in the standard place, your
+'real life' example is going to look closer to:
 
     use Test::More;
         
@@ -688,70 +688,72 @@ such as from %ENV.  There are currently two macro substitutions:
     although personally I'd rather set that via configuration in the user home
     directory.
 
-    # TRAITS
+# TRAITS
 
-    As described, a trait is a [Moose::Role](http://search.cpan.org/perldoc?Moose::Role) that is applied to the class managing
-    your database and test instance.  Currently we only have the default 'SQLite'
-    trait and the 'Testmysqld' trait, but we eventually intend to have traits to
-    add easy support for creating Postgresql databases and supporting testing on
-    replicated systems.
+As described, a trait is a [Moose::Role](http://search.cpan.org/perldoc?Moose::Role) that is applied to the class managing
+your database and test instance.  Currently we only have the default 'SQLite'
+trait and the 'Testmysqld' trait, but we eventually intend to have traits to
+add easy support for creating Postgresql databases and supporting testing on
+replicated systems.
 
-    Traits are installed by the 'traits' configuration option, which expects an
-    ArrayRef as its input (however will also normalize a scalar to an ArrayRef).
+Traits are installed by the 'traits' configuration option, which expects an
+ArrayRef as its input (however will also normalize a scalar to an ArrayRef).
 
-    Available traits are as follows.
+Available traits are as follows.
 
-    ## SQLite
+## SQLite
 
-    This is the default trait which will be loaded if no other traits are installed
-    and there is not 'connect\_info' in the configuration.  In this case we assume
-    you want us to go and create a tempory SQLite database for testing.  Please see
-    [Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite) for more.
+This is the default trait which will be loaded if no other traits are installed
+and there is not 'connect\_info' in the configuration.  In this case we assume
+you want us to go and create a tempory SQLite database for testing.  Please see
+[Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite) for more.
 
-    ## Testmysqld
+## Testmysqld
 
-    If Mysql is installed on the testing machine, and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql), we try to auto
-    create an instance of Mysql and deploy our tests to that.  Similarly to the way
-    the SQLite trait works, we attempt to create the database without requiring any
-    other using effort or setup.
+If Mysql is installed on the testing machine, and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql), we try to auto
+create an instance of Mysql and deploy our tests to that.  Similarly to the way
+the SQLite trait works, we attempt to create the database without requiring any
+other using effort or setup.
 
-    See [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testmysqld) for more.
+See [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testmysqld) for more.
 
-    ## Testpostgresql
+## Testpostgresql
 
-    If Postgresql is installed on the testing machine, along with [DBD::Pg](http://search.cpan.org/perldoc?DBD::Pg), we try
-    to auto create an instance of Postgresql in a testing area and deploy our tests
-    and fixtures to it.
+If Postgresql is installed on the testing machine, along with [DBD::Pg](http://search.cpan.org/perldoc?DBD::Pg), we try
+to auto create an instance of Postgresql in a testing area and deploy our tests
+and fixtures to it.
 
-    See [Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) for more.
+See [Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) for more.
 
-    # SEE ALSO
+# SEE ALSO
 
-    The following modules or resources may be of interest.
+The following modules or resources may be of interest.
 
-    [DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class), [DBIx::Class::Schema::PopulateMore](http://search.cpan.org/perldoc?DBIx::Class::Schema::PopulateMore), [DBIx::Class::Fixtures](http://search.cpan.org/perldoc?DBIx::Class::Fixtures)
+[DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class), [DBIx::Class::Schema::PopulateMore](http://search.cpan.org/perldoc?DBIx::Class::Schema::PopulateMore), [DBIx::Class::Fixtures](http://search.cpan.org/perldoc?DBIx::Class::Fixtures)
 
-    # AUTHOR
+# AUTHOR
 
-        John Napiorkowski C<< <jjnapiork@cpan.org> >>
+    John Napiorkowski C<< <jjnapiork@cpan.org> >>
 
-    # CONTRIBUTORS
+# CONTRIBUTORS
 
-        Tristan Pratt
-        Tomas Doran C<< <bobtfish@bobtfish.net> >>
-        Kyle Hasselbacher C<< kyleha@gmail.com >>
-        cvince
-        colinnewell
-        rbuels
-        wlk
-        yanick
-        hippich
-        lecstor
-        bphillips
+    Tristan Pratt
+    Tomas Doran C<< <bobtfish@bobtfish.net> >>
+    Kyle Hasselbacher C<< kyleha@gmail.com >>
+    cvince
+    colinnewell
+    rbuels
+    wlk
+    yanick
+    hippich
+    lecstor
+    bphillips
+    abraxxa
+    oalders
 
-    # COPYRIGHT & LICENSE
+# COPYRIGHT & LICENSE
 
-    Copyright 2012, John Napiorkowski `<jjnapiork@cpan.org>`
+Copyright 2012, John Napiorkowski `<jjnapiork@cpan.org>`
 
-    This program is free software; you can redistribute it and/or modify
-    it under the same terms as Perl itself.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
