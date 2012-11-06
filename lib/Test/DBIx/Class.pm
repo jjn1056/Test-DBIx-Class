@@ -1357,6 +1357,8 @@ You might find this useful for configuring localized username and passwords
 although personally I'd rather set that via configuration in the user home
 directory.
 
+=back
+
 =head1 TRAITS
 
 As described, a trait is a L<Moose::Role> that is applied to the class managing
