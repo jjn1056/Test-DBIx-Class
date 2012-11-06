@@ -1,6 +1,11 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
-0.35
+0.36 06 November 2012
+    - POD updates (oalders++)
+    - updated contributors
+    - don't forget to vote!
+
+0.35 05 November 2012
     - ::Example::Schema::Result::Person's email column is now nullable as
       intended (abraxxa++)
 
