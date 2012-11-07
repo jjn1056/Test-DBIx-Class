@@ -709,7 +709,7 @@ assuming you put all of your test configuration in the standard place, your
 
     done_testing;
 
-Then, assuming the existance of a L<DBIx::Class::Schema> subclass called, 
+Then, assuming the existence of a L<DBIx::Class::Schema> subclass called,
 "MyApp::Schema" and some L<DBIx::Class::ResultSources> named like "Person", 
 "Person::Employee", "Job" and "Phone", will automatically deploy a testing 
 schema in the given database / storage (or auto deploy to an in-memory based
@@ -868,7 +868,7 @@ reported and we move on to the next test.
 
 =item arrayref
 
-Given a array reference, attempt to process it via the default fixtures loader
+Given an array reference, attempt to process it via the default fixtures loader
 or through the specified loader.
 
     fixtures_ok [
@@ -962,7 +962,7 @@ Example usage for testing a result follows.
         age => 40,
         email => 'john@home.com'};  # Assuming $john has only the three columns listed
 
-In the case were we need to infer the match pattern, we get the columns of the
+In the case where we need to infer the match pattern, we get the columns of the
 given result but remove the primary key.  Please note the following would also
 work:
 
@@ -1030,7 +1030,7 @@ might be more readable.  For example, the following are the same:
     use Test::DBIx::Class {config_path=>[qw(t etc config)]}, 'Person', 'Job';
 
 The following options are currently standard and always available.  Depending
-on your storage engine (such as SQLite or mysql) you will have other options.
+on your storage engine (such as SQLite or MySQL) you will have other options.
 
 =over 4
 
@@ -1041,7 +1041,7 @@ L</Initialization Sources> for more.
 
 In the case were we have both inlined and file based configurations, the 
 inlined is merged last (that is, has highest authority to override configuration
-files.
+files).
 
 When the final merging of all configurations (both anything inlined at 'use'
 time, and anything found in any of the specified config_paths, we do a single
@@ -1125,8 +1125,8 @@ Currently there are only three traits, the SQLite trait just described (and sinc
 it get's automatically loaded you never need to load it yourself). The
 L<Test::DBIx::Class::SchemaManager::Trait::Testmysqld> trait, which is built on
 top of L<Test::mysqld> and allows you the ability to deploy to and run tests
-against a temporary instance of Mysql. For this trait Mysql and L<DBD::mysql>
-needs to be installed, but Mysql does not need to be running, nor do you need
+against a temporary instance of MySQL. For this trait MySQL and L<DBD::mysql>
+needs to be installed, but MySQL does not need to be running, nor do you need
 to create a test database or user.   The third one is the 
 L<Test::DBIx::Class::SchemaManager::Trait::Testpostgresql> trait, which is
 built on top of L<Test::postgresql> and allows you to deploy to and run tests
@@ -1255,7 +1255,7 @@ to store configuration in the format of your choice.
 calling test script.  For example, if your test script is "t/mytest.t" we add
 the path "./t/etc/mytest.*" to the path.
 
-Additionally, we do a a merge using L<Hash::Merge> of all the matching found
+Additionally, we do a merge using L<Hash::Merge> of all the matching found
 configurations.  This allows you to do 'cascading' configuration from the most
 global to the most local settings.
 
@@ -1326,7 +1326,7 @@ for valid and loading configuration files (assuming unix filesystem conventions)
 Each path is testing in turn and all found configurations are merged from top to
 bottom.  This feature is intended to make it easier to switch between sets of
 configuration files when developing.  For example, you can create a test suite
-intended for a mysql database, but allow a failback to the default Sqlite should
+intended for a MySQL database, but allow a failback to the default Sqlite should
 certain enviroment variables not exist.
 
 =head1 CONFIGURATION SUBSTITUTIONS
@@ -1381,8 +1381,8 @@ L<Test::DBIx::Class::SchemaManager::Trait::SQLite> for more.
 
 =head2 Testmysqld
 
-If Mysql is installed on the testing machine, and L<DBD::mysql>, we try to auto
-create an instance of Mysql and deploy our tests to that.  Similarly to the way
+If MySQL is installed on the testing machine, and L<DBD::mysql>, we try to auto
+create an instance of MySQL and deploy our tests to that.  Similarly to the way
 the SQLite trait works, we attempt to create the database without requiring any
 other using effort or setup.
 
