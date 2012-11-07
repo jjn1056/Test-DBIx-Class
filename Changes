@@ -1,5 +1,8 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.37 07 November 2012
+    - More typo fixes (oalders++)
+
 0.36 06 November 2012
     - POD updates (oalders++)
     - updated contributors

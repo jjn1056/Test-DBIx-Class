@@ -45,7 +45,7 @@ assuming you put all of your test configuration in the standard place, your
 
     done_testing;
 
-Then, assuming the existance of a [DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema) subclass called, 
+Then, assuming the existence of a [DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema) subclass called,
 "MyApp::Schema" and some [DBIx::Class::ResultSources](http://search.cpan.org/perldoc?DBIx::Class::ResultSources) named like "Person", 
 "Person::Employee", "Job" and "Phone", will automatically deploy a testing 
 schema in the given database / storage (or auto deploy to an in-memory based
@@ -205,7 +205,7 @@ argument styles:
 
 - arrayref
 
-    Given a array reference, attempt to process it via the default fixtures loader
+    Given an array reference, attempt to process it via the default fixtures loader
     or through the specified loader.
 
         fixtures_ok [
@@ -297,7 +297,7 @@ Example usage for testing a result follows.
         age => 40,
         email => 'john@home.com'};  # Assuming $john has only the three columns listed
 
-In the case were we need to infer the match pattern, we get the columns of the
+In the case where we need to infer the match pattern, we get the columns of the
 given result but remove the primary key.  Please note the following would also
 work:
 
@@ -365,7 +365,7 @@ might be more readable.  For example, the following are the same:
     use Test::DBIx::Class {config_path=>[qw(t etc config)]}, 'Person', 'Job';
 
 The following options are currently standard and always available.  Depending
-on your storage engine (such as SQLite or mysql) you will have other options.
+on your storage engine (such as SQLite or MySQL) you will have other options.
 
 - config\_path
 
@@ -374,7 +374,7 @@ on your storage engine (such as SQLite or mysql) you will have other options.
 
     In the case were we have both inlined and file based configurations, the 
     inlined is merged last (that is, has highest authority to override configuration
-    files.
+    files).
 
     When the final merging of all configurations (both anything inlined at 'use'
     time, and anything found in any of the specified config\_paths, we do a single
@@ -458,8 +458,8 @@ on your storage engine (such as SQLite or mysql) you will have other options.
     it get's automatically loaded you never need to load it yourself). The
     [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testmysqld) trait, which is built on
     top of [Test::mysqld](http://search.cpan.org/perldoc?Test::mysqld) and allows you the ability to deploy to and run tests
-    against a temporary instance of Mysql. For this trait Mysql and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql)
-    needs to be installed, but Mysql does not need to be running, nor do you need
+    against a temporary instance of MySQL. For this trait MySQL and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql)
+    needs to be installed, but MySQL does not need to be running, nor do you need
     to create a test database or user.   The third one is the 
     [Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) trait, which is
     built on top of [Test::postgresql](http://search.cpan.org/perldoc?Test::postgresql) and allows you to deploy to and run tests
@@ -586,7 +586,7 @@ to store configuration in the format of your choice.
 calling test script.  For example, if your test script is "t/mytest.t" we add
 the path "./t/etc/mytest.\*" to the path.
 
-Additionally, we do a a merge using [Hash::Merge](http://search.cpan.org/perldoc?Hash::Merge) of all the matching found
+Additionally, we do a merge using [Hash::Merge](http://search.cpan.org/perldoc?Hash::Merge) of all the matching found
 configurations.  This allows you to do 'cascading' configuration from the most
 global to the most local settings.
 
@@ -659,7 +659,7 @@ for valid and loading configuration files (assuming unix filesystem conventions)
 Each path is testing in turn and all found configurations are merged from top to
 bottom.  This feature is intended to make it easier to switch between sets of
 configuration files when developing.  For example, you can create a test suite
-intended for a mysql database, but allow a failback to the default Sqlite should
+intended for a MySQL database, but allow a failback to the default Sqlite should
 certain enviroment variables not exist.
 
 # CONFIGURATION SUBSTITUTIONS
@@ -710,8 +710,8 @@ you want us to go and create a tempory SQLite database for testing.  Please see
 
 ## Testmysqld
 
-If Mysql is installed on the testing machine, and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql), we try to auto
-create an instance of Mysql and deploy our tests to that.  Similarly to the way
+If MySQL is installed on the testing machine, and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql), we try to auto
+create an instance of MySQL and deploy our tests to that.  Similarly to the way
 the SQLite trait works, we attempt to create the database without requiring any
 other using effort or setup.
 
