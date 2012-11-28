@@ -641,6 +641,7 @@ sub _initialize_schema {
     my $config  = shift @_;
     my $builder = __PACKAGE__->builder;
     
+    my $fail_on_schema_break = delete $config->{fail_on_schema_break};
     my $schema_manager;
      eval {
         $schema_manager = Test::DBIx::Class::SchemaManager->initialize_schema({
@@ -654,12 +655,17 @@ sub _initialize_schema {
             Test::More::explain("configuration: " => $config)
         );
         # FIXME: make this optional.
-        Test::More::fail("Failed remaining tests since we don't have a schema");
-        Test::More::done_testing();
-        # FIXME: look more closely at Test::Builder to check just exiting is safe,
-        # skip_all is slightly more complex.
-        exit(0);
-        #$builder->skip_all("Skipping remaining tests since we don't have a schema");
+        if($fail_on_schema_break)
+        {
+            Test::More::fail("Failed remaining tests since we don't have a schema");
+            Test::More::done_testing();
+            $builder->finalize();
+            exit(0);
+        }
+        else
+        {
+            $builder->skip_all("Skipping remaining tests since we don't have a schema");
+        }
     }
 
     return $schema_manager
