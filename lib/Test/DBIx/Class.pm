@@ -1147,6 +1147,12 @@ and L<DBD::Pg> needs to be installed, but Postgresql does not need to be
 running, nor do you need to create a test database or user.  
 See L</TRAITS> for more.
 
+=item fail_on_schema_break
+
+Makes the test run fail when the schema can not be created.  Normally the
+test run is skipped when the schema fails to create.  A failure can be more
+convenient when you want to spot compilation failures.  
+
 =back
 
 Please note that although all initialization options can be set inlined or in
