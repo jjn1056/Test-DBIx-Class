@@ -653,7 +653,13 @@ sub _initialize_schema {
         Test::More::diag(
             Test::More::explain("configuration: " => $config)
         );
-        $builder->skip_all("Skipping remaining tests since we don't have a schema");
+        # FIXME: make this optional.
+        Test::More::fail("Failed remaining tests since we don't have a schema");
+        Test::More::done_testing();
+        # FIXME: look more closely at Test::Builder to check just exiting is safe,
+        # skip_all is slightly more complex.
+        exit(0);
+        #$builder->skip_all("Skipping remaining tests since we don't have a schema");
     }
 
     return $schema_manager
