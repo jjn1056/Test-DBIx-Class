@@ -641,6 +641,7 @@ sub _initialize_schema {
     my $config  = shift @_;
     my $builder = __PACKAGE__->builder;
     
+    my $fail_on_schema_break = delete $config->{fail_on_schema_break};
     my $schema_manager;
      eval {
         $schema_manager = Test::DBIx::Class::SchemaManager->initialize_schema({
@@ -653,7 +654,18 @@ sub _initialize_schema {
         Test::More::diag(
             Test::More::explain("configuration: " => $config)
         );
-        $builder->skip_all("Skipping remaining tests since we don't have a schema");
+        # FIXME: make this optional.
+        if($fail_on_schema_break)
+        {
+            Test::More::fail("Failed remaining tests since we don't have a schema");
+            Test::More::done_testing();
+            $builder->finalize();
+            exit(0);
+        }
+        else
+        {
+            $builder->skip_all("Skipping remaining tests since we don't have a schema");
+        }
     }
 
     return $schema_manager
@@ -1134,6 +1146,12 @@ against a temporary instance of Postgresql.  For this trait Postgresql
 and L<DBD::Pg> needs to be installed, but Postgresql does not need to be
 running, nor do you need to create a test database or user.  
 See L</TRAITS> for more.
+
+=item fail_on_schema_break
+
+Makes the test run fail when the schema can not be created.  Normally the
+test run is skipped when the schema fails to create.  A failure can be more
+convenient when you want to spot compilation failures.  
 
 =back
 
