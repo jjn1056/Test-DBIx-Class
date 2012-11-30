@@ -468,6 +468,12 @@ on your storage engine (such as SQLite or MySQL) you will have other options.
     running, nor do you need to create a test database or user.  
     See ["TRAITS"](#TRAITS) for more.
 
+- fail\_on\_schema\_break
+
+    Makes the test run fail when the schema can not be created.  Normally the
+    test run is skipped when the schema fails to create.  A failure can be more
+    convenient when you want to spot compilation failures.  
+
 Please note that although all initialization options can be set inlined or in
 a configuration file, some options can also be set via %ENV variables. %ENV
 settings will only apply IF there are no existing values for the option in any
