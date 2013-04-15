@@ -64,6 +64,12 @@ has 'connect_opts' => (
     isa => 'HashRef',
 );
 
+has 'deploy_opts' => (
+    is => 'ro',
+    isa => 'HashRef',
+    default => sub { {} },
+);
+
 has 'connect_info_with_opts' => (
     is => 'ro',
     isa => 'HashRef',
@@ -188,10 +194,10 @@ sub _setup_debug {
 
 sub setup {
     my $self = shift @_;
-    my $deploy_args = $self->force_drop_table ? {add_drop_table => 1} : {};
+    my $deploy_opts = {%{$self->deploy_opts}, $self->force_drop_table ? (add_drop_table => 1) : ()};
     if(my $schema = $self->schema) {
         eval {
-            $schema->deploy($deploy_args);
+            $schema->deploy($deploy_opts);
         };if($@) {
             Test::More::fail("Error Deploying Schema: $@");
         }
@@ -272,7 +278,7 @@ Test::DBIx::Class::SchemaManager - Manages a DBIx::Class::SchemaManager for Test
 
 =head1 DESCRIPTION
 
-This class is a helper for L<Test::DBIx::Class>.  Basically it is a type of
+this class is a helper for L<Test::DBIx::Class>.  Basically it is a type of
 wrapper or adaptor for your schema so we can more easily and quickly deploy it
 and cleanup it for the purposes of automated testing.
 
