@@ -402,6 +402,11 @@ on your storage engine (such as SQLite or MySQL) you will have other options.
     have the dsn auto-generated, but require extra attributes such as name\_sep
     and quote\_char.
 
+- deploy\_opts
+
+    Use this to customise any arguments that are to be passed to
+    ["deploy" in DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema#deploy), such as add\_drop\_table or quote\_identifiers.
+
 - fixture\_path
 
     These are a list of relative paths search for fixtures.  Each item should be
