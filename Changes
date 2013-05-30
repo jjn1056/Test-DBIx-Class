@@ -1,5 +1,9 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.40 30 May 2013
+    - Add a dependency when using Postgresql so that Pg tests complete
+      properly (felliott++)
+
 0.39 15 April 2013
     - New Options to better control how SQLT is configured.  (mattp++)
     - don't forget to finish you taxes (USA only)

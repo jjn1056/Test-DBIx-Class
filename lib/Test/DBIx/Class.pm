@@ -6,7 +6,7 @@ use warnings;
 
 use base 'Test::Builder::Module';
 
-our $VERSION = '0.39';
+our $VERSION = '0.40';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
 use Config::Any;
@@ -1444,6 +1444,7 @@ L<DBIx::Class>, L<DBIx::Class::Schema::PopulateMore>, L<DBIx::Class::Fixtures>
     bphillips
     abraxxa
     oalders
+    felliott
 
 =head1 COPYRIGHT & LICENSE
 
