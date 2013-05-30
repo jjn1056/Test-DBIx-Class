@@ -26,7 +26,8 @@ requires 'File::Temp';
 requires 'File::Path';
 
 feature('MySql Support', -default => 0, 'Test::mysqld' => '0.14');
-feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.09');
+feature('Postgresql Support', -default => 0, 'Test::postgresql' => '0.09',
+        'DateTime::Format::Pg' => 0);
 
 test_requires 'Test::More' => '0.94';
 tests_recursive;
