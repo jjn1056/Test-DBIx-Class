@@ -3,7 +3,7 @@ package Test::DBIx::Class::Types;
 use strict;
 use warnings;
 
-use Class::MOP;
+use Module::Runtime qw(use_module);
 use Scalar::Util qw(reftype);
 use MooseX::Types::Moose qw(Str Int ClassName ArrayRef HashRef);
 use MooseX::Types -declare => [qw/
@@ -21,7 +21,7 @@ coerce SchemaManagerClass,
   from Str,
   via {
     my $type = $_;
-    Class::MOP::load_class($type);
+    use_module($type);
     $type;
   };
 
@@ -33,7 +33,7 @@ coerce FixtureClass,
   via {
     my $type = $_;
     $type = "Test::DBIx::Class::FixtureCommand".$type if $type =~m/^::/;
-    Class::MOP::load_class($type);
+    use_module($type);
     $type;
   };
 
