@@ -13,6 +13,7 @@ requires 'Data::Visitor' => '0.27';
 requires 'Digest::MD5' => '2.39';
 requires 'Hash::Merge' => '0.11';
 requires 'List::MoreUtils' => '0.22';
+requires 'Module::Runtime' => '0.013';
 requires 'Moose' => '1.10';
 requires 'MooseX::Attribute::ENV' => '0.01';
 requires 'MooseX::Types' => '0.23';
