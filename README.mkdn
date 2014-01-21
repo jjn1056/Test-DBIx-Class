@@ -29,13 +29,12 @@ script could contain:
 
 Yes, it looks like a lot of boilerplate, but sensible defaults are in place
 (the above code example shows most of the existing defaults) and configuration
-data [can be loaded from a central file](#CONFIGURATION BY FILE).  So,
+data [can be loaded from a central file](#configuration-by-file).  So,
 assuming you put all of your test configuration in the standard place, your
 'real life' example is going to look closer to:
 
     use Test::More;
         
-
     use strict;
     use warnings;
     use Test::DBIx::Class qw(:resultsets);
@@ -45,11 +44,11 @@ assuming you put all of your test configuration in the standard place, your
 
     done_testing;
 
-Then, assuming the existence of a [DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema) subclass called,
-"MyApp::Schema" and some [DBIx::Class::ResultSources](http://search.cpan.org/perldoc?DBIx::Class::ResultSources) named like "Person", 
+Then, assuming the existence of a [DBIx::Class::Schema](https://metacpan.org/pod/DBIx::Class::Schema) subclass called,
+"MyApp::Schema" and some [DBIx::Class::ResultSources](https://metacpan.org/pod/DBIx::Class::ResultSources) named like "Person", 
 "Person::Employee", "Job" and "Phone", will automatically deploy a testing 
 schema in the given database / storage (or auto deploy to an in-memory based
-[DBD::SQLite](http://search.cpan.org/perldoc?DBD::SQLite) database), install fixtures and let you run some test cases, 
+[DBD::SQLite](https://metacpan.org/pod/DBD::SQLite) database), install fixtures and let you run some test cases, 
 such as:
 
     ## Your testing code below ##
@@ -66,7 +65,6 @@ such as:
     ], 'Installed some custom fixtures via the Populate fixture class',
 
     
-
     ok my $john = Person->find({email=>'jjnapiork@cpan.org'})
       => 'John has entered the building!';
 
@@ -132,7 +130,7 @@ Please see the test cases for more examples.
 # DESCRIPTION
 
 The goal of this distribution is to make it easier to write test cases for your
-[DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class) based applications.  It does this in three ways.  First, it trys
+[DBIx::Class](https://metacpan.org/pod/DBIx::Class) based applications.  It does this in three ways.  First, it trys
 to make it easy to deploy your Schema.  This can be to your dedicated testing
 database, or a simple SQLite database.  This allows you to run tests without 
 interfering with your development work and having to stop and set up a testing 
@@ -165,7 +163,7 @@ Use like
     ok ResultSet('Job'), "Yeah, some jobs in the database";
     ok ResultSet( Job => {hourly_pay=>{'>'=>100}}), "Good paying jobs available!";
 
-Since this returns a normal [DBIx::Class::ResultSet](http://search.cpan.org/perldoc?DBIx::Class::ResultSet), you can just call the
+Since this returns a normal [DBIx::Class::ResultSet](https://metacpan.org/pod/DBIx::Class::ResultSet), you can just call the
 normal methods against it.
 
     ok ResultSet('Job')->search({hourly_pay=>{'>'=>100}}), "Good paying jobs available!";
@@ -234,13 +232,13 @@ All different types can be mixed and matched in a given test file.
 
 ## is\_result ($result, ?$result)
 
-Quick test to make sure $result does inherit from [DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class) or that it
-inherits from a subclass of [DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class).
+Quick test to make sure $result does inherit from [DBIx::Class](https://metacpan.org/pod/DBIx::Class) or that it
+inherits from a subclass of [DBIx::Class](https://metacpan.org/pod/DBIx::Class).
 
 ## is\_resultset ($resultset, ?$resultset)
 
-Quick test to make sure $resultset does inherit from [DBIx::Class::ResultSet](http://search.cpan.org/perldoc?DBIx::Class::ResultSet)
-or from a subclass of [DBIx::Class::ResultSet](http://search.cpan.org/perldoc?DBIx::Class::ResultSet).
+Quick test to make sure $resultset does inherit from [DBIx::Class::ResultSet](https://metacpan.org/pod/DBIx::Class::ResultSet)
+or from a subclass of [DBIx::Class::ResultSet](https://metacpan.org/pod/DBIx::Class::ResultSet).
 
 ## eq\_resultset ($resultset, $resultset, ?$message)
 
@@ -255,9 +253,9 @@ Given two row objects, make sure they are the same.
 ## hri\_dump ($resultset)
 
 Not a test, just returns a version of the ResultSet that has its inflator set
-to [DBIx::Class::ResultClass::HashRefInflator](http://search.cpan.org/perldoc?DBIx::Class::ResultClass::HashRefInflator), which returns a set of hashes
+to [DBIx::Class::ResultClass::HashRefInflator](https://metacpan.org/pod/DBIx::Class::ResultClass::HashRefInflator), which returns a set of hashes
 and makes it easier to stop issues.  This return value is suitable for dumping
-via [Data::Dump](http://search.cpan.org/perldoc?Data::Dump), for example.
+via [Data::Dump](https://metacpan.org/pod/Data::Dump), for example.
 
 ## reset\_schema
 
@@ -370,7 +368,7 @@ on your storage engine (such as SQLite or MySQL) you will have other options.
 - config\_path
 
     These are the relative paths searched for configuration file information. See
-    ["Initialization Sources"](#Initialization Sources) for more.
+    ["Initialization Sources"](#initialization-sources) for more.
 
     In the case were we have both inlined and file based configurations, the 
     inlined is merged last (that is, has highest authority to override configuration
@@ -387,12 +385,12 @@ on your storage engine (such as SQLite or MySQL) you will have other options.
 
 - schema\_class
 
-    Required. This must be your subclass of [DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema) that defines
+    Required. This must be your subclass of [DBIx::Class::Schema](https://metacpan.org/pod/DBIx::Class::Schema) that defines
     your database schema. 
 
 - connect\_info
 
-    Required. This will accept anything you can send to ["connect" in DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class#connect).
+    Required. This will accept anything you can send to ["connect" in DBIx::Class](https://metacpan.org/pod/DBIx::Class#connect).
     Defaults to: \['dbi:SQLite:dbname=:memory:','',''\] if left blank (but see
     'traits' below for more)
 
@@ -405,12 +403,12 @@ on your storage engine (such as SQLite or MySQL) you will have other options.
 - deploy\_opts
 
     Use this to customise any arguments that are to be passed to
-    ["deploy" in DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema#deploy), such as add\_drop\_table or quote\_identifiers.
+    ["deploy" in DBIx::Class::Schema](https://metacpan.org/pod/DBIx::Class::Schema#deploy), such as add\_drop\_table or quote\_identifiers.
 
 - fixture\_path
 
     These are a list of relative paths search for fixtures.  Each item should be
-    a directory that contains files loadable by [Config::Any](http://search.cpan.org/perldoc?Config::Any) and suitable to
+    a directory that contains files loadable by [Config::Any](https://metacpan.org/pod/Config::Any) and suitable to
     be installed via one of the fixture classes.
 
 - fixture\_class
@@ -418,13 +416,13 @@ on your storage engine (such as SQLite or MySQL) you will have other options.
     Command class that installs data into the database.  Must provide a method
     called 'install\_fixtures' that accepts a perl data structure and installs
     it into the database.  Must capture and report errors.  Default value is
-    "::Populate", which loads [Test::DBIx::Class::FixtureCommand::Populate](http://search.cpan.org/perldoc?Test::DBIx::Class::FixtureCommand::Populate), which
-    is a command class based on ["populate" in DBIx::Class::Schema](http://search.cpan.org/perldoc?DBIx::Class::Schema#populate).
+    "::Populate", which loads [Test::DBIx::Class::FixtureCommand::Populate](https://metacpan.org/pod/Test::DBIx::Class::FixtureCommand::Populate), which
+    is a command class based on ["populate" in DBIx::Class::Schema](https://metacpan.org/pod/DBIx::Class::Schema#populate).
 
 - resultsets
 
     Lets you add in some result source definitions to be imported at test script
-    runtime.  See ["Initialization Sources"](#Initialization Sources) for more.
+    runtime.  See ["Initialization Sources"](#initialization-sources) for more.
 
 - force\_drop\_table
 
@@ -451,27 +449,27 @@ on your storage engine (such as SQLite or MySQL) you will have other options.
 
 - traits
 
-    Traits are [Moose::Role](http://search.cpan.org/perldoc?Moose::Role)s that are applied to the class managing the connection
+    Traits are [Moose::Role](https://metacpan.org/pod/Moose::Role)s that are applied to the class managing the connection
     to your database.  If you leave this option blank and you don't specify anything
     for 'connect\_info' (above), we automatically load the SQLite trait (which can
-    be reviewed at [Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite)).  This trait
+    be reviewed at [Test::DBIx::Class::SchemaManager::Trait::SQLite](https://metacpan.org/pod/Test::DBIx::Class::SchemaManager::Trait::SQLite)).  This trait
     installs the ability to automatically discover and deploy to an in memory or a
     filesystem SQLite database.  If you are just getting started with testing, this
     is probably your easiest option.
 
     Currently there are only three traits, the SQLite trait just described (and since
     it get's automatically loaded you never need to load it yourself). The
-    [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testmysqld) trait, which is built on
-    top of [Test::mysqld](http://search.cpan.org/perldoc?Test::mysqld) and allows you the ability to deploy to and run tests
-    against a temporary instance of MySQL. For this trait MySQL and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql)
+    [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](https://metacpan.org/pod/Test::DBIx::Class::SchemaManager::Trait::Testmysqld) trait, which is built on
+    top of [Test::mysqld](https://metacpan.org/pod/Test::mysqld) and allows you the ability to deploy to and run tests
+    against a temporary instance of MySQL. For this trait MySQL and [DBD::mysql](https://metacpan.org/pod/DBD::mysql)
     needs to be installed, but MySQL does not need to be running, nor do you need
     to create a test database or user.   The third one is the 
-    [Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) trait, which is
-    built on top of [Test::postgresql](http://search.cpan.org/perldoc?Test::postgresql) and allows you to deploy to and run tests
+    [Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](https://metacpan.org/pod/Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) trait, which is
+    built on top of [Test::postgresql](https://metacpan.org/pod/Test::postgresql) and allows you to deploy to and run tests
     against a temporary instance of Postgresql.  For this trait Postgresql
-    and [DBD::Pg](http://search.cpan.org/perldoc?DBD::Pg) needs to be installed, but Postgresql does not need to be
+    and [DBD::Pg](https://metacpan.org/pod/DBD::Pg) needs to be installed, but Postgresql does not need to be
     running, nor do you need to create a test database or user.  
-    See ["TRAITS"](#TRAITS) for more.
+    See ["TRAITS"](#traits) for more.
 
 - fail\_on\_schema\_break
 
@@ -494,7 +492,7 @@ directory of your distribution.  You can use:
     sqlite3 test.db
 
 to open and view the tables and their data as loaded by any fixtures or create
-statements. See [Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite) for more.
+statements. See [Test::DBIx::Class::SchemaManager::Trait::SQLite](https://metacpan.org/pod/Test::DBIx::Class::SchemaManager::Trait::SQLite) for more.
 Note that you can specify both 'dbpath' and 'keep\_db' in your configuration
 files if you prefer.  I tried to expose a subset of configuration to %ENV that
 I thought the most useful.  Patches and suggestions welcomed.
@@ -508,7 +506,7 @@ into your test script namespace.  This is the 'Source' part of:
 
 Injecting methods are optional since you can also use the 'ResultSet' keyword
 
-Imported Source keywords use [Sub::Exporter](http://search.cpan.org/perldoc?Sub::Exporter) so you have quite a few options
+Imported Source keywords use [Sub::Exporter](https://metacpan.org/pod/Sub::Exporter) so you have quite a few options
 for controling how the keywords are imported.  For example:
 
     use Test::DBIx::Class 
@@ -531,7 +529,6 @@ This code reference gets passed the resultset object.  So you can use any
 method on $resultset.  For example:
 
     'Person' => {exec => sub { shift->find('john') }, -as => 'John'}; 
-
     is_result John;
     is John->name, 'John Napiorkowski', "Got Correct Name";
 
@@ -590,14 +587,14 @@ By default, we try to load configuration fileis from the following locations:
      ./t/etc/[test file path].*
 
 Where "." is the root of the distribution and "\*" is any of the configuration
-file types supported by [Config::Any](http://search.cpan.org/perldoc?Config::Any) configuration loader.  This allows you
+file types supported by [Config::Any](https://metacpan.org/pod/Config::Any) configuration loader.  This allows you
 to store configuration in the format of your choice.
 
 "\[test file path\]" is the relative path part under the "t" directory of the
 calling test script.  For example, if your test script is "t/mytest.t" we add
 the path "./t/etc/mytest.\*" to the path.
 
-Additionally, we do a merge using [Hash::Merge](http://search.cpan.org/perldoc?Hash::Merge) of all the matching found
+Additionally, we do a merge using [Hash::Merge](https://metacpan.org/pod/Hash::Merge) of all the matching found
 configurations.  This allows you to do 'cascading' configuration from the most
 global to the most local settings.
 
@@ -636,7 +633,7 @@ level settings.
 Please note that in all the examples given, paths are written as an array
 reference of path parts, rather than as a string with delimiters (i.e. we do
 \[qw(t etc)\] rather than "t/etc").  This is not required but recommended.  All
-arguments, either string or array references, are passed to [Path::Class](http://search.cpan.org/perldoc?Path::Class) so
+arguments, either string or array references, are passed to [Path::Class](https://metacpan.org/pod/Path::Class) so
 that we can maintain better compatibility with non unix filesystems.  If you
 are writing for CPAN, please consider our non Unix filesystem friends :)
 
@@ -675,7 +672,7 @@ certain enviroment variables not exist.
 
 # CONFIGURATION SUBSTITUTIONS
 
-Similarly to [Catalyst::Plugin::ConfigLoader](http://search.cpan.org/perldoc?Catalyst::Plugin::ConfigLoader), there are some macro style 
+Similarly to [Catalyst::Plugin::ConfigLoader](https://metacpan.org/pod/Catalyst::Plugin::ConfigLoader), there are some macro style 
 keyword inflators available for use within your configuration files.  This
 allows you to set the value of a configuration setting from an external source,
 such as from %ENV.  There are currently two macro substitutions:
@@ -701,7 +698,7 @@ such as from %ENV.  There are currently two macro substitutions:
 
 # TRAITS
 
-As described, a trait is a [Moose::Role](http://search.cpan.org/perldoc?Moose::Role) that is applied to the class managing
+As described, a trait is a [Moose::Role](https://metacpan.org/pod/Moose::Role) that is applied to the class managing
 your database and test instance.  Currently we only have the default 'SQLite'
 trait and the 'Testmysqld' trait, but we eventually intend to have traits to
 add easy support for creating Postgresql databases and supporting testing on
@@ -717,30 +714,30 @@ Available traits are as follows.
 This is the default trait which will be loaded if no other traits are installed
 and there is not 'connect\_info' in the configuration.  In this case we assume
 you want us to go and create a tempory SQLite database for testing.  Please see
-[Test::DBIx::Class::SchemaManager::Trait::SQLite](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::SQLite) for more.
+[Test::DBIx::Class::SchemaManager::Trait::SQLite](https://metacpan.org/pod/Test::DBIx::Class::SchemaManager::Trait::SQLite) for more.
 
 ## Testmysqld
 
-If MySQL is installed on the testing machine, and [DBD::mysql](http://search.cpan.org/perldoc?DBD::mysql), we try to auto
+If MySQL is installed on the testing machine, and [DBD::mysql](https://metacpan.org/pod/DBD::mysql), we try to auto
 create an instance of MySQL and deploy our tests to that.  Similarly to the way
 the SQLite trait works, we attempt to create the database without requiring any
 other using effort or setup.
 
-See [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testmysqld) for more.
+See [Test::DBIx::Class::SchemaManager::Trait::Testmysqld](https://metacpan.org/pod/Test::DBIx::Class::SchemaManager::Trait::Testmysqld) for more.
 
 ## Testpostgresql
 
-If Postgresql is installed on the testing machine, along with [DBD::Pg](http://search.cpan.org/perldoc?DBD::Pg), we try
+If Postgresql is installed on the testing machine, along with [DBD::Pg](https://metacpan.org/pod/DBD::Pg), we try
 to auto create an instance of Postgresql in a testing area and deploy our tests
 and fixtures to it.
 
-See [Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](http://search.cpan.org/perldoc?Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) for more.
+See [Test::DBIx::Class::SchemaManager::Trait::Testpostgresql](https://metacpan.org/pod/Test::DBIx::Class::SchemaManager::Trait::Testpostgresql) for more.
 
 # SEE ALSO
 
 The following modules or resources may be of interest.
 
-[DBIx::Class](http://search.cpan.org/perldoc?DBIx::Class), [DBIx::Class::Schema::PopulateMore](http://search.cpan.org/perldoc?DBIx::Class::Schema::PopulateMore), [DBIx::Class::Fixtures](http://search.cpan.org/perldoc?DBIx::Class::Fixtures)
+[DBIx::Class](https://metacpan.org/pod/DBIx::Class), [DBIx::Class::Schema::PopulateMore](https://metacpan.org/pod/DBIx::Class::Schema::PopulateMore), [DBIx::Class::Fixtures](https://metacpan.org/pod/DBIx::Class::Fixtures)
 
 # AUTHOR
 
