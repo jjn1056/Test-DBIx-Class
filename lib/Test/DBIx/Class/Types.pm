@@ -10,6 +10,7 @@ use MooseX::Types -declare => [qw/
     TestBuilder SchemaManagerClass ConnectInfo FixtureClass
     ReplicantsConnectInfo
 /];
+use Module::Runtime qw(use_module);
 
 subtype TestBuilder,
   as class_type('Test::Builder');
@@ -21,8 +22,7 @@ coerce SchemaManagerClass,
   from Str,
   via {
     my $type = $_;
-    Class::MOP::load_class($type);
-    $type;
+    return use_module($type);
   };
 
 subtype FixtureClass,
@@ -33,8 +33,7 @@ coerce FixtureClass,
   via {
     my $type = $_;
     $type = "Test::DBIx::Class::FixtureCommand".$type if $type =~m/^::/;
-    Class::MOP::load_class($type);
-    $type;
+    return use_module($type);
   };
 
 ## ConnectInfo cargo culted from "Catalyst::Model::DBIC::Schema::Types"
