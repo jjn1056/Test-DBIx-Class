@@ -316,7 +316,7 @@ sub import {
                             }
                             return $resultset->search(@search);
                         }
-                        return $resultset;
+                        return $resultset->search_rs;
                     }
                 };
             } $schema_manager->schema->sources,
