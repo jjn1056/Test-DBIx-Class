@@ -6,7 +6,7 @@ use warnings;
 
 use base 'Test::Builder::Module';
 
-our $VERSION = '0.41';
+our $VERSION = '0.42';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
 use Config::Any;

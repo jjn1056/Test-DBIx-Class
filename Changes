@@ -1,5 +1,9 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.42 13 Aug 2014
+    - Fixed issue where a resultset isn't properly 'reset'
+    - documentation improvements
+
 0.41 21 Jan 2014
     - Change Moose load_class() (now deprecated) to Module::Runtime use_module()
 
