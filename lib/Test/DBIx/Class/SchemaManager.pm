@@ -5,32 +5,31 @@ use MooseX::Attribute::ENV;
 use Moose::Util;
 use Test::More ();
 use List::MoreUtils qw(uniq);
-use Test::DBIx::Class::Types qw(
-    TestBuilder SchemaManagerClass FixtureClass ConnectInfo
-);
+use Test::DBIx::Class::Types qw( :types :to );
+use Types::Standard qw(Bool HashRef Str);
 
 has 'force_drop_table' => (
     traits=>['ENV'],
     is=>'rw',
-    isa=>'Bool',
     required=>1,
     default=>0,
+    isa=>Bool,
 );
 
 has [qw/keep_db tdbic_debug/] => (
     traits=>['ENV'],
     is=>'ro',
-    isa=>'Bool',
     required=>1,
     default=>0,
+    isa=>Bool,
 );
 
 has 'deploy_db' => (
     traits=>['ENV'],
     is=>'ro',
-    isa=>'Bool',
     required=>1,
     default=>1,
+    isa=>Bool,
 );
 
 has 'builder' => (
@@ -61,19 +60,19 @@ has 'connect_info' => (
 
 has 'connect_opts' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
 );
 
 has 'deploy_opts' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
     default => sub { {} },
 );
 
 has 'connect_info_with_opts' => (
     is => 'ro',
-    isa => 'HashRef',
     lazy_build => 1,
+    isa => HashRef,
 );
 
 has 'fixture_class' => (
@@ -93,12 +92,12 @@ has 'fixture_command' => (
 
 has 'fixture_sets' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
 );
 
 has 'last_statement' => (
     is=>'rw',
-    isa=>'Str',
+    isa=>Str,
 );
 
 sub get_fixture_sets {
