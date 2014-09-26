@@ -46,7 +46,7 @@ package Test::DBIx::Class::Example::Schema::Result::Person; {
 	);
 
 	__PACKAGE__->might_have(
-		artist  => 'Test::DBIx::Class::Example::Schema::Result::Person::Employee',
+		artist  => 'Test::DBIx::Class::Example::Schema::Result::Person::Artist',
 		{
 			'foreign.artist_id' => 'self.person_id',
 		},
