@@ -50,6 +50,9 @@ use Test::More; {
         traits => [qw!Testpostgresql!],
         tdbic_debug => 0,
         keep_db => $env_keep_db,
+        connect_opts => {
+            on_connect_do => 'SET client_min_messages=WARNING;',
+        },
 	}, 'Created Sample inline configuration';
 
     #-------------------
