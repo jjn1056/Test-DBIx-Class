@@ -1,7 +1,6 @@
 package Test::DBIx::Class::SchemaManager;
 
 use Moose;
-use MooseX::Attribute::ENV;
 use Moose::Util;
 use Test::More ();
 use List::MoreUtils qw(uniq);
@@ -9,28 +8,44 @@ use Test::DBIx::Class::Types qw( :types :to );
 use Types::Standard qw(Bool HashRef Str);
 
 has 'force_drop_table' => (
-    traits=>['ENV'],
     is=>'rw',
     required=>1,
-    default=>0,
     isa=>Bool,
+    builder => '_build_force_drop_table',
 );
+sub _build_force_drop_table {
+    $ENV{force_drop_table} || $ENV{FORCE_DROP_TABLE} || 0
+}
 
-has [qw/keep_db tdbic_debug/] => (
-    traits=>['ENV'],
+has 'keep_db' => (
     is=>'ro',
-    required=>1,
-    default=>0,
     isa=>Bool,
+    required=>1,
+    builder=>'_build_keep_db',
 );
+sub _build_keep_db {
+    $ENV{keep_db} || $ENV{KEEP_DB} || 0
+}
+
+has 'tdbic_debug' => (
+    is=>'ro',
+    isa=>Bool,
+    required=>1,
+    builder=>'_build_tdbic_debug',
+);
+sub _build_tdbic_debug {
+    $ENV{tdbic_debug} || $ENV{TDBIC_DEBUG} || 0
+}
 
 has 'deploy_db' => (
-    traits=>['ENV'],
     is=>'ro',
     required=>1,
-    default=>1,
     isa=>Bool,
+    builder=>'_build_deploy_db',
 );
+sub _build_deploy_db {
+    $ENV{deploy_db} || $ENV{DEPLOY_DB} || 1
+}
 
 has 'builder' => (
     is => 'ro',
@@ -39,12 +54,16 @@ has 'builder' => (
 );
 
 has 'schema_class' => (
-    traits => ['ENV'],
     is => 'ro',
     isa => SchemaManagerClass,
     required => 1,
     coerce => 1,
+    builder => '_build_schema_class',
 );
+sub _build_schema_class {
+    $ENV{schema_class} || $ENV{SCHEMA_CLASS}
+        || die '"schema_class" is a required parameter';
+}
 
 has 'schema' => (
     is => 'ro',
@@ -76,13 +95,15 @@ has 'connect_info_with_opts' => (
 );
 
 has 'fixture_class' => (
-    traits => ['ENV'],
     is => 'ro',
     isa => FixtureClass,
     required => 1,
     coerce => 1,
-    default => '::Populate',
+    builder => '_build_fixture_class',
 );
+sub _build_fixture_class {
+    $ENV{fixture_class} || $ENV{FIXTURE_CLASS} || '::Populate'
+}
 
 has 'fixture_command' => (
     is => 'ro',

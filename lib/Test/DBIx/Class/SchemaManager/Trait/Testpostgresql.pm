@@ -1,7 +1,6 @@
 package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 	
 	use Moose::Role;
-	use MooseX::Attribute::ENV;
 	use Test::PostgreSQL;
 	use Test::More ();
 	use Path::Class qw(dir);
@@ -13,11 +12,14 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 		lazy_build=>1,
 	);
 
+	has base_dir => ( is => 'ro', builder => '_build_base_dir' );
+	sub _build_base_dir { $ENV{base_dir} || $ENV{BASE_DIR} };
 
-	has [qw/base_dir initdb postmaster/] => (
-		is=>'ro', 
-		traits=>['ENV'], 
-	);
+	has initdb => ( is => 'ro', builder => '_build_initdb' );
+	sub _build_initdb { $ENV{initdb} || $ENV{INITDB} };
+
+	has postmaster => ( is => 'ro', builder => '_build_postmaster' );
+	sub _build_postmaster { $ENV{postmaster} || $ENV{POSTMASTER} };
 
 	sub _build_postgresqlobj {
 		my ($self) = @_;

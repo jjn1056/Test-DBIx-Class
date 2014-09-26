@@ -1,7 +1,6 @@
 package Test::DBIx::Class::SchemaManager::Trait::Testmysqld;
 
 use Moose::Role;
-use MooseX::Attribute::ENV;
 use Test::mysqld;
 use Test::More ();
 use Path::Class qw(dir);
@@ -15,10 +14,12 @@ requires 'setup', 'cleanup';
 
 ## has '+force_drop_table' => (is=>'rw',default=>1);
 
-has [qw/base_dir mysql_install_db mysqld/] => (
-    is=>'ro',
-    traits=>['ENV'],
-);
+has base_dir => (is => 'ro', builder => '_build_base_dir');
+sub _build_base_dir { $ENV{base_dir} || $ENV{BASE_DIR} }
+has mysql_install_db => (is => 'ro', builder => '_build_mysql_install_db');
+sub _build_mysql_install_db { $ENV{mysql_install_db} || $ENV{MYSQL_INSTALL_DB} }
+has mysqld => (is => 'ro', builder => '_build_mysqld');
+sub _build_mysqld { $ENV{mysqld} || $ENV{MYSQLD} }
 
 has test_db_manager => (
     is=>'ro',
