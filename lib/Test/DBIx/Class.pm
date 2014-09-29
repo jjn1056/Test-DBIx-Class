@@ -1387,14 +1387,10 @@ directory.
 
 =head1 TRAITS
 
-As described, a trait is a L<Moose::Role> that is applied to the class managing
-your database and test instance.  Currently we only have the default 'SQLite'
-trait and the 'Testmysqld' trait, but we eventually intend to have traits to
-add easy support for creating Postgresql databases and supporting testing on
-replicated systems.
-
-Traits are installed by the 'traits' configuration option, which expects an
-ArrayRef as its input (however will also normalize a scalar to an ArrayRef).
+As described, a trait is a L<Moose::Role> that is applied to the class
+managing your database and test instance.  Traits are installed by the
+'traits' configuration option, which expects an ArrayRef as its input
+(however will also normalize a scalar to an ArrayRef).
 
 Available traits are as follows.
 
