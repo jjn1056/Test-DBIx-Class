@@ -722,7 +722,7 @@ assuming you put all of your test configuration in the standard place, your
     done_testing;
 
 Then, assuming the existence of a L<DBIx::Class::Schema> subclass called,
-"MyApp::Schema" and some L<DBIx::Class::ResultSources> named like "Person", 
+"MyApp::Schema" and some L<DBIx::Class::ResultSource>s named like "Person",
 "Person::Employee", "Job" and "Phone", will automatically deploy a testing 
 schema in the given database / storage (or auto deploy to an in-memory based
 L<DBD::SQLite> database), install fixtures and let you run some test cases, 
