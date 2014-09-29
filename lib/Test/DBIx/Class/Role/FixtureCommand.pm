@@ -1,6 +1,6 @@
 package Test::DBIx::Class::Role::FixtureCommand; {
 
-	use Moose::Role;
+	use Moo::Role;
 	requires qw/install_fixtures/;
 
 	has 'schema_manager' => (

@@ -14,7 +14,6 @@ requires 'Digest::MD5' => '2.39';
 requires 'Hash::Merge' => '0.11';
 requires 'List::MoreUtils' => '0.22';
 requires 'Module::Runtime' => '0.013';
-requires 'Moose' => '1.10';
 requires 'Moo' => '1.006';
 requires 'namespace::clean';
 requires 'Path::Class' => '0.21';

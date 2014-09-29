@@ -1,8 +1,8 @@
 package Test::DBIx::Class::SchemaManager;
 
-use Moose::Util;
 use Test::More ();
 use List::MoreUtils qw(uniq);
+use Moo::Role ();
 use Test::DBIx::Class::Types qw( :types :to );
 use Types::Standard qw(Bool HashRef Str);
 
@@ -197,7 +197,7 @@ sub initialize_schema {
     @traits = map { __PACKAGE__."::Trait::$_"} uniq @traits;
     $config->{traits} = \@traits;
 
-    my $self = Moose::Util::with_traits($class, @traits)->new($config)
+    my $self = Moo::Role->create_class_with_roles($class, @traits)->new($config)
         or return;
 
     $self->schema->storage->ensure_connected;

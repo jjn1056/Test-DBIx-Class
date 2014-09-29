@@ -1,24 +1,26 @@
 package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
-	
-	use Moose::Role;
+
 	use Test::PostgreSQL;
 	use Test::More ();
 	use Path::Class qw(dir);
+
+	use Moo::Role;
 
 
 	has postgresqlobj => (
 		is=>'ro',
 		init_arg=>undef,
-		lazy_build=>1,
+		lazy=>1,
+		builder=>1,
 	);
 
-	has base_dir => ( is => 'ro', builder => '_build_base_dir' );
+	has base_dir => ( is => 'ro', builder => 1 );
 	sub _build_base_dir { $ENV{base_dir} || $ENV{BASE_DIR} };
 
-	has initdb => ( is => 'ro', builder => '_build_initdb' );
+	has initdb => ( is => 'ro', builder => 1 );
 	sub _build_initdb { $ENV{initdb} || $ENV{INITDB} };
 
-	has postmaster => ( is => 'ro', builder => '_build_postmaster' );
+	has postmaster => ( is => 'ro', builder => 1 );
 	sub _build_postmaster { $ENV{postmaster} || $ENV{POSTMASTER} };
 
 	sub _build_postgresqlobj {
@@ -75,11 +77,11 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 		}
 	};
 
-    override drop_table_sql => sub {
+    sub drop_table_sql {
         my $self = shift;
         my $table = shift;
         return "drop table $table cascade";
-    };
+    }
 
 } 1;
 

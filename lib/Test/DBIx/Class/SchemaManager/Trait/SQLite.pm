@@ -1,7 +1,8 @@
 package Test::DBIx::Class::SchemaManager::Trait::SQLite; {
-	
-	use Moose::Role;
+
 	use Test::DBIx::Class::Types qw(ConnectInfo);
+
+	use Moo::Role;
 
 	sub dbname {
 		my ($self) = @_;
