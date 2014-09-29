@@ -1,17 +1,19 @@
 package Test::DBIx::Class::SchemaManager;
 
-use Moose;
 use Moose::Util;
 use Test::More ();
 use List::MoreUtils qw(uniq);
 use Test::DBIx::Class::Types qw( :types :to );
 use Types::Standard qw(Bool HashRef Str);
 
+use Moo;
+use namespace::clean;
+
 has 'force_drop_table' => (
     is=>'rw',
     required=>1,
     isa=>Bool,
-    builder => '_build_force_drop_table',
+    builder=>1,
 );
 sub _build_force_drop_table {
     $ENV{force_drop_table} || $ENV{FORCE_DROP_TABLE} || 0
@@ -21,7 +23,7 @@ has 'keep_db' => (
     is=>'ro',
     isa=>Bool,
     required=>1,
-    builder=>'_build_keep_db',
+    builder=>1,
 );
 sub _build_keep_db {
     $ENV{keep_db} || $ENV{KEEP_DB} || 0
@@ -31,7 +33,7 @@ has 'tdbic_debug' => (
     is=>'ro',
     isa=>Bool,
     required=>1,
-    builder=>'_build_tdbic_debug',
+    builder=>1,
 );
 sub _build_tdbic_debug {
     $ENV{tdbic_debug} || $ENV{TDBIC_DEBUG} || 0
@@ -41,7 +43,7 @@ has 'deploy_db' => (
     is=>'ro',
     required=>1,
     isa=>Bool,
-    builder=>'_build_deploy_db',
+    builder=>1,
 );
 sub _build_deploy_db {
     $ENV{deploy_db} || $ENV{DEPLOY_DB} || 1
@@ -58,7 +60,7 @@ has 'schema_class' => (
     isa => SchemaManagerClass,
     required => 1,
     coerce => 1,
-    builder => '_build_schema_class',
+    builder => 1,
 );
 sub _build_schema_class {
     $ENV{schema_class} || $ENV{SCHEMA_CLASS}
@@ -67,14 +69,16 @@ sub _build_schema_class {
 
 has 'schema' => (
     is => 'ro',
-    lazy_build => 1,
+    lazy => 1,
+    builder => 1,
 );
 
 has 'connect_info' => (
     is => 'ro',
     isa => ConnectInfo,
     coerce => 1,
-    lazy_build => 1,
+    lazy => 1,
+    builder => 1,
 );
 
 has 'connect_opts' => (
@@ -90,8 +94,9 @@ has 'deploy_opts' => (
 
 has 'connect_info_with_opts' => (
     is => 'ro',
-    lazy_build => 1,
     isa => HashRef,
+    lazy => 1,
+    builder => 1,
 );
 
 has 'fixture_class' => (
@@ -99,7 +104,7 @@ has 'fixture_class' => (
     isa => FixtureClass,
     required => 1,
     coerce => 1,
-    builder => '_build_fixture_class',
+    builder => 1,
 );
 sub _build_fixture_class {
     $ENV{fixture_class} || $ENV{FIXTURE_CLASS} || '::Populate'
@@ -108,7 +113,8 @@ sub _build_fixture_class {
 has 'fixture_command' => (
     is => 'ro',
     init_arg => undef,
-    lazy_build => 1,
+    lazy => 1,
+    builder => 1,
 );
 
 has 'fixture_sets' => (

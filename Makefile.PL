@@ -15,6 +15,8 @@ requires 'Hash::Merge' => '0.11';
 requires 'List::MoreUtils' => '0.22';
 requires 'Module::Runtime' => '0.013';
 requires 'Moose' => '1.10';
+requires 'Moo' => '1.006';
+requires 'namespace::clean';
 requires 'Path::Class' => '0.21';
 requires 'SQL::Translator' => '0.11006';
 requires 'Scalar::Util' => '1.23';
