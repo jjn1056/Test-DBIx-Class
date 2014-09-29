@@ -63,7 +63,7 @@ sub import {
                     }
 
                     if($search) {
-                        my @search = ref $search ? @$search : ($search, @_);
+                        my @search = ref $search eq 'ARRAY' ? @$search : ($search, @_);
                         $resultset = $resultset->search(@search);
                     }
 
@@ -844,6 +844,9 @@ normal methods against it.
     ok ResultSet('Job')->search({hourly_pay=>{'>'=>100}}), "Good paying jobs available!";
 
 This is the same as the test above.
+
+ResultSet can also be called with a C<< $source, [\%search,
+\%condition] >> signature.
 
 =head2 fixtures_ok
 
