@@ -38,6 +38,32 @@ fixtures_ok sub {
     ]);
 }, 'Installed fixtures';
 
+
+is ResultSet('Person', {age => {'>' => 30}})->count, 2,
+    'ResultSet($source, \%search) works';
+is ResultSet('Person', [{age => {'>' => 30}}])->count, 2,
+    'ResultSet($source, [\%search]) works';
+
+{
+    my @names = sort {$a->{name} eq $b->{name}}
+        hri_dump(
+            ResultSet('Person', {age => {'>' => 30}}, {columns => ['name']})
+        )->all;
+
+    is_deeply \@names, [{name=>'John'}, {name=>'Vanessa'}],
+    'ResultSet($source, \%search, \%cond) works';
+}
+
+{
+    my @names = sort {$a->{name} eq $b->{name}}
+        hri_dump(
+            ResultSet('Person', [{age => {'>' => 30}}, {columns => ['name']}])
+        )->all;
+
+    is_deeply \@names, [{name=>'John'}, {name=>'Vanessa'}],
+    'ResultSet($source, [\%search, \%cond]) works';
+}
+
 is_deeply {map { $_->{name} => @$_{age} } hri_dump(Person)},
    { John => 40, Vanessa => 35, Vincent => 15 },
   'Got Expected results';

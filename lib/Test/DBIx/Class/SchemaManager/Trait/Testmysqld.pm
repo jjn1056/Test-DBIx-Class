@@ -127,7 +127,7 @@ has my_replicant_cnf => (
 sub prepare_replicant_config {
     my ($self, $replicant, @replicants,%extra) = @_;
     my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
-    my $port = find_next_unused_port();
+    my $port = $self->find_next_unused_port();
     my %config = (
         my_cnf => {
             'port'=>$port,

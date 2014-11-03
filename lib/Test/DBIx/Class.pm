@@ -63,7 +63,7 @@ sub import {
                     }
 
                     if($search) {
-                        my @search = ref $search ? @$search : ($search, @_);
+                        my @search = ref $search eq 'ARRAY' ? @$search : ($search, @_);
                         $resultset = $resultset->search(@search);
                     }
 
@@ -722,7 +722,7 @@ assuming you put all of your test configuration in the standard place, your
     done_testing;
 
 Then, assuming the existence of a L<DBIx::Class::Schema> subclass called,
-"MyApp::Schema" and some L<DBIx::Class::ResultSources> named like "Person", 
+"MyApp::Schema" and some L<DBIx::Class::ResultSource>s named like "Person",
 "Person::Employee", "Job" and "Phone", will automatically deploy a testing 
 schema in the given database / storage (or auto deploy to an in-memory based
 L<DBD::SQLite> database), install fixtures and let you run some test cases, 
@@ -844,6 +844,9 @@ normal methods against it.
     ok ResultSet('Job')->search({hourly_pay=>{'>'=>100}}), "Good paying jobs available!";
 
 This is the same as the test above.
+
+ResultSet can also be called with a C<< $source, [\%search,
+\%condition] >> signature.
 
 =head2 fixtures_ok
 
@@ -1384,14 +1387,10 @@ directory.
 
 =head1 TRAITS
 
-As described, a trait is a L<Moose::Role> that is applied to the class managing
-your database and test instance.  Currently we only have the default 'SQLite'
-trait and the 'Testmysqld' trait, but we eventually intend to have traits to
-add easy support for creating Postgresql databases and supporting testing on
-replicated systems.
-
-Traits are installed by the 'traits' configuration option, which expects an
-ArrayRef as its input (however will also normalize a scalar to an ArrayRef).
+As described, a trait is a L<Moose::Role> that is applied to the class
+managing your database and test instance.  Traits are installed by the
+'traits' configuration option, which expects an ArrayRef as its input
+(however will also normalize a scalar to an ArrayRef).
 
 Available traits are as follows.
 
