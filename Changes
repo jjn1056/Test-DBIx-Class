@@ -6,8 +6,8 @@ This file documents the revision history for Perl extension Test-DBIx-Class.
     - quiet down Postgresql pointless warnings (felliot)
     - fix RT 75247 (felliot)
     - Fixed bad test cases (felliot)
-
-
+    - Replaced Test::Postgresql dependency with Test::PostgreSQL for those
+      wanting to test Postgres. (colinnewell)
 
 0.42 13 Aug 2014
     - Fixed issue where a resultset isn't properly 'reset'
