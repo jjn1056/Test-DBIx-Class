@@ -1,5 +1,8 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+    - Replaced Test::Postgresql dependency with Test::PostgreSQL for those
+      wanting to test Postgres.
+
 0.42 13 Aug 2014
     - Fixed issue where a resultset isn't properly 'reset'
     - documentation improvements

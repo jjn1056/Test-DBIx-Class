@@ -2,7 +2,7 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 	
 	use Moose::Role;
 	use MooseX::Attribute::ENV;
-	use Test::postgresql;
+	use Test::PostgreSQL;
 	use Test::More ();
 	use Path::Class qw(dir);
 
@@ -26,8 +26,8 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 		}
 
 		my %config = (
-			initdb_args => $Test::postgresql::Defaults{initdb_args} ."",
-			postmaster_args => $Test::postgresql::Defaults{postmaster_args},
+			initdb_args => $Test::PostgreSQL::Defaults{initdb_args} ."",
+			postmaster_args => $Test::PostgreSQL::Defaults{postmaster_args},
 		);
 
 		$config{base_dir} = $self->base_dir if $self->base_dir;	
@@ -39,10 +39,10 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 			$self->force_drop_table(1);
 		}
 
-		if(my $testdb = Test::postgresql->new(%config)) {
+		if(my $testdb = Test::PostgreSQL->new(%config)) {
 			return $testdb;
 		} else {
-			die $Test::postgresql::errstr;
+			die $Test::PostgreSQL::errstr;
 		}
 	}
 
@@ -89,19 +89,19 @@ Test::DBIx::Class::SchemaManager::Trait::Testpostgresql - deploy to a test Postg
 
 =head1 DESCRIPTION
 
-This trait uses L<Test::postgresql> to auto create a test instance of Postgresql in a
+This trait uses L<Test::PostgreSQL> to auto create a test instance of Postgresql in a
 temporary area.  This way you can test against Postgresql without having to create
 a test database, users, etc.  Postgresql needs to be installed (but doesn't need to
 be running) as well as L<DBD::Pg>.  You need to install these yourself.
 
-Please review L<Test::postgresql> for help if you get stuck.
+Please review L<Test::PostgreSQL> for help if you get stuck.
 
 =head1 CONFIGURATION
 
 This trait supports all the existing features but adds some additional options
 you can put into your inlined of configuration files.  These following 
 additional configuration options basically map to the options supported by 
-L<Test::postgresql> and the docs are adapted shamelessly from that module.
+L<Test::PostgreSQL> and the docs are adapted shamelessly from that module.
 
 For the most part, if you have Postgresql installed in a normal, findable manner
 you should be able to leave all these options blank.
@@ -151,7 +151,7 @@ core functionality as described in the basic documentation.
 =head2 keep_db
 
 If you use the 'keep_db' option, this will preserve the temporarily created
-database files, however it will not prevent L<Test::postgresql> from stopping the
+database files, however it will not prevent L<Test::PostgreSQL> from stopping the
 database when you are finished.  This is a safety measure, since if we didn't
 stop a test generated database instance automatically, you could easily end up
 with many databases running at once, and that could bring your server or testing
@@ -206,7 +206,7 @@ document patches for how to do all the above on windows.
 
 =head2 Noisy warnings
 
-When running the L<Test::postgresql> instance, you'll probably see a lot of
+When running the L<Test::PostgreSQL> instance, you'll probably see a lot of
 mostly harmless warnings, similar to:
 
 	NOTICE:  drop cascades to 2 other objects
