@@ -1,5 +1,14 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.43 03 November 2014
+    - Documentation fixes (felliot)
+    - bug fixes in the mysql trait (felliot)
+    - quiet down Postgresql pointless warnings (felliot)
+    - fix RT 75247 (felliot)
+    - Fixed bad test cases (felliot)
+
+
+
 0.42 13 Aug 2014
     - Fixed issue where a resultset isn't properly 'reset'
     - documentation improvements

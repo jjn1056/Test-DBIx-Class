@@ -45,7 +45,7 @@ assuming you put all of your test configuration in the standard place, your
     done_testing;
 
 Then, assuming the existence of a [DBIx::Class::Schema](https://metacpan.org/pod/DBIx::Class::Schema) subclass called,
-"MyApp::Schema" and some [DBIx::Class::ResultSource](https://metacpan.org/pod/DBIx::Class::ResultSource)s named like "Person", 
+"MyApp::Schema" and some [DBIx::Class::ResultSources](https://metacpan.org/pod/DBIx::Class::ResultSources) named like "Person", 
 "Person::Employee", "Job" and "Phone", will automatically deploy a testing 
 schema in the given database / storage (or auto deploy to an in-memory based
 [DBD::SQLite](https://metacpan.org/pod/DBD::SQLite) database), install fixtures and let you run some test cases, 
@@ -81,7 +81,6 @@ such as:
     is_fields 'job_title', $john->jobs, 
         [qw/programmer administrator/],
         'Same test as above, just different compare format;
-
 
 
     is_fields [qw/job_title salary/], $john->jobs, [
@@ -151,8 +150,6 @@ The following methods are automatically imported when you use this module.
 
 You probably won't need this directly in your tests unless you have some
 application logic methods in it.
-
-
 
 ## ResultSet ($source, ?{%search}, ?{%conditions})
 
@@ -529,6 +526,7 @@ This code reference gets passed the resultset object.  So you can use any
 method on $resultset.  For example:
 
     'Person' => {exec => sub { shift->find('john') }, -as => 'John'}; 
+
     is_result John;
     is John->name, 'John Napiorkowski', "Got Correct Name";
 
