@@ -9,8 +9,8 @@ use Test::More; {
 	use warnings;
 
 	BEGIN {
-		eval "use Test::postgresql"; if($@) {
-			plan skip_all => 'Test::postgresql not installed';
+		eval "use Test::PostgreSQL"; if($@) {
+			plan skip_all => 'Test::PostgreSQL not installed';
 		}
 	}
 

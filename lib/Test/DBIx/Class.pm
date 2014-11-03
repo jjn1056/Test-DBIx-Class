@@ -1146,7 +1146,7 @@ against a temporary instance of MySQL. For this trait MySQL and L<DBD::mysql>
 needs to be installed, but MySQL does not need to be running, nor do you need
 to create a test database or user.   The third one is the 
 L<Test::DBIx::Class::SchemaManager::Trait::Testpostgresql> trait, which is
-built on top of L<Test::postgresql> and allows you to deploy to and run tests
+built on top of L<Test::PostgreSQL> and allows you to deploy to and run tests
 against a temporary instance of Postgresql.  For this trait Postgresql
 and L<DBD::Pg> needs to be installed, but Postgresql does not need to be
 running, nor do you need to create a test database or user.  
