@@ -10,7 +10,7 @@ our $VERSION = '0.43';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
 use Config::Any;
-use Data::Visitor::Callback;
+use DBIx::Class::Schema::PopulateMore::Visitor;
 use Digest::MD5;
 use Hash::Merge;
 use Path::Class;
@@ -347,7 +347,12 @@ sub _initialize {
         }
     }
     my $merged_with_fixtures_config = $class->_prepare_fixtures($merged_config);
-    my $visitor = Data::Visitor::Callback->new(plain_value=>\&_visit_config_values);
+    my $visitor = DBIx::Class::Schema::PopulateMore::Visitor->new(
+        {
+            match_condition => qr{.+},
+            update_callback => \&_visit_config_values
+        }
+    );
     $visitor->visit($merged_with_fixtures_config);
 
     my $schema_manager = $class->_initialize_schema($merged_with_fixtures_config);
