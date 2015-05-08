@@ -1,7 +1,6 @@
 package Test::DBIx::Class::SchemaManager;
 
 use Moose;
-use MooseX::Attribute::ENV;
 use Moose::Util;
 use Test::More ();
 use List::MoreUtils qw(uniq);
@@ -11,8 +10,32 @@ use Test::DBIx::Class::Types qw(
 );
 use Types::Standard qw(Bool HashRef Str);
 
+sub BUILDARGS {
+    my $class = shift;
+    my %args;
+    # can be passed a hashref or a hash
+    if ( @_ % 2 == 1 ) {
+        %args = %{ $_[0] };
+    }
+    else {
+        %args = @_;
+    }
+    foreach my $attr (
+        qw/ force_drop_table keep_db tdbic_debug deploy_db
+        schema_class fixture_class /
+      )
+    {
+        if ( defined $ENV{$attr} ) {
+            $args{$attr} = $ENV{$attr};
+        }
+        elsif ( defined $ENV{ uc $attr } ) {
+            $args{$attr} = $ENV{ uc $attr };
+        }
+    }
+    return \%args;
+};
+
 has 'force_drop_table' => (
-    traits=>['ENV'],
     is=>'rw',
     isa=>Bool,
     required=>1,
@@ -20,7 +43,6 @@ has 'force_drop_table' => (
 );
 
 has [qw/keep_db tdbic_debug/] => (
-    traits=>['ENV'],
     is=>'ro',
     isa=>Bool,
     required=>1,
@@ -28,7 +50,6 @@ has [qw/keep_db tdbic_debug/] => (
 );
 
 has 'deploy_db' => (
-    traits=>['ENV'],
     is=>'ro',
     isa=>Bool,
     required=>1,
@@ -42,7 +63,6 @@ has 'builder' => (
 );
 
 has 'schema_class' => (
-    traits => ['ENV'],
     is => 'ro',
     isa => SchemaManagerClass,
     required => 1,
@@ -79,7 +99,6 @@ has 'connect_info_with_opts' => (
 );
 
 has 'fixture_class' => (
-    traits => ['ENV'],
     is => 'ro',
     isa => FixtureClass,
     required => 1,
