@@ -22,7 +22,7 @@ requires 'Scalar::Util' => '1.23';
 requires 'Sub::Exporter' => '0.982';
 requires 'Test::Builder' => '0.96';
 requires 'Test::Deep' => '0.106';
-requires 'Type::Tiny' => '1.000005';
+requires 'Type::Tiny' => '1.000004';
 requires 'File::Temp';
 requires 'File::Path';
 
