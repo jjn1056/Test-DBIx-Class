@@ -1,6 +1,6 @@
 package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 	
-	use Moose::Role;
+	use Moo::Role;
 	use MooseX::Attribute::ENV;
 	use Test::PostgreSQL;
 	use Test::More ();
@@ -73,7 +73,8 @@ package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 		}
 	};
 
-    override drop_table_sql => sub {
+    around drop_table_sql => sub {
+        my $orig = shift;
         my $self = shift;
         my $table = shift;
         return "drop table $table cascade";

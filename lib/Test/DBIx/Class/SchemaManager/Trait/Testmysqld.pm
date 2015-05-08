@@ -1,7 +1,8 @@
 package Test::DBIx::Class::SchemaManager::Trait::Testmysqld;
 
-use Moose::Role;
+use Moo::Role;
 use MooseX::Attribute::ENV;
+use Types::Standard qw(ArrayRef HashRef Str);
 use Test::mysqld;
 use Test::More ();
 use Path::Class qw(dir);
@@ -43,7 +44,7 @@ sub _build_test_db_manager {
 has default_cnf => (
     is=>'ro',
     init_arg=>undef,
-    isa=>'HashRef',
+    isa=>HashRef,
     auto_deref=>1,
     lazy_build=>1,
 );
@@ -65,13 +66,13 @@ has port_to_try_first => (
 
 has my_cnf => (
     is=>'ro',
-    isa=>'HashRef',
+    isa=>HashRef,
     auto_deref=>1,
 );
 
 ## Replicant stuff... probably should be a delegate
 
-has deployed_replicants => (is=>'rw', isa=>'ArrayRef', auto_deref=>1);
+has deployed_replicants => (is=>'rw', isa=>ArrayRef, auto_deref=>1);
 
 has replicants => (
     is=>'rw',
@@ -83,14 +84,14 @@ has replicants => (
 
 has pool_args => (
     is=>'ro',
-    isa=>'HashRef',
+    isa=>HashRef,
     required=>0,
     predicate=>'has_pool_args',
 );
 
 has balancer_type => (
     is=>'ro',
-    isa=>'Str',
+    isa=>Str,
     required=>1,
     predicate=>'has_balancer_type',
     default=>'::Random',
@@ -98,7 +99,7 @@ has balancer_type => (
 
 has balancer_args => (
     is=>'ro',
-    isa=>'HashRef',
+    isa=>HashRef,
     required=>1,
     predicate=>'has_balancer_args',
     default=> sub {
@@ -112,7 +113,7 @@ has balancer_args => (
 has default_replicant_cnf => (
     is=>'ro',
     init_arg=>undef,
-    isa=>'HashRef',
+    isa=>HashRef,
     auto_deref=>1,
     required=>1,
     default=> sub { +{} },
@@ -120,7 +121,7 @@ has default_replicant_cnf => (
 
 has my_replicant_cnf => (
     is=>'ro',
-    isa=>'HashRef',
+    isa=>HashRef,
     auto_deref=>1,
 );
 
