@@ -7,6 +7,7 @@ use Test::More ();
 use List::MoreUtils qw(uniq);
 use Test::DBIx::Class::Types qw(
     TestBuilder SchemaManagerClass FixtureClass ConnectInfo
+    to_FixtureClass to_ConnectInfo
 );
 
 has 'force_drop_table' => (
