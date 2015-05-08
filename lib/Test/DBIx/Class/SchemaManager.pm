@@ -9,11 +9,12 @@ use Test::DBIx::Class::Types qw(
     TestBuilder SchemaManagerClass FixtureClass ConnectInfo
     to_FixtureClass to_ConnectInfo
 );
+use Types::Standard qw(Bool HashRef Str);
 
 has 'force_drop_table' => (
     traits=>['ENV'],
     is=>'rw',
-    isa=>'Bool',
+    isa=>Bool,
     required=>1,
     default=>0,
 );
@@ -21,7 +22,7 @@ has 'force_drop_table' => (
 has [qw/keep_db tdbic_debug/] => (
     traits=>['ENV'],
     is=>'ro',
-    isa=>'Bool',
+    isa=>Bool,
     required=>1,
     default=>0,
 );
@@ -29,7 +30,7 @@ has [qw/keep_db tdbic_debug/] => (
 has 'deploy_db' => (
     traits=>['ENV'],
     is=>'ro',
-    isa=>'Bool',
+    isa=>Bool,
     required=>1,
     default=>1,
 );
@@ -62,18 +63,18 @@ has 'connect_info' => (
 
 has 'connect_opts' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
 );
 
 has 'deploy_opts' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
     default => sub { {} },
 );
 
 has 'connect_info_with_opts' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
     lazy_build => 1,
 );
 
@@ -94,12 +95,12 @@ has 'fixture_command' => (
 
 has 'fixture_sets' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
 );
 
 has 'last_statement' => (
     is=>'rw',
-    isa=>'Str',
+    isa=>Str,
 );
 
 sub get_fixture_sets {
