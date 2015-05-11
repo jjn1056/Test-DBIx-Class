@@ -13,6 +13,7 @@ use Types::Standard qw(ArrayRef Bool HashRef Str);
 has 'force_drop_table' => (
     is=>'rw',
     isa=>Bool,
+    required=>1,
     lazy=>1,
     builder=>1,
 );
@@ -23,6 +24,7 @@ sub _build_force_drop_table {
 has [qw/keep_db tdbic_debug/] => (
     is=>'lazy',
     isa=>Bool,
+    required=>1,
 );
 sub _build_keep_db {
     return shift->env_builder('keep_db', 0);
@@ -34,6 +36,7 @@ sub _build_tdbic_debug {
 has 'deploy_db' => (
     is=>'lazy',
     isa=>Bool,
+    required=>1,
 );
 sub _build_deploy_db {
     return shift->env_builder('deploy_db', 1);
@@ -48,6 +51,7 @@ has 'builder' => (
 has 'schema_class' => (
     is => 'lazy',
     isa => SchemaManagerClass,
+    required => 1,
     coerce => 1,
 );
 sub _build_schema_class {
@@ -83,6 +87,7 @@ has 'connect_info_with_opts' => (
 has 'fixture_class' => (
     is => 'lazy',
     isa => FixtureClass,
+    required => 1,
     coerce => 1,
 );
 sub _build_fixture_class {
