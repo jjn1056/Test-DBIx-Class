@@ -10,7 +10,7 @@ our $VERSION = '0.43';
 our $AUTHORITY = 'cpan:JJNAPIORK';
 
 use Config::Any;
-use Data::Visitor::Callback;
+use DBIx::Class::Schema::PopulateMore::Visitor;
 use Digest::MD5;
 use Hash::Merge;
 use Path::Class;
@@ -347,7 +347,12 @@ sub _initialize {
         }
     }
     my $merged_with_fixtures_config = $class->_prepare_fixtures($merged_config);
-    my $visitor = Data::Visitor::Callback->new(plain_value=>\&_visit_config_values);
+    my $visitor = DBIx::Class::Schema::PopulateMore::Visitor->new(
+        {
+            match_condition => qr{.+},
+            update_callback => \&_visit_config_values
+        }
+    );
     $visitor->visit($merged_with_fixtures_config);
 
     my $schema_manager = $class->_initialize_schema($merged_with_fixtures_config);
@@ -1133,7 +1138,7 @@ to an already existing and populated database, set this option to false.
 
 =item traits
 
-Traits are L<Moose::Role>s that are applied to the class managing the connection
+Traits are L<Moo::Role>s that are applied to the class managing the connection
 to your database.  If you leave this option blank and you don't specify anything
 for 'connect_info' (above), we automatically load the SQLite trait (which can
 be reviewed at L<Test::DBIx::Class::SchemaManager::Trait::SQLite>).  This trait
@@ -1387,7 +1392,7 @@ directory.
 
 =head1 TRAITS
 
-As described, a trait is a L<Moose::Role> that is applied to the class
+As described, a trait is a L<Moo::Role> that is applied to the class
 managing your database and test instance.  Traits are installed by the
 'traits' configuration option, which expects an ArrayRef as its input
 (however will also normalize a scalar to an ArrayRef).
@@ -1444,6 +1449,7 @@ L<DBIx::Class>, L<DBIx::Class::Schema::PopulateMore>, L<DBIx::Class::Fixtures>
     abraxxa
     oalders
     felliott
+    SysPete <peter@sysnix.com>
 
 =head1 COPYRIGHT & LICENSE
 

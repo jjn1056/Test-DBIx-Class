@@ -1,7 +1,7 @@
 package Test::DBIx::Class::SchemaManager::Trait::Testmysqld;
 
-use Moose::Role;
-use MooseX::Attribute::ENV;
+use Moo::Role;
+use Types::Standard qw(ArrayRef HashRef Str);
 use Test::mysqld;
 use Test::More ();
 use Path::Class qw(dir);
@@ -15,14 +15,21 @@ requires 'setup', 'cleanup';
 ## has '+force_drop_table' => (is=>'rw',default=>1);
 
 has [qw/base_dir mysql_install_db mysqld/] => (
-    is=>'ro',
-    traits=>['ENV'],
+    is=>'lazy',
 );
+sub _build_base_dir {
+    return shift->env_builder('base_dir');
+}
+sub _build_mysql_install_db {
+    return shift->env_builder('mysql_install_db');
+}
+sub _build_mysqld {
+    return shift->env_builder('mysqld');
+}
 
 has test_db_manager => (
-    is=>'ro',
+    is=>'lazy',
     init_arg=>undef,
-    lazy_build=>1,
 );
 
 sub _build_test_db_manager {
@@ -41,11 +48,9 @@ sub _build_test_db_manager {
 }
 
 has default_cnf => (
-    is=>'ro',
+    is=>'lazy',
     init_arg=>undef,
-    isa=>'HashRef',
-    auto_deref=>1,
-    lazy_build=>1,
+    isa=>HashRef,
 );
 
 sub _build_default_cnf {
@@ -65,32 +70,31 @@ has port_to_try_first => (
 
 has my_cnf => (
     is=>'ro',
-    isa=>'HashRef',
-    auto_deref=>1,
+    isa=>HashRef,
+    default=>sub{+{}},
 );
 
 ## Replicant stuff... probably should be a delegate
 
-has deployed_replicants => (is=>'rw', isa=>'ArrayRef', auto_deref=>1);
+has deployed_replicants => (is=>'rw', isa=>ArrayRef);
 
 has replicants => (
     is=>'rw',
     isa=>ReplicantsConnectInfo,
     coerce=>1,
-    auto_deref=>1,
     predicate=>'has_replicants',
 );
 
 has pool_args => (
     is=>'ro',
-    isa=>'HashRef',
+    isa=>HashRef,
     required=>0,
     predicate=>'has_pool_args',
 );
 
 has balancer_type => (
     is=>'ro',
-    isa=>'Str',
+    isa=>Str,
     required=>1,
     predicate=>'has_balancer_type',
     default=>'::Random',
@@ -98,7 +102,7 @@ has balancer_type => (
 
 has balancer_args => (
     is=>'ro',
-    isa=>'HashRef',
+    isa=>HashRef,
     required=>1,
     predicate=>'has_balancer_args',
     default=> sub {
@@ -112,16 +116,15 @@ has balancer_args => (
 has default_replicant_cnf => (
     is=>'ro',
     init_arg=>undef,
-    isa=>'HashRef',
-    auto_deref=>1,
+    isa=>HashRef,
     required=>1,
     default=> sub { +{} },
 );
 
 has my_replicant_cnf => (
     is=>'ro',
-    isa=>'HashRef',
-    auto_deref=>1,
+    isa=>HashRef,
+    default=> sub { +{} },
 );
 
 sub prepare_replicant_config {
@@ -132,8 +135,8 @@ sub prepare_replicant_config {
         my_cnf => {
             'port'=>$port,
             'server-id'=>($replicant->{name}+2),
-            $self->default_replicant_cnf,
-            $self->my_replicant_cnf,
+            %{$self->default_replicant_cnf},
+            %{$self->my_replicant_cnf},
             %my_cnf_extra,
         },
         %extra,
@@ -173,7 +176,7 @@ around 'setup' => sub {
     ## Do we need to invent replicants?
     my @replicants = ();
     my @deployed_replicants = ();
-    foreach	my $replicant ($self->replicants) {
+    foreach	my $replicant (@{$self->replicants}) {
         if($replicant->{dsn}) {
             push @replicants, $replicant;
         } else {
@@ -204,7 +207,7 @@ around 'setup' => sub {
 
     $self->deployed_replicants(\@deployed_replicants);
     $self->replicants(\@replicants);
-    $self->schema->storage->connect_replicants($self->replicants);
+    $self->schema->storage->connect_replicants(@{$self->replicants});
     $self->schema->storage->ensure_connected;
     my $port =  $self->default_cnf->{port};  ## TODO I doubt this is correct.....
 
@@ -226,8 +229,8 @@ sub prepare_config {
     my %my_cnf_extra = $extra{my_cnf} ? delete $extra{my_cnf} : ();
     my %config = (
         my_cnf => {
-            $self->default_cnf,
-            $self->my_cnf,
+            %{$self->default_cnf},
+            %{$self->my_cnf},
             %my_cnf_extra,
         },
         %extra,

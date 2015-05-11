@@ -1,37 +1,46 @@
 package Test::DBIx::Class::SchemaManager;
 
-use Moose;
-use MooseX::Attribute::ENV;
-use Moose::Util;
+use Moo;
+with 'MooX::Traits';
 use Test::More ();
 use List::MoreUtils qw(uniq);
 use Test::DBIx::Class::Types qw(
     TestBuilder SchemaManagerClass FixtureClass ConnectInfo
+    to_FixtureClass to_ConnectInfo
 );
+use Types::Standard qw(ArrayRef Bool HashRef Str);
 
 has 'force_drop_table' => (
-    traits=>['ENV'],
     is=>'rw',
-    isa=>'Bool',
+    isa=>Bool,
     required=>1,
-    default=>0,
+    lazy=>1,
+    builder=>1,
 );
+sub _build_force_drop_table {
+    return shift->env_builder('force_drop_table', 0);
+}
 
 has [qw/keep_db tdbic_debug/] => (
-    traits=>['ENV'],
-    is=>'ro',
-    isa=>'Bool',
+    is=>'lazy',
+    isa=>Bool,
     required=>1,
-    default=>0,
 );
+sub _build_keep_db {
+    return shift->env_builder('keep_db', 0);
+}
+sub _build_tdbic_debug {
+    return shift->env_builder('tdbic_debug', 0);
+}
 
 has 'deploy_db' => (
-    traits=>['ENV'],
-    is=>'ro',
-    isa=>'Bool',
+    is=>'lazy',
+    isa=>Bool,
     required=>1,
-    default=>1,
 );
+sub _build_deploy_db {
+    return shift->env_builder('deploy_db', 1);
+}
 
 has 'builder' => (
     is => 'ro',
@@ -40,65 +49,64 @@ has 'builder' => (
 );
 
 has 'schema_class' => (
-    traits => ['ENV'],
-    is => 'ro',
+    is => 'lazy',
     isa => SchemaManagerClass,
     required => 1,
     coerce => 1,
 );
+sub _build_schema_class {
+    return shift->env_builder('schema_class');
+}
 
 has 'schema' => (
-    is => 'ro',
-    lazy_build => 1,
+    is => 'lazy',
 );
 
 has 'connect_info' => (
-    is => 'ro',
+    is => 'lazy',
     isa => ConnectInfo,
     coerce => 1,
-    lazy_build => 1,
 );
 
 has 'connect_opts' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
 );
 
 has 'deploy_opts' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
     default => sub { {} },
 );
 
 has 'connect_info_with_opts' => (
-    is => 'ro',
-    isa => 'HashRef',
-    lazy_build => 1,
+    is => 'lazy',
+    isa => HashRef,
 );
 
 has 'fixture_class' => (
-    traits => ['ENV'],
-    is => 'ro',
+    is => 'lazy',
     isa => FixtureClass,
     required => 1,
     coerce => 1,
-    default => '::Populate',
 );
+sub _build_fixture_class {
+    return shift->env_builder('fixture_class', '::Populate');
+}
 
 has 'fixture_command' => (
-    is => 'ro',
+    is => 'lazy',
     init_arg => undef,
-    lazy_build => 1,
 );
 
 has 'fixture_sets' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
 );
 
 has 'last_statement' => (
     is=>'rw',
-    isa=>'Str',
+    isa=>Str,
 );
 
 sub get_fixture_sets {
@@ -171,7 +179,7 @@ sub initialize_schema {
     @traits = map { __PACKAGE__."::Trait::$_"} uniq @traits;
     $config->{traits} = \@traits;
 
-    my $self = Moose::Util::with_traits($class, @traits)->new($config)
+    my $self = $class->new_with_traits($config)
         or return;
 
     $self->schema->storage->ensure_connected;
@@ -259,6 +267,21 @@ sub install_fixtures {
     return $self->schema->txn_do( sub {
         $fixture_command->install_fixtures(@args);
     });
+}
+
+
+# lazy builder replacement for MooseX::Attribute::ENV
+sub env_builder {
+    my ( $self, $env_var, $default ) = @_;
+    if ( defined $ENV{$env_var} ) {
+        return $ENV{$env_var};
+    }
+    elsif ( defined $ENV{ uc $env_var } ) {
+        return $ENV{ uc $env_var };
+    }
+    else {
+        return $default;
+    }
 }
 
 sub DEMOLISH {

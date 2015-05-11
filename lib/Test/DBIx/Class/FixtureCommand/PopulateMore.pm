@@ -1,6 +1,6 @@
 package Test::DBIx::Class::FixtureCommand::PopulateMore; {
 
-	use Moose;
+	use Moo;
 	use Test::More ();
 	use DBIx::Class::Schema::PopulateMore::Command;
 	with 'Test::DBIx::Class::Role::FixtureCommand';

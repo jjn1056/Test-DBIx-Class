@@ -12,6 +12,14 @@ BEGIN {
     eval "use Test::mysqld"; if($@) {
         plan skip_all => 'Test::mysqld not installed';
     }
+    require DBIx::Class::Optional::Dependencies;
+    my $deps = DBIx::Class::Optional::Dependencies->req_list_for('replicated');
+    foreach my $dep (keys %$deps) {
+        my $ver = $deps->{$dep};
+        eval "use $dep $ver"; if($@) {
+            plan skip_all => "$dep $ver not installed";
+        }
+    }
 }
 
 my $lastname;
