@@ -1449,6 +1449,7 @@ L<DBIx::Class>, L<DBIx::Class::Schema::PopulateMore>, L<DBIx::Class::Fixtures>
     abraxxa
     oalders
     felliott
+    SysPete <peter@sysnix.com>
 
 =head1 COPYRIGHT & LICENSE
 
