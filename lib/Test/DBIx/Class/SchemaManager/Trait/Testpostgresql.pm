@@ -1,7 +1,6 @@
 package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 	
 	use Moo::Role;
-	use MooX::HasEnv;
 	use Test::PostgreSQL;
 	use Test::More ();
 	use Path::Class qw(dir);
