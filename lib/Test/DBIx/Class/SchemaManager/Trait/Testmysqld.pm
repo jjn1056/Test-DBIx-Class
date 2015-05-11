@@ -71,7 +71,7 @@ has port_to_try_first => (
 has my_cnf => (
     is=>'ro',
     isa=>HashRef,
-    default=>sub{{}},
+    default=>sub{+{}},
 );
 
 ## Replicant stuff... probably should be a delegate
@@ -124,6 +124,7 @@ has default_replicant_cnf => (
 has my_replicant_cnf => (
     is=>'ro',
     isa=>HashRef,
+    default=> sub { +{} },
 );
 
 sub prepare_replicant_config {
@@ -175,7 +176,7 @@ around 'setup' => sub {
     ## Do we need to invent replicants?
     my @replicants = ();
     my @deployed_replicants = ();
-    foreach	my $replicant ($self->replicants) {
+    foreach	my $replicant (@{$self->replicants}) {
         if($replicant->{dsn}) {
             push @replicants, $replicant;
         } else {
