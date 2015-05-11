@@ -1,7 +1,6 @@
 package Test::DBIx::Class::SchemaManager::Trait::SQLite; {
 	
 	use Moo::Role;
-	use MooseX::Attribute::ENV;
 	use Test::DBIx::Class::Types qw(ConnectInfo);
 
 	sub dbname {
