@@ -1,23 +1,29 @@
 package Test::DBIx::Class::SchemaManager::Trait::Testpostgresql; {
 	
 	use Moo::Role;
-	use MooseX::Attribute::ENV;
+	use MooX::HasEnv;
 	use Test::PostgreSQL;
 	use Test::More ();
 	use Path::Class qw(dir);
 
 
 	has postgresqlobj => (
-		is=>'ro',
+		is=>'lazy',
 		init_arg=>undef,
-		lazy_build=>1,
 	);
 
-
-	has [qw/base_dir initdb postmaster/] => (
-		is=>'ro', 
-		traits=>['ENV'], 
-	);
+    has [qw/base_dir initdb postmaster/] => (
+        is=>'lazy', 
+    );
+    sub _build_base_dir {
+         return shift->env_builder('base_dir');
+    }
+    sub _build_initdb {
+         return shift->env_builder('initdb');
+    }
+    sub _build_postmaster {
+         return shift->env_builder('postmaster');
+    }
 
 	sub _build_postgresqlobj {
 		my ($self) = @_;
