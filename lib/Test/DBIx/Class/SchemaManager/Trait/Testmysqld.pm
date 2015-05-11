@@ -207,7 +207,7 @@ around 'setup' => sub {
 
     $self->deployed_replicants(\@deployed_replicants);
     $self->replicants(\@replicants);
-    $self->schema->storage->connect_replicants($self->replicants);
+    $self->schema->storage->connect_replicants(@{$self->replicants});
     $self->schema->storage->ensure_connected;
     my $port =  $self->default_cnf->{port};  ## TODO I doubt this is correct.....
 
