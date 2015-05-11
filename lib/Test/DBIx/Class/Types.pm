@@ -110,7 +110,7 @@ Test::DBIx::Class::Types - Type Constraint Library
 
 =head1 DESCRIPTION
 
-L<MooseX::Types> based type constraint library
+L<Type::Tiny> based type constraint library
 
 =head1 AUTHOR
 
