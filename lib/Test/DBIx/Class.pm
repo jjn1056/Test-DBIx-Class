@@ -1138,7 +1138,7 @@ to an already existing and populated database, set this option to false.
 
 =item traits
 
-Traits are L<Moose::Role>s that are applied to the class managing the connection
+Traits are L<Moo::Role>s that are applied to the class managing the connection
 to your database.  If you leave this option blank and you don't specify anything
 for 'connect_info' (above), we automatically load the SQLite trait (which can
 be reviewed at L<Test::DBIx::Class::SchemaManager::Trait::SQLite>).  This trait
@@ -1392,7 +1392,7 @@ directory.
 
 =head1 TRAITS
 
-As described, a trait is a L<Moose::Role> that is applied to the class
+As described, a trait is a L<Moo::Role> that is applied to the class
 managing your database and test instance.  Traits are installed by the
 'traits' configuration option, which expects an ArrayRef as its input
 (however will also normalize a scalar to an ArrayRef).
