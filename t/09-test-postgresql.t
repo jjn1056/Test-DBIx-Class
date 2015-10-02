@@ -12,6 +12,9 @@ use Test::More; {
 		eval "use Test::PostgreSQL"; if($@) {
 			plan skip_all => 'Test::PostgreSQL not installed';
 		}
+		eval "use DateTime::Format::Pg"; if($@) {
+			plan skip_all => 'DateTime::Format::Pg not installed';
+		}
 	}
 
 	my $lastname;
