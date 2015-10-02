@@ -12,6 +12,10 @@ BEGIN {
     eval "use Test::mysqld"; if($@) {
         plan skip_all => 'Test::mysqld not installed';
     }
+    eval "use MooseX::Types::LoadableClass 0.011 "; if($@) {
+        plan skip_all => 'The following modules are required for Replication MooseX::Types::LoadableClass >= 0.011 (see DBIx::Class::Optional::Dependencies for details)';
+    }
+
 }
 
 my $lastname;
