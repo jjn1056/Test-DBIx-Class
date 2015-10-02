@@ -1,5 +1,8 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.44 02 October 2015
+    - Test fixes (colinnewell)
+
 0.43 03 November 2014
     - Documentation fixes (felliot)
     - bug fixes in the mysql trait (felliot)
