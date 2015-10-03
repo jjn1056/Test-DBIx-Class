@@ -59,10 +59,22 @@ use Test::More; {
     $config->{tdbic_debug} = 1;
     $fh = '';
 
-    my $manager = Test::DBIx::Class::SchemaManager->initialize_schema({
-        %$config, 
-        builder => $builder,
-    });
+    my $manager;
+    eval {
+        $manager = Test::DBIx::Class::SchemaManager->initialize_schema({
+            %$config,
+            builder => $builder,
+        });
+    };
+    if ($@ or !$manager) {
+        Test::More::diag("Can't initialize a schema with the given configuration");
+        Test::More::diag("Returned Error: ".$@) if $@;
+        Test::More::diag(
+            Test::More::explain("configuration: " => $config)
+        );
+        done_testing;
+        exit;
+    }
 
     cmp_ok $fh, '=~', '# Starting mysqld with:', 'diag emitted';
     print ("$fh\n") if $env_keep_db;
