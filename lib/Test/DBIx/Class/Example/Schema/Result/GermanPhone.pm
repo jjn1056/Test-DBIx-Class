@@ -1,16 +1,16 @@
 package Test::DBIx::Class::Example::Schema::Result::GermanPhone; {
 	use base 'Test::DBIx::Class::Example::Schema::Result';
 
-    __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
+	__PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 	__PACKAGE__->table('german_phone');
 
-    __PACKAGE__->result_source_instance->is_virtual(1);
-    __PACKAGE__->result_source_instance->view_definition(
-        q{SELECT * FROM phone WHERE number LIKE '+49%'}
-    );
-    __PACKAGE__->result_source_instance->deploy_depends_on(
-        ['Test::DBIx::Class::Example::Schema::Result::Phone']
-    );
+	__PACKAGE__->result_source_instance->is_virtual(1);
+	__PACKAGE__->result_source_instance->view_definition(
+		q{SELECT * FROM phone WHERE number LIKE '+49%'}
+	);
+	__PACKAGE__->result_source_instance->deploy_depends_on(
+		['Test::DBIx::Class::Example::Schema::Result::Phone']
+	);
 
 	__PACKAGE__->add_columns(
 		fk_person_id => {

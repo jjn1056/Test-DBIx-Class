@@ -1,15 +1,15 @@
 package Test::DBIx::Class::Example::Schema::Result::RussianPhone; {
 	use base 'Test::DBIx::Class::Example::Schema::Result';
 
-    __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
+	__PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 	__PACKAGE__->table('russian_phone');
 
-    __PACKAGE__->result_source_instance->view_definition(
-        q{SELECT * FROM phone WHERE number LIKE '+7%'}
-    );
-    __PACKAGE__->result_source_instance->deploy_depends_on(
-        ['Test::DBIx::Class::Example::Schema::Result::Phone']
-    );
+	__PACKAGE__->result_source_instance->view_definition(
+		q{SELECT * FROM phone WHERE number LIKE '+7%'}
+	);
+	__PACKAGE__->result_source_instance->deploy_depends_on(
+		['Test::DBIx::Class::Example::Schema::Result::Phone']
+	);
 
 	__PACKAGE__->add_columns(
 		fk_person_id => {
