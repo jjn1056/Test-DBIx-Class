@@ -19,11 +19,13 @@ use Test::More; {
 			"CD::Track",
 			"Company",
 			"Company::Employee",
+			"GermanPhone",
 			"Job",
 			"Person",
 			"Person::Artist",
 			"Person::Employee",
 			"Phone",
+			"RussianPhone",
 		],
 		'Got expected sources';
 

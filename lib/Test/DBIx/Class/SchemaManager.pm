@@ -215,18 +215,36 @@ sub cleanup {
 
     unless ($self->keep_db) {
         $schema->storage->with_deferred_fk_checks(sub {
-            foreach my $source ($schema->sources) {
-                my $tablesource = $schema->source($source);
-                next unless $tablesource;
-                my $table = $tablesource->name;
-                $schema->storage->dbh->do($self->drop_table_sql($table))
-                    if !($schema->source($source)->can('is_virtual') &&
-                        $schema->source($source)->is_virtual);
+            foreach my $source_name ($schema->sources) {
+                my $source = $schema->source($source_name);
+                next unless $source;
+                $self->drop_source($source);
             }
         });
     }
 
     $self->schema->storage->disconnect;
+}
+
+sub drop_source
+{
+    my $self = shift;
+    my $source = shift;
+
+    my $schema = $self->schema;
+    my $source_name = $source->name;
+
+    my $sql;
+    if ($source->isa('DBIx::Class::ResultSource::View')) {
+        $sql = $self->drop_view_sql($source_name) unless $source->is_virtual();
+    }
+    else {
+        $sql = $self->drop_table_sql($source_name);
+    }
+
+    $schema->storage->dbh->do($sql) if defined $sql;
+
+    return;
 }
 
 # this has been pushed out to a method so that it can be overriden
@@ -236,6 +254,15 @@ sub drop_table_sql
     my $self = shift;
     my $table = shift;
     return "drop table $table";
+}
+
+# this has been pushed out to a method so that it can be overriden
+# by the traits.
+sub drop_view_sql
+{
+    my $self = shift;
+    my $view = shift;
+    return "drop view $view";
 }
 
 sub reset {
