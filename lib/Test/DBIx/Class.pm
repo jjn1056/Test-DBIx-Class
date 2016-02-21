@@ -1444,7 +1444,7 @@ L<DBIx::Class>, L<DBIx::Class::Schema::PopulateMore>, L<DBIx::Class::Fixtures>
     abraxxa
     oalders
     felliott
-    VadimPushtaev
+    Vadim Pushtaev C<< <pushtaev@cpan.org> >>
 
 =head1 COPYRIGHT & LICENSE
 
