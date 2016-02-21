@@ -215,7 +215,7 @@ sub cleanup {
 
     unless ($self->keep_db) {
         $schema->storage->with_deferred_fk_checks(sub {
-            foreach my $source_name ($schema->sources) {
+            foreach my $source_name (@{$self->deployed_sources()}) {
                 my $source = $schema->source($source_name);
                 next unless $source;
                 $self->drop_source($source);
@@ -224,6 +224,18 @@ sub cleanup {
     }
 
     $self->schema->storage->disconnect;
+}
+
+sub deployed_sources
+{
+    my ($self) = @_;
+
+    my $deploy_opts = $self->deploy_opts;
+
+    return $deploy_opts->{sources} if exists $deploy_opts->{sources};
+    return $deploy_opts->{parser_args}->{sources} if exists $deploy_opts->{parser_args}->{sources};
+
+    return [ $self->schema->sources ];
 }
 
 sub drop_source
