@@ -756,6 +756,7 @@ The following modules or resources may be of interest.
     abraxxa
     oalders
     felliott
+    Vadim Pushtaev C<< <pushtaev@cpan.org> >>
 
 # COPYRIGHT & LICENSE
 
