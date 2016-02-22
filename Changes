@@ -1,5 +1,9 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.46 22 February 2016
+
+    - Allow dropping of real views created. (VadimPushtaev)
+
 0.45 03 October 2015
     - Another test fix
 
