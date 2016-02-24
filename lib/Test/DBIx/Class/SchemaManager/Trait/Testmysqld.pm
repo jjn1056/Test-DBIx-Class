@@ -1,7 +1,5 @@
 package Test::DBIx::Class::SchemaManager::Trait::Testmysqld;
 
-use Moose::Role;
-use MooseX::Attribute::ENV;
 use Test::mysqld;
 use Test::More ();
 use Path::Class qw(dir);
@@ -9,20 +7,26 @@ use Test::DBIx::Class::Types qw(ReplicantsConnectInfo);
 use Socket;
 use File::Temp qw(tempdir);
 use File::Path qw(make_path);
+use Types::Standard qw(ArrayRef HashRef Str);
+
+use Moo::Role;
 
 requires 'setup', 'cleanup';
 
 ## has '+force_drop_table' => (is=>'rw',default=>1);
 
-has [qw/base_dir mysql_install_db mysqld/] => (
-    is=>'ro',
-    traits=>['ENV'],
-);
+has base_dir => (is => 'ro', builder => 1,);
+sub _build_base_dir { $ENV{base_dir} || $ENV{BASE_DIR} }
+has mysql_install_db => (is => 'ro', builder => 1,);
+sub _build_mysql_install_db { $ENV{mysql_install_db} || $ENV{MYSQL_INSTALL_DB} }
+has mysqld => (is => 'ro', builder => 1,);
+sub _build_mysqld { $ENV{mysqld} || $ENV{MYSQLD} }
 
 has test_db_manager => (
     is=>'ro',
     init_arg=>undef,
-    lazy_build=>1,
+    lazy=>1,
+    builder=>1,
 );
 
 sub _build_test_db_manager {
@@ -40,15 +44,14 @@ sub _build_test_db_manager {
     }
 }
 
-has default_cnf => (
+has _default_cnf => (
     is=>'ro',
     init_arg=>undef,
-    isa=>'HashRef',
-    auto_deref=>1,
-    lazy_build=>1,
+    isa=>HashRef,
+    lazy=>1,
+    builder=>1,
 );
-
-sub _build_default_cnf {
+sub _build__default_cnf {
     my $port = $_[0]->find_next_unused_port();
     return {
         'server-id'=>1,
@@ -57,40 +60,78 @@ sub _build_default_cnf {
         'port'=>$port,
     };
 }
+sub default_cnf { wantarray ? %{$_[0]->_default_cnf} : $_[0]->_default_cnf }
+
 
 has port_to_try_first => (
-    is=>'rw',
-    default=> sub { 8000 + int(rand(2000)) },
+    is      =>'rw',
+    builder => 1,
 );
+sub _build_port_to_try_first { 8000 + int(rand(2000)) }
 
-has my_cnf => (
+has _my_cnf => (
     is=>'ro',
-    isa=>'HashRef',
-    auto_deref=>1,
+    isa=>HashRef,
+    init_arg=>'my_cnf',
 );
+sub my_cnf {
+    my $self = shift;
+    if (not defined $self->{_my_cnf}) {
+        return wantarray ? () : undef;
+    }
+    return wantarray ? %{$self->_my_cnf} : $self->_my_cnf;
+}
 
 ## Replicant stuff... probably should be a delegate
 
-has deployed_replicants => (is=>'rw', isa=>'ArrayRef', auto_deref=>1);
+has _deployed_replicants => (
+    is=>'rw',
+    isa=>ArrayRef,
+    init_arg=>'deployed_replicants',
+);
+sub deployed_replicants {
+    my $self = shift;
 
-has replicants => (
+    return $self->_deployed_replicants(@_) if (@_);
+
+    if (not defined $self->{_deployed_replicants}) {
+        return wantarray ? () : undef;
+    }
+
+    return  wantarray ? @{$self->_deployed_replicants}
+                      :   $self->_deployed_replicants;
+}
+
+has _replicants => (
     is=>'rw',
     isa=>ReplicantsConnectInfo,
     coerce=>1,
-    auto_deref=>1,
+    init_arg=>'replicants',
     predicate=>'has_replicants',
 );
+sub replicants {
+    my $self = shift;
+
+    my $ret = $self->_replicants;
+    return $self->_replicants(@_) if (@_);
+
+    if (not defined $ret) {
+        return wantarray ? () : undef;
+    }
+
+    return  wantarray ? @$ret : $ret;
+}
 
 has pool_args => (
     is=>'ro',
-    isa=>'HashRef',
+    isa=>HashRef,
     required=>0,
     predicate=>'has_pool_args',
 );
 
 has balancer_type => (
     is=>'ro',
-    isa=>'Str',
+    isa=>Str,
     required=>1,
     predicate=>'has_balancer_type',
     default=>'::Random',
@@ -98,7 +139,7 @@ has balancer_type => (
 
 has balancer_args => (
     is=>'ro',
-    isa=>'HashRef',
+    isa=>HashRef,
     required=>1,
     predicate=>'has_balancer_args',
     default=> sub {
@@ -109,20 +150,34 @@ has balancer_args => (
     },
 );
 
-has default_replicant_cnf => (
+has _default_replicant_cnf => (
     is=>'ro',
     init_arg=>undef,
-    isa=>'HashRef',
-    auto_deref=>1,
+    isa=>HashRef,
+    init_arg=>'default_replicant_cnf',
     required=>1,
     default=> sub { +{} },
 );
+sub default_replicant_cnf {
+    my $self = shift;
+    if (not defined $self->{_default_replicant_cnf}) {
+        return wantarray ? () : undef;
+    }
+    return wantarray ? %{$self->_default_replicant_cnf} : $self->_default_replicant_cnf;
+}
 
-has my_replicant_cnf => (
+has _my_replicant_cnf => (
     is=>'ro',
-    isa=>'HashRef',
-    auto_deref=>1,
+    isa=>HashRef,
+    init_arg=>'my_replicant_cnf',
 );
+sub my_replicant_cnf {
+    my $self = shift;
+    if (not defined $self->{_my_replicant_cnf}) {
+        return wantarray ? () : undef;
+    }
+    return wantarray ? %{$self->_my_replicant_cnf} : $self->_my_replicant_cnf;
+}
 
 sub prepare_replicant_config {
     my ($self, $replicant, @replicants,%extra) = @_;

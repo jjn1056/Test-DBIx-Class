@@ -1,8 +1,10 @@
 package Test::DBIx::Class::FixtureCommand::Populate; {
 
-	use Moose;
 	use Test::More ();
+
+	use Moo;
 	with 'Test::DBIx::Class::Role::FixtureCommand';
+	use namespace::clean;
 
 	sub install_fixtures {
 		my ($self, $arg, @rest) = @_;

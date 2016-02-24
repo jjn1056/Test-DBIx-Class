@@ -14,15 +14,15 @@ requires 'Digest::MD5' => '2.39';
 requires 'Hash::Merge' => '0.11';
 requires 'List::MoreUtils' => '0.22';
 requires 'Module::Runtime' => '0.013';
-requires 'Moose' => '1.10';
-requires 'MooseX::Attribute::ENV' => '0.01';
-requires 'MooseX::Types' => '0.23';
+requires 'Moo' => '1.006';
+requires 'namespace::clean';
 requires 'Path::Class' => '0.21';
 requires 'SQL::Translator' => '0.11006';
 requires 'Scalar::Util' => '1.23';
 requires 'Sub::Exporter' => '0.982';
 requires 'Test::Builder' => '0.96';
 requires 'Test::Deep' => '0.106';
+requires 'Type::Tiny' => '1.000002';
 requires 'File::Temp';
 requires 'File::Path';
 

@@ -3,17 +3,20 @@ package Test::DBIx::Class::Types;
 use strict;
 use warnings;
 
-use Class::MOP;
-use Scalar::Util qw(reftype);
-use MooseX::Types::Moose qw(Str Int ClassName ArrayRef HashRef);
-use MooseX::Types -declare => [qw/
+use Type::Library
+  -base,
+  -declare => qw(
     TestBuilder SchemaManagerClass ConnectInfo FixtureClass
     ReplicantsConnectInfo
-/];
+  );
+use Type::Utils -all;
+use Types::Standard qw(Str Int ClassName ArrayRef HashRef);
+
 use Module::Runtime qw(use_module);
+use Scalar::Util qw(reftype);
 
 subtype TestBuilder,
-  as class_type('Test::Builder');
+  as class_type({ class => 'Test::Builder'});
 
 subtype SchemaManagerClass,
   as ClassName;
@@ -111,7 +114,7 @@ Test::DBIx::Class::Types - Type Constraint Library
 
 =head1 DESCRIPTION
 
-L<MooseX::Types> based type constraint library
+L<Type::Tiny> based type constraint library
 
 =head1 AUTHOR
 

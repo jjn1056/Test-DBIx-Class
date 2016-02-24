@@ -1,37 +1,53 @@
 package Test::DBIx::Class::SchemaManager;
 
-use Moose;
-use MooseX::Attribute::ENV;
-use Moose::Util;
 use Test::More ();
 use List::MoreUtils qw(uniq);
-use Test::DBIx::Class::Types qw(
-    TestBuilder SchemaManagerClass FixtureClass ConnectInfo
-);
+use Moo::Role ();
+use Test::DBIx::Class::Types qw( :types :to );
+use Types::Standard qw(Bool HashRef Str);
+
+use Moo;
+use namespace::clean;
 
 has 'force_drop_table' => (
-    traits=>['ENV'],
     is=>'rw',
-    isa=>'Bool',
     required=>1,
-    default=>0,
+    isa=>Bool,
+    builder=>1,
 );
+sub _build_force_drop_table {
+    $ENV{force_drop_table} || $ENV{FORCE_DROP_TABLE} || 0
+}
 
-has [qw/keep_db tdbic_debug/] => (
-    traits=>['ENV'],
+has 'keep_db' => (
     is=>'ro',
-    isa=>'Bool',
+    isa=>Bool,
     required=>1,
-    default=>0,
+    builder=>1,
 );
+sub _build_keep_db {
+    $ENV{keep_db} || $ENV{KEEP_DB} || 0
+}
+
+has 'tdbic_debug' => (
+    is=>'ro',
+    isa=>Bool,
+    required=>1,
+    builder=>1,
+);
+sub _build_tdbic_debug {
+    $ENV{tdbic_debug} || $ENV{TDBIC_DEBUG} || 0
+}
 
 has 'deploy_db' => (
-    traits=>['ENV'],
     is=>'ro',
-    isa=>'Bool',
     required=>1,
-    default=>1,
+    isa=>Bool,
+    builder=>1,
 );
+sub _build_deploy_db {
+    $ENV{deploy_db} || $ENV{DEPLOY_DB} || 1
+}
 
 has 'builder' => (
     is => 'ro',
@@ -40,65 +56,75 @@ has 'builder' => (
 );
 
 has 'schema_class' => (
-    traits => ['ENV'],
     is => 'ro',
     isa => SchemaManagerClass,
     required => 1,
     coerce => 1,
+    builder => 1,
 );
+sub _build_schema_class {
+    $ENV{schema_class} || $ENV{SCHEMA_CLASS}
+        || die '"schema_class" is a required parameter';
+}
 
 has 'schema' => (
     is => 'ro',
-    lazy_build => 1,
+    lazy => 1,
+    builder => 1,
 );
 
 has 'connect_info' => (
     is => 'ro',
     isa => ConnectInfo,
     coerce => 1,
-    lazy_build => 1,
+    lazy => 1,
+    builder => 1,
 );
 
 has 'connect_opts' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
 );
 
 has 'deploy_opts' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
     default => sub { {} },
 );
 
 has 'connect_info_with_opts' => (
     is => 'ro',
-    isa => 'HashRef',
-    lazy_build => 1,
+    isa => HashRef,
+    lazy => 1,
+    builder => 1,
 );
 
 has 'fixture_class' => (
-    traits => ['ENV'],
     is => 'ro',
     isa => FixtureClass,
     required => 1,
     coerce => 1,
-    default => '::Populate',
+    builder => 1,
 );
+sub _build_fixture_class {
+    $ENV{fixture_class} || $ENV{FIXTURE_CLASS} || '::Populate'
+}
 
 has 'fixture_command' => (
     is => 'ro',
     init_arg => undef,
-    lazy_build => 1,
+    lazy => 1,
+    builder => 1,
 );
 
 has 'fixture_sets' => (
     is => 'ro',
-    isa => 'HashRef',
+    isa => HashRef,
 );
 
 has 'last_statement' => (
     is=>'rw',
-    isa=>'Str',
+    isa=>Str,
 );
 
 sub get_fixture_sets {
@@ -171,7 +197,7 @@ sub initialize_schema {
     @traits = map { __PACKAGE__."::Trait::$_"} uniq @traits;
     $config->{traits} = \@traits;
 
-    my $self = Moose::Util::with_traits($class, @traits)->new($config)
+    my $self = Moo::Role->create_class_with_roles($class, @traits)->new($config)
         or return;
 
     $self->schema->storage->ensure_connected;
