@@ -1,8 +1,3 @@
-#!/usr/bin/env perl
-
-use maint::Maker;
-
-all_from 'lib/Test/DBIx/Class.pm';
 requires 'Config::Any' => '0.19';
 requires 'DBIx::Class' => '0.08123';
 requires 'DBIx::Class::Schema::PopulateMore' => '0.16';
@@ -26,9 +21,14 @@ requires 'Test::Deep' => '0.106';
 requires 'File::Temp';
 requires 'File::Path';
 
-feature('MySql Support', -default => 0, 'Test::mysqld' => '0.14');
-feature('Postgresql Support', -default => 0, 'Test::PostgreSQL' => '0.09',
-        'DateTime::Format::Pg' => 0);
+feature 'mysql', 'MySql Support' => sub { 
+	requires 'Test::mysqld' => '0.14',
+};
+
+feature 'postgres', 'Postgresql Support' => sub { 
+	requires 'Test::PostgreSQL' => '0.09',
+	requires 'DateTime::Format::Pg' => '0',
+};
 
 test_requires 'Test::More' => '0.94';
-tests_recursive;
+
