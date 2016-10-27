@@ -26,7 +26,7 @@ feature 'mysql', 'MySql Support' => sub {
 };
 
 feature 'postgres', 'Postgresql Support' => sub { 
-	requires 'Test::PostgreSQL' => '0.09',
+	requires 'Test::Postgresql58' => '2.01',
 	requires 'DateTime::Format::Pg' => '0',
 };
 
