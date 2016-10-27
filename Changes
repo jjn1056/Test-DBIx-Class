@@ -1,5 +1,10 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.48_01 27 October 2016
+
+    - Switch to Test::Postgresql58 to retain Perl 5.8 support
+      with Postgres.
+
 0.47 22 February 2016
 
     - Added support for deploy_opts->*->sources.
