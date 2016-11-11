@@ -40,6 +40,19 @@ note('set connect_info + connect_opts'); {
 
 }
 
+note('test alternative SQLite dsn syntax'); {
+    ok my $config = {
+        schema_class => 'Test::DBIx::Class::Example::Schema',
+        connect_info => ['dbi:SQLite:dbname=:memory:','',''],
+        connect_opts => { name_sep => '.', quote_char => '`', },
+    }, 'Created Sample inline configuration';
+
+    ok my $schema_manager = Test::DBIx::Class->_initialize_schema($config)
+      => 'Connected and deployed a testable schema';
+    is $schema_manager->_extract_dbname_from_dsn('DBI:SQLite:/tmp/foo.sqlite'), '/tmp/foo.sqlite', 'Extracted correct dbname';
+    is $schema_manager->_extract_dbname_from_dsn('DBI:SQLite:dbname=/tmp/foo.sqlite'), '/tmp/foo.sqlite', 'Extracted correct dbname';
+    is $schema_manager->_extract_dbname_from_dsn('DBI:SQLite:dbname=:memory'), ':memory', 'Extracted correct dbname';
+}
 
 done_testing;
 

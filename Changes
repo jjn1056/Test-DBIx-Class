@@ -1,5 +1,7 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+    - Fix for SQLite dsn parsing oddity (#42).
+
 0.49 02 November 2016
 
     - General release after no problems with developer release.

@@ -14,7 +14,7 @@ package Test::DBIx::Class::SchemaManager::Trait::SQLite; {
 			return $env_path;
 		}
 		elsif($dsn) {
-			my ($dbname) = $dsn =~ m/dbi:[^:]+:dbname=(.+)/i;
+			my ($dbname) = $self->_extract_dbname_from_dsn($dsn);
 			if($dbname) {
 				return $dbname;
 			}
@@ -26,6 +26,13 @@ package Test::DBIx::Class::SchemaManager::Trait::SQLite; {
 			return ':memory:';
 		}
 	}
+
+    sub _extract_dbname_from_dsn
+    {
+        my ($self, $dsn) = @_;
+        my ($dbname) = $dsn =~ m/dbi:[^:]+:(?:dbname=)?(.+)/i;
+        return $dbname;
+    }
 
 	sub get_default_connect_info {
 		my ($self) = @_;
