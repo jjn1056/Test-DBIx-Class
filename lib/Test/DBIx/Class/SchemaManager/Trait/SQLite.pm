@@ -19,7 +19,7 @@ package Test::DBIx::Class::SchemaManager::Trait::SQLite; {
 				return $dbname;
 			}
 			else {
-				croak("Couldn't find dbname in sqlite dsn '$dsn'");
+				die("Couldn't find dbname in sqlite dsn '$dsn'");
 			}
 		}
 		else {
