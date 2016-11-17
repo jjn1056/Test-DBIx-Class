@@ -37,11 +37,12 @@ package Test::DBIx::Class::FixtureCommand::Populate; {
 
 		my @return;
 		foreach my $definition (@definitions) {
-			my ($source, $rows) = each %$definition;
-            my $rs = $self->schema_manager->schema->resultset($source);
+			while (my ($source, $rows) = each %$definition) {
+				my $rs = $self->schema_manager->schema->resultset($source);
 
-			my @rows =  $rs->populate($rows);
-			push @return, {$source => [@rows]};
+				my @rows =  $rs->populate($rows);
+				push @return, {$source => [@rows]};
+			}
 		}
 		return @return;
 	}
