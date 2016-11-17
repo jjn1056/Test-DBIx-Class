@@ -1266,9 +1266,57 @@ in one file:
 In this case you can simple do "use Test::DBIx::Class" and everything will
 happen automatically.
 
+In the example 't/etc/schema.pl' file, instead of (or as well as) fixture_sets
+you could instead define fixture_path to allow resultset data outside of the
+main 't/etc/schema.pl' file.
+
+     'fixture_path' => [qw{t etc fixtures}],
+
+Create the file './t/etc/fixtures/basic.pl' and insert
+
+    [
+      'Person' => [
+        [
+          'name',
+          'age',
+          'email'
+        ],
+        [
+          'John',
+          '40',
+          'john@nowehere.com'
+        ],
+        [
+          'Vincent',
+          '15',
+          'vincent@home.com'
+        ],
+        [
+          'Vanessa',
+          '35',
+          'vanessa@school.com'
+        ]
+      ]
+    ]
+
+Additional rulesets should be included within the outermost [ ] like
+this.
+
+    [
+      'Person' => [
+        ...
+      ],
+      'Job' => [
+        ...
+      ]
+    ]
+
+The 'basic' fixture would be used with fixtures_ok in exactly the same way
+as when it was embedded within schema.pl using fixture_sets.
+
 =head1 CONFIGURATION BY FILE
 
-By default, we try to load configuration fileis from the following locations:
+By default, we try to load configuration files from the following locations:
 
      ./t/etc/schema.*
      ./t/etc/[test file path].*
@@ -1295,7 +1343,7 @@ Relative paths are rooted to the distribution home directory (ie, the one that
 contains your 'lib' and 't' directories).  Full paths are searched without
 modification.
 
-You can specify multiply paths.  The following would search for both "schema.*"
+You can specify multiple paths.  The following would search for both "schema.*"
 and "share/schema".
 
     use Test::DBIx::Class -config_path => [[qw/share schema/], [qw/schema/]];
@@ -1324,7 +1372,7 @@ arguments, either string or array references, are passed to L<Path::Class> so
 that we can maintain better compatibility with non unix filesystems.  If you
 are writing for CPAN, please consider our non Unix filesystem friends :)
 
-Lastly, there is an %ENV variable named '' which, if it
+Lastly, there is an %ENV variable named 'TEST_DBIC_CONFIG_SUFFIX' which, if it
 exists, can be used to further customize your configuration path.  If we find
 that $ENV{TEST_DBIC_CONFIG_SUFFIX} is set, we attempt to find configuration files
 with the suffix appended to each of the items in the config_path option.  So, if
@@ -1349,7 +1397,7 @@ for valid and loading configuration files (assuming unix filesystem conventions)
     ~/etc/test-schema.*
     ~/etc/test-schema-mysql.*
     
-Each path is testing in turn and all found configurations are merged from top to
+Each path is tested in turn and all found configurations are merged from top to
 bottom.  This feature is intended to make it easier to switch between sets of
 configuration files when developing.  For example, you can create a test suite
 intended for a MySQL database, but allow a failback to the default Sqlite should
