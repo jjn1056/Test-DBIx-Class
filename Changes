@@ -1,5 +1,10 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.51 17 November 2016
+
+    - Updated documentation for fixture_path
+    - Fixed bug to add more than a single resultset from a hash
+
 0.50 14 November 2016
 
     - Switched croak to die to prevent error info from being lost (#42).
