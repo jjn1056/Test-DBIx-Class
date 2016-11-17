@@ -1493,6 +1493,7 @@ L<DBIx::Class>, L<DBIx::Class::Schema::PopulateMore>, L<DBIx::Class::Fixtures>
     oalders
     felliott
     Vadim Pushtaev C<< <pushtaev@cpan.org> >>
+    simonamor
 
 =head1 COPYRIGHT & LICENSE
 
