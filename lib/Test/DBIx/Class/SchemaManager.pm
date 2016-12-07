@@ -175,6 +175,10 @@ sub initialize_schema {
         or return;
 
     $self->schema->storage->ensure_connected;
+    if($config->{default_resultset_attributes})
+    {
+        $self->schema->default_resultset_attributes($config->{default_resultset_attributes});
+    }
     $self->setup if $self->deploy_db;
 
     return $self;

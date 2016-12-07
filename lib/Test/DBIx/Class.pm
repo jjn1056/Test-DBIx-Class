@@ -1089,6 +1089,13 @@ and quote_char.
 Use this to customise any arguments that are to be passed to
 L<DBIx::Class::Schema/deploy>, such as add_drop_table or quote_identifiers.
 
+=item default_resultset_attributes
+
+Allows you to specify default_resultset_attributes to be set on the schema.
+These will be used when creating all new resultsets.
+
+This is typically done to enable caching or turn on the software_limit flag.
+
 =item fixture_path
 
 These are a list of relative paths search for fixtures.  Each item should be

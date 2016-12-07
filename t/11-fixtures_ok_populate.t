@@ -5,13 +5,18 @@ use warnings;
 # get loaded when calling fixtures_ok, without errors or warnings.
 
 # Hard-code a plan to verify Test::DBIx::Class's fixtures_ok behavior.
-use Test::More 'tests' => 8;
+use Test::More 'tests' => 9;
 
 use Test::DBIx::Class {
   schema_class => 'Test::DBIx::Class::Example::Schema',
   connect_info => ['dbi:SQLite:dbname=:memory:','','', {on_connect_call => 'use_foreign_keys'}],
   fixture_class => '::Populate',
+  default_resultset_attributes => {
+      test_attribute => 1,
+  },
 }, 'Person', 'Company';
+
+ok Person->{attrs}->{test_attribute}, 'default_resultset_attributes attribute should be set';
 
 fixtures_ok [ 
   Company => [
