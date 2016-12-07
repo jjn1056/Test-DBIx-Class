@@ -1,5 +1,9 @@
 This file documents the revision history for Perl extension Test-DBIx-Class.
 
+0.52 17 November 2016
+
+    - Add support for default_resultset_attributes schema setting
+
 0.51 17 November 2016
 
     - Updated documentation for fixture_path
